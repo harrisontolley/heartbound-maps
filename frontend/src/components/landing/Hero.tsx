@@ -1,7 +1,7 @@
 import { Section } from "./Section";
 import { SectionLabel } from "./SectionLabel";
 import { LinkButton } from "./LinkButton";
-import { MediaPlaceholder } from "./MediaPlaceholder";
+import { PosterImage } from "./PosterImage";
 import { copy, STUDIO_HREF } from "./copy";
 
 /** Above-the-fold hero: headline, subhead, two CTAs, and a poster preview. */
@@ -29,10 +29,10 @@ export function Hero() {
         </div>
 
         <div className="relative">
-          <MediaPlaceholder
-            label={hero.media.label}
-            caption={hero.media.caption}
-            aspect="4 / 5"
+          <PosterImage
+            media={hero.media}
+            priority
+            sizes="(min-width: 1024px) 45vw, 100vw"
             className="shadow-[0_4px_16px_rgba(0,0,0,0.04)]"
           />
         </div>

@@ -1,6 +1,6 @@
 import { Section } from "./Section";
 import { SectionLabel } from "./SectionLabel";
-import { MediaPlaceholder } from "./MediaPlaceholder";
+import { PosterImage } from "./PosterImage";
 import { copy } from "./copy";
 
 const CARD =
@@ -22,7 +22,10 @@ export function Features() {
       <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
         {features.items.map((item) => (
           <article key={item.title} className={CARD}>
-            <MediaPlaceholder label={item.media.label} aspect={item.media.aspect} />
+            <PosterImage
+              media={item.media}
+              sizes="(min-width: 1024px) 22vw, (min-width: 640px) 45vw, 90vw"
+            />
             <h3 className="text-[18px] font-medium leading-[1.44] text-ink">
               {item.title}
             </h3>
@@ -43,7 +46,11 @@ export function Features() {
             <p className="max-w-[52ch] text-[16px] leading-[1.5] tracking-[0.16px] text-body">
               {item.body}
             </p>
-            <MediaPlaceholder label={item.media.label} aspect={item.media.aspect} />
+            <PosterImage
+              media={item.media}
+              className={"src" in item.media ? "mx-auto max-w-[280px]" : ""}
+              sizes="(min-width: 768px) 280px, 90vw"
+            />
           </article>
         ))}
       </div>

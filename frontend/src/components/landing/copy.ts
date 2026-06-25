@@ -36,6 +36,9 @@ export const copy = {
     media: {
       label: "Hero — a finished poster: home in the center, labeled arrows fanning out to each place with distances",
       caption: "Replace with a high-res render of a real poster (vintage-cartography style).",
+      aspect: "2 / 3",
+      src: "/showcase/hero-home-london.png",
+      alt: "Vintage cartography poster with arrows pointing from London to New York, Paris, Edinburgh, Sydney and Lisbon",
     },
   },
 
@@ -66,22 +69,42 @@ export const copy = {
       {
         title: "Vintage cartography",
         body: "Aged paper, hand-set serif labels, a compass rose. The classic look for a hallway.",
-        media: { label: "Poster style — vintage-cartography", aspect: "4 / 5" },
+        media: {
+          label: "Poster style — vintage-cartography",
+          aspect: "2 / 3",
+          src: "/showcase/feature-vintage.png",
+          alt: "Vintage cartography poster centered on Rome",
+        },
       },
       {
         title: "Minimal compass",
         body: "Clean lines, generous space, one accent. For modern rooms.",
-        media: { label: "Poster style — minimal-compass", aspect: "4 / 5" },
+        media: {
+          label: "Poster style — minimal-compass",
+          aspect: "2 / 3",
+          src: "/showcase/feature-minimal.png",
+          alt: "Minimal compass poster centered on Copenhagen",
+        },
       },
       {
         title: "Bold modern",
         body: "Heavy geometric type and high contrast. A statement piece.",
-        media: { label: "Poster style — bold-modern", aspect: "4 / 5" },
+        media: {
+          label: "Poster style — bold-modern",
+          aspect: "2 / 3",
+          src: "/showcase/feature-bold.png",
+          alt: "Bold modern poster centered on Los Angeles",
+        },
       },
       {
         title: "Night sky",
         body: "Deep ink background, places glowing like stars over a dark map.",
-        media: { label: "Poster style — night-sky", aspect: "4 / 5" },
+        media: {
+          label: "Poster style — night-sky",
+          aspect: "2 / 3",
+          src: "/showcase/feature-night-sky.png",
+          alt: "Night sky poster centered on Reykjavik with places glowing like stars",
+        },
       },
     ],
     layoutEngine: {
@@ -92,7 +115,12 @@ export const copy = {
     exportCard: {
       title: "Export ready to print",
       body: "Download a crisp SVG for any size, or a print-quality PNG at full resolution. No watermarks on paid plans.",
-      media: { label: "Export formats — SVG + print-quality PNG", aspect: "16 / 10" },
+      media: {
+        label: "Export formats — SVG + print-quality PNG",
+        aspect: "2 / 3",
+        src: "/showcase/exportcard-export-formats.png",
+        alt: "Bold modern poster centered on Amsterdam",
+      },
     },
   },
 
@@ -122,12 +150,42 @@ export const copy = {
     eyebrow: "Made with Pinprint",
     headline: "A few we'd hang ourselves.",
     items: [
-      { label: "Example poster — a transatlantic family", aspect: "4 / 5" },
-      { label: "Example poster — a decade of moves", aspect: "4 / 5" },
-      { label: "Example poster — student years abroad", aspect: "4 / 5" },
-      { label: "Example poster — coastal hometowns", aspect: "4 / 5" },
-      { label: "Example poster — three continents", aspect: "4 / 5" },
-      { label: "Example poster — one long road trip", aspect: "4 / 5" },
+      {
+        label: "Example poster — a transatlantic family",
+        aspect: "2 / 3",
+        src: "/showcase/showcase-transatlantic-family.png",
+        alt: "Sea-atlas poster of a transatlantic family, centered on London",
+      },
+      {
+        label: "Example poster — a decade of moves",
+        aspect: "2 / 3",
+        src: "/showcase/showcase-decade-of-moves.png",
+        alt: "Topographic poster of a decade of moves, centered on Denver",
+      },
+      {
+        label: "Example poster — student years abroad",
+        aspect: "2 / 3",
+        src: "/showcase/showcase-student-years-abroad.png",
+        alt: "Blueprint poster of student years abroad, centered on Manchester",
+      },
+      {
+        label: "Example poster — coastal hometowns",
+        aspect: "2 / 3",
+        src: "/showcase/showcase-coastal-hometowns.png",
+        alt: "Minimal compass poster of coastal hometowns, centered on Brighton",
+      },
+      {
+        label: "Example poster — three continents",
+        aspect: "2 / 3",
+        src: "/showcase/showcase-three-continents.png",
+        alt: "Constellation poster spanning three continents, centered on Singapore",
+      },
+      {
+        label: "Example poster — one long road trip",
+        aspect: "2 / 3",
+        src: "/showcase/showcase-one-long-road-trip.png",
+        alt: "Art deco poster of one long road trip, centered on Chicago",
+      },
     ],
   },
 

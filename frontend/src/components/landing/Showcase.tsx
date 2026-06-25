@@ -1,6 +1,6 @@
 import { Section } from "./Section";
 import { SectionLabel } from "./SectionLabel";
-import { MediaPlaceholder } from "./MediaPlaceholder";
+import { PosterImage } from "./PosterImage";
 import { copy } from "./copy";
 
 /** Gallery of example posters to show range and outcome. */
@@ -17,11 +17,11 @@ export function Showcase() {
 
       <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {showcase.items.map((item, i) => (
-          <MediaPlaceholder
+          <PosterImage
             key={i}
-            label={item.label}
-            aspect={item.aspect}
+            media={item}
             className="bg-surface-card"
+            sizes="(min-width: 1024px) 30vw, (min-width: 640px) 45vw, 90vw"
           />
         ))}
       </div>
