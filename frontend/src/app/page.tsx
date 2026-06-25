@@ -1,5 +1,6 @@
-import { PosterStudio } from "@/components/PosterStudio";
+import { LandingPage } from "@/components/landing/LandingPage";
 
+// Marketing landing page. The poster-building tool lives at /studio.
 export default function Home() {
-  return <PosterStudio />;
+  return <LandingPage />;
 }
