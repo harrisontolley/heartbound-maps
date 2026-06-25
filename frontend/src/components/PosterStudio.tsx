@@ -1,40 +1,31 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import dynamic from "next/dynamic";
 import { usePosterStore } from "@/lib/store/posterStore";
 import { useFontsReady } from "@/hooks/useFontsReady";
 import { useHydrated } from "@/hooks/useHydrated";
 import { useMeasuredLayout } from "@/hooks/useMeasuredLayout";
-import {
-  getActiveTemplate,
-  TEMPLATE_ORDER,
-  TEMPLATES,
-} from "@/lib/templates/registry";
-import {
-  VINTAGE_VARIANT_ORDER,
-  VINTAGE_VARIANT_LABELS,
-} from "@/lib/templates/vintageVariants";
+import { getActiveTemplate, TEMPLATE_ORDER } from "@/lib/templates/registry";
+import { VINTAGE_VARIANT_ORDER } from "@/lib/templates/vintageVariants";
 import { resolveCustomized } from "@/lib/templates/customize";
-import { POSTER_SIZES } from "@/lib/templates/sizes";
+import {
+  PRODUCTS_BY_ID,
+  type PrintProduct,
+} from "@/lib/commerce/printProducts";
 import type { TemplateId, VintageVariant } from "@/lib/templates/types";
-import { Poster } from "@/components/poster/Poster";
-import { PlaceSearch } from "@/components/controls/PlaceSearch";
-import { PlaceList } from "@/components/controls/PlaceList";
-import { CustomizePanel } from "@/components/controls/CustomizePanel";
-import { Button } from "@/components/ui/Button";
-import { PillButton } from "@/components/ui/PillButton";
-import { GradientOrbs } from "@/components/ui/GradientOrbs";
 import { exportSvg, exportPng, slugify } from "@/lib/export";
-import type { GeoResult } from "@/lib/types";
+import { StudioHeader } from "@/components/studio/StudioHeader";
+import { ConfigRail } from "@/components/studio/ConfigRail";
+import { PosterStage } from "@/components/studio/PosterStage";
+import { BuyBar } from "@/components/studio/BuyBar";
 
-const MapPicker = dynamic(() => import("@/components/map/MapPicker"), {
-  ssr: false,
-  loading: () => (
-    <div className="h-full w-full animate-pulse bg-surface-strong" />
-  ),
-});
-
+/**
+ * Studio shell: header (export) + config rail + live poster stage + sticky buy
+ * bar. The rail and stage own their internals; this component only resolves the
+ * active template/size, derives the measured geometry, and wires export + the
+ * ?template/?variant deep links. Desktop is a fixed two-pane viewport; mobile
+ * stacks (poster first) and scrolls the page under a sticky buy bar.
+ */
 export function PosterStudio() {
   const home = usePosterStore((s) => s.home);
   const places = usePosterStore((s) => s.places);
@@ -43,11 +34,8 @@ export function PosterStudio() {
   const setTemplate = usePosterStore((s) => s.setTemplate);
   const vintageVariant = usePosterStore((s) => s.vintageVariant);
   const setVintageVariant = usePosterStore((s) => s.setVintageVariant);
-  const toggleUnits = usePosterStore((s) => s.toggleUnits);
   const bearingMode = usePosterStore((s) => s.bearingMode);
-  const setBearingMode = usePosterStore((s) => s.setBearingMode);
-  const addFromGeo = usePosterStore((s) => s.addFromGeo);
-  const sizeId = usePosterStore((s) => s.sizeId);
+  const productId = usePosterStore((s) => s.productId);
   const customization = usePosterStore((s) => s.customization);
 
   const base = getActiveTemplate(templateId, vintageVariant);
@@ -55,11 +43,11 @@ export function PosterStudio() {
     () => resolveCustomized(base, customization),
     [base, customization],
   );
-  const { width, height } = POSTER_SIZES[sizeId];
+  const product = PRODUCTS_BY_ID[productId];
+  const { w: width, h: height } = product.viewBox;
   const fontsReady = useFontsReady();
-
   const mounted = useHydrated();
-  const [notice, setNotice] = useState<string | null>(null);
+
   const [exporting, setExporting] = useState<null | "svg" | "png">(null);
   const posterRef = useRef<HTMLDivElement>(null);
 
@@ -88,21 +76,15 @@ export function PosterStudio() {
       if (kind === "svg") await exportSvg(svg, name);
       else await exportPng(svg, name);
     } catch {
-      flash("Export failed — try again");
+      // Export rarely fails; leave the buttons re-enabled for a retry.
     } finally {
       setExporting(null);
     }
   }
 
-  function flash(msg: string) {
-    setNotice(msg);
-    window.setTimeout(() => setNotice((n) => (n === msg ? null : n)), 2600);
-  }
-
-  function handleSelect(r: GeoResult) {
-    const result = addFromGeo(r);
-    if (result === "duplicate") flash(`${r.label} is already on your map`);
-    else if (result === "home") flash(`${r.label} set as home`);
+  function addToCart(product: PrintProduct) {
+    // SEAM: replace with real cart store + Stripe checkout when commerce ships.
+    void product;
   }
 
   const measured = useMeasuredLayout({
@@ -118,161 +100,33 @@ export function PosterStudio() {
   const items = mounted ? measured : [];
 
   return (
-    <div className="flex h-screen flex-col">
-      {/* Top bar */}
-      <header className="relative overflow-hidden border-b border-hairline bg-canvas">
-        <GradientOrbs preset="header" />
-        <div className="relative z-10 flex items-center justify-between gap-4 px-5 py-3">
-          <div className="flex items-baseline gap-3">
-            <h1 className="font-display text-2xl leading-none text-ink">
-              Pinprint
-            </h1>
-            <span className="hidden text-sm text-muted sm:inline">
-              poster maps of the places that matter
-            </span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div
-              className="flex items-center gap-1"
-              title="How each arrow's direction & distance are computed"
-            >
-              {(
-                [
-                  [
-                    "great-circle",
-                    "Direct",
-                    "Great-circle: the true shortest-path bearing & distance",
-                  ],
-                  [
-                    "rhumb",
-                    "Map",
-                    "Rhumb line: constant-heading bearing & distance — matches a flat map",
-                  ],
-                ] as const
-              ).map(([mode, label, hint]) => (
-                <PillButton
-                  key={mode}
-                  active={bearingMode === mode}
-                  onClick={() => bearingMode !== mode && setBearingMode(mode)}
-                  title={hint}
-                >
-                  {label}
-                </PillButton>
-              ))}
-            </div>
-            <div className="flex items-center gap-1">
-              {(["km", "mi"] as const).map((u) => (
-                <PillButton
-                  key={u}
-                  active={units === u}
-                  onClick={() => units !== u && toggleUnits()}
-                >
-                  {u}
-                </PillButton>
-              ))}
-            </div>
-            <Button
-              variant="outline"
-              onClick={() => handleDownload("svg")}
-              disabled={exporting !== null || !home}
-            >
-              {exporting === "svg" ? "…" : "SVG"}
-            </Button>
-            <Button
-              variant="primary"
-              onClick={() => handleDownload("png")}
-              disabled={exporting !== null || !home}
-            >
-              {exporting === "png" ? "Rendering…" : "Download PNG"}
-            </Button>
-          </div>
-        </div>
-      </header>
+    <div className="flex min-h-screen flex-col lg:h-screen lg:min-h-0">
+      <StudioHeader
+        onDownload={handleDownload}
+        exporting={exporting}
+        canDownload={!!home}
+        className="sticky top-0 lg:static"
+      />
 
       <div className="flex min-h-0 flex-1 flex-col lg:flex-row">
-        {/* Controls */}
-        <aside className="relative flex w-full shrink-0 flex-col overflow-y-auto border-hairline bg-canvas-soft p-4 lg:w-[360px] lg:border-r">
-          <GradientOrbs preset="sidebar" />
-          <div className="relative z-10 flex flex-col gap-4">
-            <div>
-              <PlaceSearch onSelect={handleSelect} />
-              {notice && <p className="mt-2 text-xs text-muted">{notice}</p>}
-            </div>
-
-            <PlaceList />
-
-            <div className="overflow-hidden rounded-xl border border-hairline bg-surface-card shadow-[0_4px_16px_rgba(0,0,0,0.04)]">
-              <div className="h-56 w-full">
-                <MapPicker />
-              </div>
-              <p className="bg-surface-strong px-2.5 py-1.5 text-[11px] text-muted">
-                Click the map to drop a place · © OpenStreetMap contributors
-              </p>
-            </div>
-
-            <CustomizePanel />
-          </div>
-        </aside>
-
-        {/* Preview */}
-        <main className="flex min-h-0 flex-1 flex-col bg-canvas">
-          <div className="relative z-10 border-b border-hairline bg-canvas-soft">
-            <div className="flex items-center gap-2 overflow-x-auto px-4 py-2.5">
-              {TEMPLATE_ORDER.map((id) => (
-                <PillButton
-                  key={id}
-                  active={id === templateId}
-                  onClick={() => setTemplate(id)}
-                >
-                  {TEMPLATES[id].name}
-                </PillButton>
-              ))}
-            </div>
-            {templateId === "vintage-cartography" && (
-              <div className="flex items-center gap-2 border-t border-hairline-soft px-4 py-2.5">
-                <span className="text-[11px] font-semibold uppercase tracking-[0.09em] text-muted">
-                  Style
-                </span>
-                {VINTAGE_VARIANT_ORDER.map((v) => (
-                  <PillButton
-                    key={v}
-                    active={v === vintageVariant}
-                    size="sm"
-                    onClick={() => setVintageVariant(v)}
-                  >
-                    {VINTAGE_VARIANT_LABELS[v]}
-                  </PillButton>
-                ))}
-                <span className="ml-1 hidden text-xs text-muted sm:inline">
-                  — pick your favourite
-                </span>
-              </div>
-            )}
-          </div>
-
-          <div className="relative flex flex-1 items-center justify-center overflow-auto p-6">
-            <GradientOrbs preset="preview" />
-            <div
-              ref={posterRef}
-              className="relative z-10 h-full max-h-[calc(100vh-160px)] max-w-full overflow-hidden rounded-sm bg-surface-card shadow-2xl"
-              style={{ aspectRatio: `${width} / ${height}` }}
-            >
-              <Poster
-                home={home}
-                items={items}
-                template={template}
-                units={units}
-                width={width}
-                height={height}
-                title={text.title}
-                subtitle={text.subtitle}
-                footer={text.footer}
-                display={display}
-              />
-            </div>
-          </div>
-        </main>
+        <ConfigRail className="order-2 lg:order-1 lg:overflow-y-auto" />
+        <PosterStage
+          className="order-1 min-h-[55vh] lg:order-2 lg:min-h-0 lg:overflow-auto"
+          home={home}
+          items={items}
+          template={template}
+          units={units}
+          width={width}
+          height={height}
+          title={text.title}
+          subtitle={text.subtitle}
+          footer={text.footer}
+          display={display}
+          posterRef={posterRef}
+        />
       </div>
+
+      <BuyBar product={product} canBuy={!!home} onAddToCart={addToCart} />
     </div>
   );
 }

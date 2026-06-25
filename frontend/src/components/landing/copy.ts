@@ -220,7 +220,7 @@ export const copy = {
     tiers: [
       {
         name: "Free",
-        price: "£0",
+        price: "$0",
         cadence: "forever",
         summary: "Design and preview as much as you want.",
         features: [
@@ -234,7 +234,7 @@ export const copy = {
       },
       {
         name: "Maker",
-        price: "£12",
+        price: "$12",
         cadence: "one-off, per poster",
         summary: "One poster, print-ready, no watermark.",
         features: [
@@ -248,7 +248,7 @@ export const copy = {
       },
       {
         name: "Studio",
-        price: "£29",
+        price: "$29",
         cadence: "per year",
         summary: "For makers and gift-givers who do this often.",
         features: [

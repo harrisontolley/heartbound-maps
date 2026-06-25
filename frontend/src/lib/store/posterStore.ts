@@ -10,6 +10,8 @@ import {
   DEFAULT_CUSTOMIZATION,
   type Customization,
 } from "../templates/customize";
+import { DEFAULT_PRODUCT_ID } from "../commerce/printProducts";
+import { LOOKS_BY_ID, type LookId } from "../looks/looks";
 import { SEED_HOME, SEED_PLACES } from "../seed";
 
 export type { VintageVariant };
@@ -45,6 +47,8 @@ type PosterState = {
   templateId: TemplateId;
   vintageVariant: VintageVariant;
   sizeId: PosterSizeId;
+  /** Selected print product (drives the preview viewBox + buy price). */
+  productId: string;
   customization: Customization;
 
   setHome: (home: Place | null) => void;
@@ -59,6 +63,9 @@ type PosterState = {
   setTemplate: (id: TemplateId) => void;
   setVintageVariant: (v: VintageVariant) => void;
   setSize: (id: PosterSizeId) => void;
+  setProduct: (productId: string) => void;
+  /** Apply a curated look: set its template + variant and clear customization. */
+  applyLook: (id: LookId) => void;
   /** Merge a partial customization patch. */
   setCustomization: (patch: Partial<Customization>) => void;
   /** Restore all customization to the active template's defaults. */
@@ -79,11 +86,12 @@ type PosterState = {
 export const usePosterStore = create<PosterState>((set, get) => ({
   home: SEED_HOME,
   places: SEED_PLACES,
-  units: "km",
+  units: "mi",
   bearingMode: "great-circle",
   templateId: DEFAULT_TEMPLATE_ID,
   vintageVariant: "classic",
   sizeId: DEFAULT_POSTER_SIZE_ID,
+  productId: DEFAULT_PRODUCT_ID,
   customization: DEFAULT_CUSTOMIZATION,
 
   setHome: (home) => set({ home }),
@@ -107,6 +115,15 @@ export const usePosterStore = create<PosterState>((set, get) => ({
   setTemplate: (templateId) => set({ templateId }),
   setVintageVariant: (vintageVariant) => set({ vintageVariant }),
   setSize: (sizeId) => set({ sizeId }),
+  setProduct: (productId) => set({ productId }),
+  applyLook: (id) => {
+    const look = LOOKS_BY_ID[id];
+    set({
+      templateId: look.templateId,
+      vintageVariant: look.vintageVariant ?? "classic",
+      customization: DEFAULT_CUSTOMIZATION,
+    });
+  },
   setCustomization: (patch) =>
     set((s) => ({ customization: { ...s.customization, ...patch } })),
   resetCustomization: () => set({ customization: DEFAULT_CUSTOMIZATION }),
