@@ -1,0 +1,25 @@
+{
+  "name": "@pinprint/backend",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "start": "tsx src/server.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest",
+    "test:run": "vitest run"
+  },
+  "dependencies": {
+    "@hono/node-server": "^1.13.7",
+    "@neondatabase/serverless": "^0.10.4",
+    "@pinprint/shared": "workspace:*",
+    "hono": "^4.6.14"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "tsx": "^4.19.2",
+    "typescript": "^5",
+    "vitest": "^4.1.9"
+  }
+}
