@@ -1,28 +1,22 @@
 "use client";
 
-import Link from "next/link";
-import { SignedIn, SignedOut, UserButton } from "@neondatabase/auth/react/ui";
+import { SignedIn, SignedOut } from "@neondatabase/auth/react/ui";
 import { LinkButton } from "@/components/landing/LinkButton";
+import { AccountMenu } from "./AccountMenu";
 
-// Header entry point for auth. Shows "Sign in" when signed out, and an Account
-// link + UserButton (account settings, sign out, manage Google) when signed in.
-// A small client island so the surrounding header can stay a server component.
+// Header entry point for auth. Signed out → a "Sign in" CTA; signed in → the
+// account menu (a monogram avatar that opens account links + sign out). A small
+// client island so the surrounding header can stay a server component.
 export function AccountNav() {
   return (
-    <div className="flex items-center gap-3">
+    <div className="flex items-center">
       <SignedOut>
         <LinkButton href="/auth/sign-in" variant="outline" size="sm">
           Sign in
         </LinkButton>
       </SignedOut>
       <SignedIn>
-        <Link
-          href="/account"
-          className="hidden text-[15px] font-medium text-body transition-colors hover:text-ink sm:inline"
-        >
-          Account
-        </Link>
-        <UserButton />
+        <AccountMenu />
       </SignedIn>
     </div>
   );

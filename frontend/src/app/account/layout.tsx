@@ -3,12 +3,8 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import {
-  RedirectToSignIn,
-  SignedIn,
-  SignedOut,
-  UserButton,
-} from "@neondatabase/auth/react/ui";
+import { RedirectToSignIn, SignedIn, SignedOut } from "@neondatabase/auth/react/ui";
+import { AccountMenu } from "@/components/account/AccountMenu";
 
 // Account chrome + route protection. Signed-out visitors are redirected to
 // /auth/sign-in; signed-in users get the wordmark bar, a sidebar, and the page
@@ -37,7 +33,7 @@ export default function AccountLayout({ children }: { children: ReactNode }) {
               <Link href="/" className="font-display text-2xl tracking-[-0.32px] text-ink">
                 Pinprint
               </Link>
-              <UserButton />
+              <AccountMenu />
             </div>
           </header>
 
