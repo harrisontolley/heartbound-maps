@@ -12,6 +12,7 @@ import {
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { usePosterStore } from "@/lib/store/posterStore";
+import { apiUrl } from "@/lib/api";
 import type { GeoResult } from "@/lib/types";
 
 function dot(color: string, ring: string): L.DivIcon {
@@ -38,7 +39,7 @@ function ClickToAdd() {
         lng,
       };
       try {
-        const res = await fetch(`/api/geocode/reverse?lat=${lat}&lon=${lng}`);
+        const res = await fetch(apiUrl(`/geocode/reverse?lat=${lat}&lon=${lng}`));
         const r = res.ok ? ((await res.json()) as GeoResult | null) : null;
         addFromGeo(r && r.label ? r : fallback);
       } catch {

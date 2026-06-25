@@ -27,4 +27,10 @@ describe("pinprint-api", () => {
     const res = await app.request("/geocode/reverse?lat=foo");
     expect(res.status).toBe(400);
   });
+
+  it("serves the same routes under the /_/backend service prefix", async () => {
+    const res = await app.request("/_/backend/health");
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual({ ok: true });
+  });
 });

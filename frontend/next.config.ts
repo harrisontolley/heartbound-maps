@@ -1,21 +1,11 @@
 import type { NextConfig } from "next";
 
-// The backend (Hono) owns geocoding. The client still calls same-origin
-// /api/geocode/*; these rewrites proxy those to the backend, so there is no CORS
-// and the client hooks are unchanged. BACKEND_URL points at the local dev server
-// (http://localhost:8787) or the deployed API in production.
-const BACKEND_URL = process.env.BACKEND_URL ?? "http://localhost:8787";
-
+// Geocoding lives in the backend service. The client calls it directly via
+// NEXT_PUBLIC_BACKEND_URL (see src/lib/api.ts): in production Vercel injects the
+// relative route prefix "/_/backend" (same origin, no CORS); in local dev it's
+// the backend dev server. No rewrite needed.
 const nextConfig: NextConfig = {
   transpilePackages: ["@pinprint/shared"],
-  async rewrites() {
-    return [
-      {
-        source: "/api/geocode/:path*",
-        destination: `${BACKEND_URL}/geocode/:path*`,
-      },
-    ];
-  },
 };
 
 export default nextConfig;
