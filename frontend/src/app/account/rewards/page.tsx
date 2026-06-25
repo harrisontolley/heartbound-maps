@@ -4,11 +4,11 @@ import { useState } from "react";
 import type { Rewards } from "@pinprint/shared";
 import { useResource } from "@/lib/account/useResource";
 import { Card, SectionHeading } from "@/components/account/Card";
-import { Loading, ErrorNote } from "@/components/account/States";
+import { Loading, ErrorState } from "@/components/account/States";
 import { formatDate, formatPrice } from "@/lib/account/format";
 
 export default function RewardsPage() {
-  const { data, loading, error } = useResource<Rewards>("/account/rewards");
+  const { data, loading, error, reload } = useResource<Rewards>("/account/rewards");
   const [copied, setCopied] = useState(false);
 
   function copy(code: string) {
@@ -25,8 +25,8 @@ export default function RewardsPage() {
         description="Earn points and credit on every order. Perks are on the way."
       />
 
-      {loading ? <Loading /> : null}
-      {error ? <ErrorNote message={error} /> : null}
+      {loading ? <Loading variant="card" /> : null}
+      {error ? <ErrorState error={error} onRetry={reload} /> : null}
 
       {data ? (
         <div className="flex flex-col gap-5">

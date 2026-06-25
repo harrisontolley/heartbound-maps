@@ -5,19 +5,19 @@ import type { OrderSummary } from "@pinprint/shared";
 import { useResource } from "@/lib/account/useResource";
 import { Card, SectionHeading } from "@/components/account/Card";
 import { OrderStatusBadge } from "@/components/account/OrderStatusBadge";
-import { Loading, ErrorNote, EmptyState } from "@/components/account/States";
+import { Loading, ErrorState, EmptyState } from "@/components/account/States";
 import { formatDate, formatPrice } from "@/lib/account/format";
 
 export default function OrdersPage() {
-  const { data, loading, error } = useResource<OrderSummary[]>("/account/orders");
+  const { data, loading, error, reload } = useResource<OrderSummary[]>("/account/orders");
 
   return (
     <div>
       <SectionHeading title="Orders" description="Every poster you've ordered." />
 
-      {loading ? <Loading /> : null}
-      {error ? <ErrorNote message={error} /> : null}
-      {!loading && data && data.length === 0 ? (
+      {loading ? <Loading rows={4} /> : null}
+      {error ? <ErrorState error={error} onRetry={reload} /> : null}
+      {!loading && !error && data && data.length === 0 ? (
         <EmptyState>
           You haven&apos;t placed any orders yet.{" "}
           <Link href="/studio" className="text-ink underline">

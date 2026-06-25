@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { authClient } from "@/lib/auth/client";
 import { apiFetch } from "@/lib/apiClient";
 import { Card, SectionHeading } from "@/components/account/Card";
+import { ErrorNote } from "@/components/account/States";
 import { Button } from "@/components/ui/Button";
 
 export default function SettingsPage() {
@@ -12,11 +13,15 @@ export default function SettingsPage() {
   const [exporting, setExporting] = useState(false);
   const [confirming, setConfirming] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [exportError, setExportError] = useState<string | null>(null);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   async function exportData() {
     setExporting(true);
+    setExportError(null);
     try {
       const res = await apiFetch("/account/export", { method: "POST" });
+      if (!res.ok) throw new Error();
       const blob = await res.blob();
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -24,6 +29,8 @@ export default function SettingsPage() {
       a.download = "pinprint-account.json";
       a.click();
       URL.revokeObjectURL(url);
+    } catch {
+      setExportError("We couldn’t prepare your data. Please try again.");
     } finally {
       setExporting(false);
     }
@@ -31,12 +38,15 @@ export default function SettingsPage() {
 
   async function deleteAccount() {
     setDeleting(true);
+    setDeleteError(null);
     try {
       // Clear app-owned data (orders are retained but disassociated for records).
-      await apiFetch("/account/delete", { method: "POST" });
+      const res = await apiFetch("/account/delete", { method: "POST" });
+      if (!res.ok) throw new Error();
       await authClient.signOut();
       router.replace("/");
-    } finally {
+    } catch {
+      setDeleteError("We couldn’t delete your account. Please try again.");
       setDeleting(false);
     }
   }
@@ -64,6 +74,7 @@ export default function SettingsPage() {
               {exporting ? "Preparing…" : "Download my data"}
             </Button>
           </div>
+          {exportError ? <div className="mt-3"><ErrorNote message={exportError} /></div> : null}
         </Card>
 
         <Card className="border-error/30 p-6">
@@ -99,6 +110,7 @@ export default function SettingsPage() {
               </button>
             )}
           </div>
+          {deleteError ? <div className="mt-3"><ErrorNote message={deleteError} /></div> : null}
         </Card>
       </div>
     </div>

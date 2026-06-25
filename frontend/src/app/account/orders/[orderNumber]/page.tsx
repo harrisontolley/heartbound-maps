@@ -7,13 +7,13 @@ import { useResource } from "@/lib/account/useResource";
 import { Card } from "@/components/account/Card";
 import { OrderStatusBadge } from "@/components/account/OrderStatusBadge";
 import { OrderTimeline } from "@/components/account/OrderTimeline";
-import { Loading, ErrorNote } from "@/components/account/States";
+import { Loading, ErrorState } from "@/components/account/States";
 import { formatDate, formatPrice } from "@/lib/account/format";
 
 export default function OrderDetailPage() {
   const params = useParams<{ orderNumber: string }>();
   const orderNumber = params.orderNumber;
-  const { data: order, loading, error } = useResource<Order>(
+  const { data: order, loading, error, reload } = useResource<Order>(
     orderNumber ? `/account/orders/${orderNumber}` : null,
   );
 
@@ -23,8 +23,8 @@ export default function OrderDetailPage() {
         ← All orders
       </Link>
 
-      {loading ? <Loading /> : null}
-      {error ? <div className="mt-4"><ErrorNote message={error} /></div> : null}
+      {loading ? <div className="mt-4"><Loading variant="card" /></div> : null}
+      {error ? <div className="mt-4"><ErrorState error={error} onRetry={reload} /></div> : null}
 
       {order ? (
         <>

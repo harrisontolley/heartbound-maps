@@ -6,7 +6,7 @@ import { authClient } from "@/lib/auth/client";
 import { useResource } from "@/lib/account/useResource";
 import { Card, SectionHeading } from "@/components/account/Card";
 import { OrderStatusBadge } from "@/components/account/OrderStatusBadge";
-import { Loading, ErrorNote } from "@/components/account/States";
+import { Loading, ErrorState } from "@/components/account/States";
 import { formatDate, formatPrice } from "@/lib/account/format";
 
 export default function AccountOverviewPage() {
@@ -33,9 +33,9 @@ export default function AccountOverviewPage() {
               View all
             </Link>
           </div>
-          {orders.loading ? <Loading /> : null}
-          {orders.error ? <ErrorNote message={orders.error} /> : null}
-          {!orders.loading && recent.length === 0 ? (
+          {orders.loading ? <Loading variant="inline" rows={3} /> : null}
+          {orders.error ? <ErrorState error={orders.error} onRetry={orders.reload} compact /> : null}
+          {!orders.loading && !orders.error && recent.length === 0 ? (
             <p className="text-sm text-muted">No orders yet.</p>
           ) : null}
           <ul className="flex flex-col gap-3">
@@ -65,8 +65,8 @@ export default function AccountOverviewPage() {
               Details
             </Link>
           </div>
-          {rewards.loading ? <Loading /> : null}
-          {rewards.error ? <ErrorNote message={rewards.error} /> : null}
+          {rewards.loading ? <Loading variant="inline" rows={2} /> : null}
+          {rewards.error ? <ErrorState error={rewards.error} onRetry={rewards.reload} compact /> : null}
           {rewards.data ? (
             <div className="flex flex-col gap-3">
               <div className="flex gap-6">

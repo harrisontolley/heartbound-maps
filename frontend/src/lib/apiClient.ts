@@ -1,6 +1,5 @@
 "use client";
 
-import { authClient } from "@/lib/auth/client";
 import { apiUrl } from "@/lib/api";
 
 // Authenticated client-side calls to the Hono backend. The Neon Auth session lives
@@ -8,15 +7,26 @@ import { apiUrl } from "@/lib/api";
 // it work in local dev, where the frontend (:3000) and backend (:8787) are
 // cross-origin and the auth cookie is never sent to the backend.
 
-// getJWTToken() exists on the runtime client (authenticated JWT > anonymous > null)
-// but isn't surfaced on the Next client's static type — narrow it here.
-type TokenClient = { getJWTToken?: () => Promise<string | null> };
+// Minting the backend JWT is subtle on the Next client:
+//   • createAuthClient() returns the raw Better Auth client, which has NO real
+//     getJWTToken() — accessing it proxies to a nonexistent
+//     /api/auth/get-j-w-t-token (404).
+//   • The session object's own `token` field is the *opaque* session token, not
+//     a JWKS-signed JWT, so the backend's jwtVerify rejects it.
+// The JWKS-verifiable JWT comes from Neon Auth's dedicated /token endpoint. We
+// hit it through the same-origin proxy; the httpOnly session cookie authenticates
+// the request and the body is { token }.
 
-/** Current session JWT, or null when signed out / unavailable. */
+/** Current session JWT for the backend, or null when signed out / unavailable. */
 export async function authToken(): Promise<string | null> {
   try {
-    const get = (authClient as unknown as TokenClient).getJWTToken;
-    return get ? await get() : null;
+    const res = await fetch("/api/auth/token", {
+      headers: { accept: "application/json" },
+      credentials: "same-origin",
+    });
+    if (!res.ok) return null;
+    const body = (await res.json()) as { token?: string | null };
+    return body?.token ?? null;
   } catch {
     return null;
   }
@@ -33,9 +43,36 @@ export async function apiFetch(path: string, init: RequestInit = {}): Promise<Re
   return fetch(apiUrl(path), { ...init, headers });
 }
 
-/** Convenience: GET + parse JSON, throwing on a non-2xx response. */
+/**
+ * Error from a non-2xx backend response. Carries the HTTP `status` and the
+ * backend's machine `code` (the `error` field, e.g. "unauthorized",
+ * "auth_unconfigured", "not_found") so callers can render user-facing copy
+ * instead of the raw `message` (which is for logs only — never shown to users).
+ */
+export class ApiError extends Error {
+  constructor(
+    readonly status: number,
+    readonly code: string | null,
+    readonly path: string,
+  ) {
+    super(`GET ${path} → ${status}${code ? ` (${code})` : ""}`);
+    this.name = "ApiError";
+  }
+}
+
+/** Best-effort read of the backend's `{ error: "code" }` body; null if absent. */
+async function errorCode(res: Response): Promise<string | null> {
+  try {
+    const body = (await res.json()) as { error?: unknown };
+    return typeof body?.error === "string" ? body.error : null;
+  } catch {
+    return null;
+  }
+}
+
+/** Convenience: GET + parse JSON, throwing an {@link ApiError} on a non-2xx response. */
 export async function apiGet<T>(path: string): Promise<T> {
   const res = await apiFetch(path);
-  if (!res.ok) throw new Error(`GET ${path} → ${res.status}`);
+  if (!res.ok) throw new ApiError(res.status, await errorCode(res), path);
   return (await res.json()) as T;
 }

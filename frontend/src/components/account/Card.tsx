@@ -1,15 +1,13 @@
-import type { ReactNode } from "react";
+import type { HTMLAttributes, ReactNode } from "react";
 
 /** White surface card used throughout the account section. */
 export function Card({
   children,
   className = "",
-}: {
-  children: ReactNode;
-  className?: string;
-}) {
+  ...rest
+}: { children: ReactNode; className?: string } & HTMLAttributes<HTMLDivElement>) {
   return (
-    <div className={`rounded-xl border border-hairline bg-surface-card ${className}`}>
+    <div className={`rounded-xl border border-hairline bg-surface-card ${className}`} {...rest}>
       {children}
     </div>
   );

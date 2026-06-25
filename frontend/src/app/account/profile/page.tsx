@@ -6,20 +6,20 @@ import { authClient } from "@/lib/auth/client";
 import { useResource } from "@/lib/account/useResource";
 import { apiFetch } from "@/lib/apiClient";
 import { Card, SectionHeading } from "@/components/account/Card";
-import { Loading, ErrorNote } from "@/components/account/States";
+import { Loading, ErrorState, ErrorNote } from "@/components/account/States";
 import { Button } from "@/components/ui/Button";
 import { PillButton } from "@/components/ui/PillButton";
 
 export default function ProfilePage() {
   const session = authClient.useSession();
   const user = session.data?.user as { name?: string; email?: string } | undefined;
-  const { data, loading, error } = useResource<AccountProfile>("/account/profile");
+  const { data, loading, error, reload } = useResource<AccountProfile>("/account/profile");
 
   return (
     <div>
       <SectionHeading title="Profile" description="Your details and preferences." />
-      {loading ? <Loading /> : null}
-      {error ? <ErrorNote message={error} /> : null}
+      {loading ? <Loading variant="card" /> : null}
+      {error ? <ErrorState error={error} onRetry={reload} /> : null}
       {data ? (
         <div className="flex flex-col gap-5">
           <Card className="p-6">
@@ -53,12 +53,14 @@ function PreferencesForm({ initial }: { initial: AccountProfile }) {
   const [orderUpdates, setOrderUpdates] = useState(initial.orderUpdatesOptIn);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   async function save() {
     setSaving(true);
     setSaved(false);
+    setSaveError(null);
     try {
-      await apiFetch("/account/profile", {
+      const res = await apiFetch("/account/profile", {
         method: "PATCH",
         body: JSON.stringify({
           preferredUnits: units,
@@ -66,8 +68,11 @@ function PreferencesForm({ initial }: { initial: AccountProfile }) {
           orderUpdatesOptIn: orderUpdates,
         }),
       });
+      if (!res.ok) throw new Error();
       setSaved(true);
       window.setTimeout(() => setSaved(false), 2000);
+    } catch {
+      setSaveError("We couldn’t save your changes. Please try again.");
     } finally {
       setSaving(false);
     }
@@ -108,6 +113,7 @@ function PreferencesForm({ initial }: { initial: AccountProfile }) {
         </Button>
         {saved ? <span className="text-sm text-success">Saved</span> : null}
       </div>
+      {saveError ? <div className="mt-3"><ErrorNote message={saveError} /></div> : null}
     </Card>
   );
 }

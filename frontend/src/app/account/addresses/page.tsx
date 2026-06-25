@@ -5,7 +5,7 @@ import type { Address, AddressInput } from "@pinprint/shared";
 import { useResource } from "@/lib/account/useResource";
 import { apiFetch } from "@/lib/apiClient";
 import { Card, SectionHeading } from "@/components/account/Card";
-import { Loading, ErrorNote, EmptyState } from "@/components/account/States";
+import { Loading, ErrorState, ErrorNote, EmptyState } from "@/components/account/States";
 import { Button } from "@/components/ui/Button";
 
 const EMPTY: AddressInput = {
@@ -25,6 +25,7 @@ export default function AddressesPage() {
   const [form, setForm] = useState<AddressInput>(EMPTY);
   const [busy, setBusy] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
 
   const set = (k: keyof AddressInput) => (e: React.ChangeEvent<HTMLInputElement>) =>
     setForm((f) => ({ ...f, [k]: e.target.value }));
@@ -50,18 +51,30 @@ export default function AddressesPage() {
   }
 
   async function remove(id: string) {
-    await apiFetch(`/account/addresses/${id}`, { method: "DELETE" });
-    await reload();
+    setActionError(null);
+    try {
+      const res = await apiFetch(`/account/addresses/${id}`, { method: "DELETE" });
+      if (!res.ok) throw new Error();
+      await reload();
+    } catch {
+      setActionError("We couldn’t delete that address. Please try again.");
+    }
   }
 
   async function makeDefault(a: Address) {
     const { id, isDefault: _omit, ...rest } = a;
     void _omit;
-    await apiFetch(`/account/addresses/${id}`, {
-      method: "PATCH",
-      body: JSON.stringify({ ...rest, isDefault: true }),
-    });
-    await reload();
+    setActionError(null);
+    try {
+      const res = await apiFetch(`/account/addresses/${id}`, {
+        method: "PATCH",
+        body: JSON.stringify({ ...rest, isDefault: true }),
+      });
+      if (!res.ok) throw new Error();
+      await reload();
+    } catch {
+      setActionError("We couldn’t update your default address. Please try again.");
+    }
   }
 
   return (
@@ -97,11 +110,12 @@ export default function AddressesPage() {
         </Card>
       ) : null}
 
-      {loading ? <Loading /> : null}
-      {error ? <ErrorNote message={error} /> : null}
-      {!loading && data && data.length === 0 && !adding ? (
+      {loading ? <Loading rows={2} /> : null}
+      {error ? <ErrorState error={error} onRetry={reload} /> : null}
+      {!loading && !error && data && data.length === 0 && !adding ? (
         <EmptyState>No saved addresses yet.</EmptyState>
       ) : null}
+      {actionError ? <div className="mb-3"><ErrorNote message={actionError} /></div> : null}
 
       <div className="grid gap-3 sm:grid-cols-2">
         {(data ?? []).map((a) => (
