@@ -35,12 +35,5 @@ export type Computed = Place & {
   bearingDeg: number;
 };
 
-/** Normalized geocoder result returned by the /api/geocode routes. */
-export type GeoResult = {
-  id: string;
-  label: string;
-  fullName: string;
-  lat: number;
-  lng: number;
-  kind?: string;
-};
+/** Normalized geocoder result returned by the backend /geocode routes. */
+export type { GeoResult } from "@pinprint/shared";

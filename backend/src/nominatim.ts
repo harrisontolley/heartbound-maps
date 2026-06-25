@@ -1,4 +1,4 @@
-import type { GeoResult } from "../types";
+import type { GeoResult } from "@pinprint/shared";
 
 // Server-side Nominatim client. Lives behind the route handlers so we can set a
 // descriptive User-Agent (browsers can't), respect the ~1 req/s usage policy,
