@@ -23,13 +23,14 @@ Managed with **pnpm workspaces** + **Turborepo**.
 
 ```bash
 pnpm install
-cp frontend/.env.example frontend/.env   # BACKEND_URL=http://localhost:8787
+cp frontend/.env.example frontend/.env   # NEXT_PUBLIC_BACKEND_URL=http://localhost:8787
 cp backend/.env.example backend/.env     # DATABASE_URL optional for now
 pnpm dev                                 # frontend :3000  +  backend :8787
 ```
 
-The frontend proxies `/api/geocode/*` to the backend, so the Studio's place
-search works against the local API with no CORS setup.
+In dev the Studio calls the backend at `NEXT_PUBLIC_BACKEND_URL`
+(`http://localhost:8787`), and the backend enables CORS for that cross-origin
+call. In production both run on one domain, so the calls are same-origin.
 
 ## Scripts (run from the repo root)
 
@@ -49,9 +50,11 @@ Turborepo · Vercel.
 
 ## Deployment
 
-Two Vercel projects from this one repo: the frontend (root directory
-`frontend/`) and the backend API (root directory `backend/`). The backend takes
-`DATABASE_URL`; the frontend takes `BACKEND_URL` pointing at the deployed API.
+Deployed to Vercel as a **single project using Services** (`experimentalServices`
+in `vercel.json`): the `frontend` Next.js app at `/` and the `backend` Hono
+service at `/_/backend`, sharing one domain. Vercel injects
+`NEXT_PUBLIC_BACKEND_URL=/_/backend` for the client automatically; set
+`DATABASE_URL` (Neon) once at the project level.
 
 ## License
 

@@ -1,12 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { apiUrl } from "@/lib/api";
 import type { GeoResult } from "@/lib/types";
 
 export type GeoStatus = "idle" | "loading" | "success" | "empty" | "error";
 
 /**
- * Debounced autocomplete against /api/geocode/search. Cancels in-flight requests
+ * Debounced autocomplete against the backend /geocode/search. Cancels in-flight requests
  * on each keystroke and only fires once the query reaches `minLength`.
  *
  * The transient states (idle for short queries, loading while the current query
@@ -29,7 +30,7 @@ export function useGeocodeSearch(
     const controller = new AbortController();
     const timer = setTimeout(async () => {
       try {
-        const res = await fetch(`/api/geocode/search?q=${encodeURIComponent(q)}`, {
+        const res = await fetch(apiUrl(`/geocode/search?q=${encodeURIComponent(q)}`), {
           signal: controller.signal,
         });
         if (!res.ok) throw new Error("request failed");

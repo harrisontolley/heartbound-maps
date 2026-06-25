@@ -4,6 +4,18 @@
 **Status:** Approved
 **Branch:** `feat/monorepo`
 
+> **Revision (2026-06-25) — Vercel Services.** Deployment changed from two
+> separate Vercel projects to a **single project using Vercel "Services"**
+> (`experimentalServices` in a root `vercel.json`): `frontend` at `/` and
+> `backend` at `/_/backend`, one shared domain. Consequences: the frontend calls
+> the backend via the auto-injected `NEXT_PUBLIC_BACKEND_URL` (relative
+> `/_/backend`, no CORS) instead of a Next.js rewrite + `BACKEND_URL`; the Hono
+> backend runs as a native web service (`src/index.ts` default export +
+> `src/server.ts` on `PORT`, built with `tsc`) rather than a serverless function
+> (the `backend/api/index.ts` + `backend/vercel.json` were removed); and its
+> routes are mounted at both `/` and `/_/backend` because Vercel does not strip
+> the route prefix. `DATABASE_URL` is set once at the project level.
+
 ## Goal
 
 Refactor the single full-stack Next.js app into a professional, public monorepo:
