@@ -56,3 +56,6 @@ export const app = new Hono();
 app.use("*", cors());
 app.route("/", registerRoutes(new Hono()));
 app.route(SERVICE_PREFIX, registerRoutes(new Hono()));
+
+// Default export is what Vercel's Hono runtime wraps as the function handler.
+export default app;
