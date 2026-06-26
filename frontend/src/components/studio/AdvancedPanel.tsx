@@ -236,6 +236,11 @@ export function AdvancedPanel() {
             checked={c.ringGuidesOn ?? base.ringGuides}
             onChange={(v) => set({ ringGuidesOn: v })}
           />
+          <Toggle
+            label="Scale arrows by distance"
+            checked={c.scaleArrowsByDistance}
+            onChange={(v) => set({ scaleArrowsByDistance: v })}
+          />
         </div>
       </section>
 

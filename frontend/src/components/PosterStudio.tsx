@@ -97,6 +97,7 @@ export function PosterStudio() {
     height,
     fontsReady,
     bearingMode,
+    scaleByDistance: customization.scaleArrowsByDistance,
   });
   const items = mounted ? measured : [];
 

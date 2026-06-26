@@ -22,17 +22,37 @@ export function useMeasuredLayout(opts: {
   height: number;
   fontsReady: boolean;
   bearingMode: BearingMode;
+  scaleByDistance: boolean;
 }): LaidOut[] {
-  const { home, places, units, template, width, height, fontsReady, bearingMode } =
-    opts;
+  const {
+    home,
+    places,
+    units,
+    template,
+    width,
+    height,
+    fontsReady,
+    bearingMode,
+    scaleByDistance,
+  } = opts;
 
   return useMemo(() => {
     if (!home) return [];
     const computed = computePlaces(home, places, { mode: bearingMode });
-    const cfg = defaultLayoutConfig(width, height);
+    const cfg = defaultLayoutConfig(width, height, { scaleByDistance });
     const measure = createMeasurer(template, units);
     return computeLayout(computed, cfg, measure);
     // fontsReady intentionally included so layout refreshes when fonts settle.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [home, places, units, template, width, height, fontsReady, bearingMode]);
+  }, [
+    home,
+    places,
+    units,
+    template,
+    width,
+    height,
+    fontsReady,
+    bearingMode,
+    scaleByDistance,
+  ]);
 }

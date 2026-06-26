@@ -21,6 +21,8 @@ export type Customization = {
   showDistances: boolean;
   showNorth: boolean;
   showFooter: boolean;
+  // Layout behaviour: scale arrow length by distance (farther = longer).
+  scaleArrowsByDistance: boolean;
   // Text overrides (null = auto-generated default).
   titleText: string | null;
   subtitleText: string | null;
@@ -39,6 +41,7 @@ export const DEFAULT_CUSTOMIZATION: Customization = {
   showDistances: true,
   showNorth: true,
   showFooter: true,
+  scaleArrowsByDistance: true,
   titleText: null,
   subtitleText: null,
   footerText: null,

@@ -38,10 +38,14 @@ export type LayoutConfig = {
   margin: number;
   /** Inner gap so arrows start outside the home marker. */
   homeRadius: number;
-  /** Default arrow length. */
+  /** Default arrow length (used when distance scaling is off). */
   baseRadius: number;
   /** Max arrow length (keeps labels inside the safe area). */
   maxRadius: number;
+  /** When true, arrow length encodes distance (farther = longer). */
+  scaleByDistance: boolean;
+  /** Floor arrow length for the nearest place when distance scaling is on. */
+  minRadius: number;
   /** Bearings within this many degrees form a "same direction" cluster. */
   clusterAngleDeg: number;
   /** Radius stagger between stacked labels in a cluster. */

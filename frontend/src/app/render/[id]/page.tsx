@@ -67,6 +67,7 @@ export default function RenderPage({
     height: POSTER_H,
     fontsReady,
     bearingMode: "great-circle",
+    scaleByDistance: true,
   });
 
   // Guards run after all hooks so hook order is stable in every environment.

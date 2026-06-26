@@ -123,4 +123,65 @@ describe("computeLayout", () => {
     const items = [comp({ id: "a", bearingDeg: 30 }), comp({ id: "b", bearingDeg: 210 })];
     expect(computeLayout(items, cfg, measure)).toHaveLength(2);
   });
+
+  describe("distance magnitude", () => {
+    it("makes a farther place's arrow longer even on a different bearing", () => {
+      // Distinct bearings (no same-direction cluster) — with scaling on, length is
+      // driven purely by distance, so the farther place must have the longer arrow.
+      const cfg = defaultLayoutConfig(1000, 1500);
+      const items = [
+        comp({ id: "near", bearingDeg: 0, distanceKm: 500 }),
+        comp({ id: "far", bearingDeg: 90, distanceKm: 5000 }),
+      ];
+      const out = computeLayout(items, cfg, measure);
+      const near = out.find((o) => o.id === "near")!;
+      const far = out.find((o) => o.id === "far")!;
+      expect(near.radius).toBeLessThan(far.radius);
+    });
+
+    it("orders arrow length by distance across a spread set", () => {
+      const cfg = defaultLayoutConfig(1000, 1500);
+      const items = [
+        comp({ id: "a", bearingDeg: 0, distanceKm: 200 }),
+        comp({ id: "b", bearingDeg: 90, distanceKm: 1000 }),
+        comp({ id: "c", bearingDeg: 180, distanceKm: 5000 }),
+        comp({ id: "d", bearingDeg: 270, distanceKm: 15000 }),
+      ];
+      const out = computeLayout(items, cfg, measure);
+      const r = (id: string) => out.find((o) => o.id === id)!.radius;
+      expect(r("a")).toBeLessThan(r("b"));
+      expect(r("b")).toBeLessThan(r("c"));
+      expect(r("c")).toBeLessThan(r("d"));
+    });
+
+    it("keeps every arrow length within [minRadius, maxRadius]", () => {
+      const cfg = defaultLayoutConfig(1000, 1500);
+      const items = [
+        comp({ id: "a", bearingDeg: 0, distanceKm: 80 }),
+        comp({ id: "b", bearingDeg: 90, distanceKm: 1200 }),
+        comp({ id: "c", bearingDeg: 180, distanceKm: 9000 }),
+        comp({ id: "d", bearingDeg: 270, distanceKm: 17000 }),
+      ];
+      const out = computeLayout(items, cfg, measure);
+      for (const o of out) {
+        expect(o.radius).toBeGreaterThanOrEqual(cfg.minRadius);
+        expect(o.radius).toBeLessThanOrEqual(cfg.maxRadius);
+      }
+    });
+
+    it("keeps uniform arrow length when scaling is disabled", () => {
+      // The same distinct-bearing, different-distance pair as above, but with the
+      // toggle off, must fall back to identical (baseRadius) lengths.
+      const cfg = defaultLayoutConfig(1000, 1500, { scaleByDistance: false });
+      const items = [
+        comp({ id: "near", bearingDeg: 0, distanceKm: 500 }),
+        comp({ id: "far", bearingDeg: 90, distanceKm: 5000 }),
+      ];
+      const out = computeLayout(items, cfg, measure);
+      const near = out.find((o) => o.id === "near")!;
+      const far = out.find((o) => o.id === "far")!;
+      expect(near.radius).toBe(cfg.baseRadius);
+      expect(far.radius).toBe(cfg.baseRadius);
+    });
+  });
 });

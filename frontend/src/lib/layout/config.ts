@@ -22,6 +22,11 @@ export function defaultLayoutConfig(
     homeRadius: 46,
     baseRadius: Math.min(260, maxRadius),
     maxRadius,
+    // Distance scaling: nearest place lands on `minRadius`, farthest on
+    // `maxRadius`. The floor clears the home marker / rose (`homeRadius` 46) and
+    // sits well below `baseRadius` so near vs far reads clearly.
+    scaleByDistance: true,
+    minRadius: Math.min(150, maxRadius),
     clusterAngleDeg: 7,
     // Must exceed a label's height (+padding) so a vertical signpost stack
     // separates by radius alone, without needing the relaxation fallback.

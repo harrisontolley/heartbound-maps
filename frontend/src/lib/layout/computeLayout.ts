@@ -1,6 +1,7 @@
 import type { Computed } from "../types";
 import { bearingToVec } from "../geo/projection";
 import { rectsOverlap } from "./aabb";
+import { distanceRadius } from "./magnitude";
 import type {
   LabelBox,
   LabelSize,
@@ -85,13 +86,26 @@ export function computeLayout(
   cfg: LayoutConfig,
   measure: MeasureFn,
 ): LaidOut[] {
+  // Seed each arrow's length. With distance scaling on, length encodes distance
+  // (farther = longer) via a log-normalized map across this poster's range. A
+  // single place or an all-equal-distance set has no range to scale across, so
+  // it falls back to the fixed `baseRadius` (the uniform, unscaled look).
+  const distances = items.map((p) => p.distanceKm);
+  const dMin = Math.min(...distances);
+  const dMax = Math.max(...distances);
+  const useMagnitude = cfg.scaleByDistance && dMax > dMin;
+  const baseRadiusFor = (p: Computed): number =>
+    useMagnitude
+      ? distanceRadius(p.distanceKm, dMin, dMax, cfg.minRadius, cfg.maxRadius)
+      : cfg.baseRadius;
+
   const sizes = new Map<string, LabelSize>();
   const laid: LaidOut[] = items.map((p) => {
     sizes.set(p.id, measure(p));
     return {
       ...p,
       dir: bearingToVec(p.bearingDeg),
-      radius: cfg.baseRadius,
+      radius: baseRadiusFor(p),
       perp: 0,
       tip: { x: 0, y: 0 },
       labelBox: {} as LabelBox,
@@ -100,8 +114,12 @@ export function computeLayout(
   });
 
   // STEP 1 — stagger near-identical bearings so same-direction arrows don't
-  // overlap. Cluster by bearing; within a cluster, order by distance and assign
-  // increasing radii (nearest place gets the shortest arrow).
+  // overlap. Cluster by bearing; within a cluster, order by distance (nearest
+  // shortest) and walk outward, forcing each arrow at least `radiusStep` past the
+  // previous one. This keeps each arrow's seeded length (so distance scaling shows
+  // through) while still guaranteeing separation for near-equidistant places.
+  // When scaling is off every arrow seeds at `baseRadius`, so this reproduces the
+  // original `baseRadius + k * radiusStep` stagger exactly.
   const byBearing = [...laid].sort((a, b) => a.bearingDeg - b.bearingDeg);
   let clusterStart = 0;
   for (let i = 1; i <= byBearing.length; i++) {
@@ -113,9 +131,11 @@ export function computeLayout(
       const group = byBearing
         .slice(clusterStart, i)
         .sort((a, b) => a.distanceKm - b.distanceKm);
-      group.forEach((g, k) => {
-        g.radius = Math.min(cfg.baseRadius + k * cfg.radiusStep, cfg.maxRadius);
-      });
+      let prev = -Infinity;
+      for (const g of group) {
+        g.radius = Math.min(Math.max(g.radius, prev + cfg.radiusStep), cfg.maxRadius);
+        prev = g.radius;
+      }
       clusterStart = i;
     }
   }
