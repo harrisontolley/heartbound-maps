@@ -12,7 +12,7 @@ type Variant = "primary" | "outline" | "tertiary";
 type Size = "sm" | "md";
 
 const BASE =
-  "inline-flex items-center justify-center font-medium transition-colors disabled:pointer-events-none disabled:opacity-40";
+  "inline-flex items-center justify-center whitespace-nowrap font-medium transition-colors disabled:pointer-events-none disabled:opacity-40";
 
 const SIZES: Record<Size, string> = {
   sm: "h-9 rounded-pill px-4 text-sm",

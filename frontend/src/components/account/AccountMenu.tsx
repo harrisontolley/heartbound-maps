@@ -1,8 +1,10 @@
 "use client";
 
+import type { ReactNode } from "react";
 import { UserButton } from "@neondatabase/auth/react/ui";
 import { authClient } from "@/lib/auth/client";
 import { AccountAvatar } from "./AccountAvatar";
+import { ACCOUNT_LINKS } from "./links";
 
 // Signed-in header control: a bare Garamond-monogram avatar that opens the account
 // menu. We reuse Neon Auth's UserButton (so sign-out, settings and multi-session
@@ -56,18 +58,22 @@ function ProfileIcon() {
 
 // The orphan "Account" link that used to sit next to the avatar now lives in the
 // menu, grouped with the rest. `signedIn` keeps them hidden if the session lapses;
-// `separator` on the last one divides this group from Settings / Sign out.
-const LINKS = [
-  { href: "/account", icon: <OverviewIcon />, label: "Overview", signedIn: true },
-  { href: "/account/orders", icon: <OrdersIcon />, label: "Orders", signedIn: true },
-  {
-    href: "/account/profile",
-    icon: <ProfileIcon />,
-    label: "Profile",
-    signedIn: true,
-    separator: true,
-  },
-];
+// `separator` on the last one divides this group from Settings / Sign out. The
+// href/label pairs come from the shared ACCOUNT_LINKS so the mobile hamburger
+// menu (MobileNav) can't drift; the icons and flags are layered on here.
+const ICONS: Record<string, ReactNode> = {
+  "/account": <OverviewIcon />,
+  "/account/orders": <OrdersIcon />,
+  "/account/profile": <ProfileIcon />,
+};
+const LINKS = ACCOUNT_LINKS.map((link, i) => ({
+  href: link.href,
+  label: link.label,
+  icon: ICONS[link.href],
+  signedIn: true,
+  // Divide this group from the library's Settings / Sign out on the last item.
+  separator: i === ACCOUNT_LINKS.length - 1,
+}));
 
 // twMerge inside the library's cn() lets these override the shadcn defaults
 // cleanly (last class wins) — no !important or specificity juggling.

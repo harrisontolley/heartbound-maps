@@ -14,7 +14,7 @@ export function SiteHeader() {
       <div className="mx-auto flex h-16 w-full max-w-[1200px] items-center justify-between px-6">
         <a
           href="#top"
-          className="font-display text-2xl font-normal tracking-[-0.32px] text-ink"
+          className="shrink-0 font-display text-2xl font-normal tracking-[-0.32px] text-ink"
         >
           {copy.brand.name}
         </a>
@@ -31,7 +31,7 @@ export function SiteHeader() {
           ))}
         </nav>
 
-        <div className="flex items-center gap-2 sm:gap-3 md:gap-4">
+        <div className="flex shrink-0 items-center gap-2 sm:gap-3 md:gap-4">
           <AccountNav />
           <LinkButton href={STUDIO_HREF} variant="primary" size="md">
             {copy.hero.primaryCta}

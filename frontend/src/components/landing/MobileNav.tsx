@@ -2,7 +2,9 @@
 
 import { useEffect, useId, useState } from "react";
 import Link from "next/link";
-import { SignedOut } from "@neondatabase/auth/react/ui";
+import { SignedIn, SignedOut } from "@neondatabase/auth/react/ui";
+import { authClient } from "@/lib/auth/client";
+import { ACCOUNT_LINKS } from "@/components/account/links";
 import { copy } from "./copy";
 
 /**
@@ -15,6 +17,15 @@ import { copy } from "./copy";
 export function MobileNav() {
   const [open, setOpen] = useState(false);
   const panelId = useId();
+
+  // The avatar dropdown is hidden on mobile (see AccountNav), so the account
+  // links + sign out live here instead. Full reload after sign out mirrors the
+  // auth library's own behaviour and guarantees the session UI fully resets.
+  async function handleSignOut() {
+    setOpen(false);
+    await authClient.signOut();
+    window.location.href = "/";
+  }
 
   // Close on Escape for keyboard users.
   useEffect(() => {
@@ -91,6 +102,25 @@ export function MobileNav() {
                   Sign in
                 </Link>
               </SignedOut>
+              <SignedIn>
+                {ACCOUNT_LINKS.map((link, i) => (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    onClick={() => setOpen(false)}
+                    className={`${i === 0 ? "border-t border-hairline " : ""}px-4 py-3 text-[15px] font-medium text-body transition-colors hover:bg-surface-strong hover:text-ink`}
+                  >
+                    {link.label}
+                  </Link>
+                ))}
+                <button
+                  type="button"
+                  onClick={handleSignOut}
+                  className="border-t border-hairline px-4 py-3 text-left text-[15px] font-semibold text-ink transition-colors hover:bg-surface-strong"
+                >
+                  Sign out
+                </button>
+              </SignedIn>
             </nav>
           </div>
         </>

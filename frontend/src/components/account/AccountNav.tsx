@@ -21,7 +21,12 @@ export function AccountNav() {
         </span>
       </SignedOut>
       <SignedIn>
-        <AccountMenu />
+        {/* On mobile the avatar would crowd the wordmark + primary CTA, so the
+            account links + sign out move into the hamburger menu (see MobileNav)
+            and the avatar dropdown shows inline only from md: up. */}
+        <span className="hidden md:inline-flex">
+          <AccountMenu />
+        </span>
       </SignedIn>
     </div>
   );
