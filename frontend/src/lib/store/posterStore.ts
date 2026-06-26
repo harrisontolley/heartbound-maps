@@ -11,6 +11,7 @@ import {
   type Customization,
 } from "../templates/customize";
 import { DEFAULT_PRODUCT_ID } from "../commerce/printProducts";
+import type { StudioFormat } from "../commerce/price";
 import { LOOKS_BY_ID, type LookId } from "../looks/looks";
 import { SEED_HOME, SEED_PLACES } from "../seed";
 
@@ -49,6 +50,10 @@ type PosterState = {
   sizeId: PosterSizeId;
   /** Selected print product (drives the preview viewBox + buy price). */
   productId: string;
+  /** Whether the buyer is purchasing a physical print or the digital file. */
+  format: StudioFormat;
+  /** Ready-to-hang frame upsell on a print (ignored when format === "digital"). */
+  addFrame: boolean;
   customization: Customization;
 
   setHome: (home: Place | null) => void;
@@ -64,6 +69,8 @@ type PosterState = {
   setVintageVariant: (v: VintageVariant) => void;
   setSize: (id: PosterSizeId) => void;
   setProduct: (productId: string) => void;
+  setFormat: (format: StudioFormat) => void;
+  setAddFrame: (addFrame: boolean) => void;
   /** Apply a curated look: set its template + variant and clear customization. */
   applyLook: (id: LookId) => void;
   /** Merge a partial customization patch. */
@@ -92,6 +99,8 @@ export const usePosterStore = create<PosterState>((set, get) => ({
   vintageVariant: "classic",
   sizeId: DEFAULT_POSTER_SIZE_ID,
   productId: DEFAULT_PRODUCT_ID,
+  format: "print",
+  addFrame: false,
   customization: DEFAULT_CUSTOMIZATION,
 
   setHome: (home) => set({ home }),
@@ -116,6 +125,8 @@ export const usePosterStore = create<PosterState>((set, get) => ({
   setVintageVariant: (vintageVariant) => set({ vintageVariant }),
   setSize: (sizeId) => set({ sizeId }),
   setProduct: (productId) => set({ productId }),
+  setFormat: (format) => set({ format }),
+  setAddFrame: (addFrame) => set({ addFrame }),
   applyLook: (id) => {
     const look = LOOKS_BY_ID[id];
     set({

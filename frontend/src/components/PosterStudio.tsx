@@ -8,10 +8,8 @@ import { useMeasuredLayout } from "@/hooks/useMeasuredLayout";
 import { getActiveTemplate, TEMPLATE_ORDER } from "@/lib/templates/registry";
 import { VINTAGE_VARIANT_ORDER } from "@/lib/templates/vintageVariants";
 import { resolveCustomized } from "@/lib/templates/customize";
-import {
-  PRODUCTS_BY_ID,
-  type PrintProduct,
-} from "@/lib/commerce/printProducts";
+import { PRODUCTS_BY_ID } from "@/lib/commerce/printProducts";
+import type { StudioSelection } from "@/lib/commerce/price";
 import type { TemplateId, VintageVariant } from "@/lib/templates/types";
 import { exportSvg, exportPng, slugify } from "@/lib/export";
 import { StudioHeader } from "@/components/studio/StudioHeader";
@@ -37,6 +35,8 @@ export function PosterStudio() {
   const setVintageVariant = usePosterStore((s) => s.setVintageVariant);
   const bearingMode = usePosterStore((s) => s.bearingMode);
   const productId = usePosterStore((s) => s.productId);
+  const format = usePosterStore((s) => s.format);
+  const addFrame = usePosterStore((s) => s.addFrame);
   const customization = usePosterStore((s) => s.customization);
 
   const base = getActiveTemplate(templateId, vintageVariant);
@@ -83,9 +83,9 @@ export function PosterStudio() {
     }
   }
 
-  function addToCart(product: PrintProduct) {
+  function addToCart(selection: StudioSelection) {
     // SEAM: replace with real cart store + Stripe checkout when commerce ships.
-    void product;
+    void selection;
   }
 
   const measured = useMeasuredLayout({
@@ -128,7 +128,13 @@ export function PosterStudio() {
         />
       </div>
 
-      <BuyBar product={product} canBuy={!!home} onAddToCart={addToCart} />
+      <BuyBar
+        product={product}
+        format={format}
+        addFrame={addFrame}
+        canBuy={!!home}
+        onAddToCart={addToCart}
+      />
     </div>
   );
 }

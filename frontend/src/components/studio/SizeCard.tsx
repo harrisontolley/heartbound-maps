@@ -5,21 +5,24 @@ import type { PrintProduct } from "@/lib/commerce/printProducts";
 
 /**
  * One purchasable print size: a proportional glyph, the dimensions, and the
- * placeholder price. Active = ink ring (matches the look cards). "Popular" is a
- * quiet badge, not a color shout.
+ * price. Active = ink ring (matches the look cards). The optional badge ("Popular",
+ * "Premium") is a quiet chip, not a color shout; it falls back to product.popular.
  */
 export function SizeCard({
   product,
   active,
+  badge,
   onSelect,
 }: {
   product: PrintProduct;
   active: boolean;
+  badge?: string;
   onSelect: () => void;
 }) {
   const ratio = product.widthIn / product.heightIn;
   const gw = ratio >= 1 ? 30 : Math.round(30 * ratio);
   const gh = ratio >= 1 ? Math.round(30 / ratio) : 30;
+  const badgeLabel = badge ?? (product.popular ? "Popular" : null);
 
   return (
     <button
@@ -32,9 +35,9 @@ export function SizeCard({
           : "border-hairline hover:border-hairline-strong"
       }`}
     >
-      {product.popular && (
+      {badgeLabel && (
         <span className="absolute right-2 top-2 rounded-pill bg-surface-strong px-2 py-0.5 text-[9px] font-semibold uppercase tracking-[0.08em] text-muted">
-          Popular
+          {badgeLabel}
         </span>
       )}
       <span

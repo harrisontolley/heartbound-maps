@@ -4,6 +4,7 @@ import {
   PRODUCTS_BY_ID,
   DEFAULT_PRODUCT_ID,
   ORIENTATION_ORDER,
+  OFFERED_PRODUCTS,
   productsByOrientation,
 } from "./printProducts";
 import { formatUsd } from "./price";
@@ -33,6 +34,24 @@ describe("print products", () => {
   it("offers products for every orientation", () => {
     for (const o of ORIENTATION_ORDER) {
       expect(productsByOrientation(o).length).toBeGreaterThan(0);
+    }
+  });
+
+  it("surfaces the curated 2:3 portrait ladder, one popular", () => {
+    expect(OFFERED_PRODUCTS.map((p) => p.id)).toEqual([
+      "portrait-12x18",
+      "portrait-16x24",
+      "portrait-24x36",
+    ]);
+    expect(OFFERED_PRODUCTS.every((p) => p.orientation === "portrait")).toBe(
+      true,
+    );
+    expect(OFFERED_PRODUCTS.filter((p) => p.popular)).toHaveLength(1);
+  });
+
+  it("gives every product a frame upcharge", () => {
+    for (const p of PRINT_PRODUCTS) {
+      expect(p.frameUpchargeCents).toBeGreaterThan(0);
     }
   });
 

@@ -8,6 +8,8 @@ import { PlaceSearch } from "@/components/controls/PlaceSearch";
 import { PlaceList } from "@/components/controls/PlaceList";
 import { LookGrid } from "./LookGrid";
 import { SizePicker } from "./SizePicker";
+import { FrameUpsellCard } from "./FrameUpsellCard";
+import { DigitalOption } from "./DigitalOption";
 import { AdvancedPanel } from "./AdvancedPanel";
 import { activeLookId, LOOKS_BY_ID } from "@/lib/looks/looks";
 import { PRODUCTS_BY_ID } from "@/lib/commerce/printProducts";
@@ -28,6 +30,8 @@ export function ConfigRail({ className = "" }: { className?: string }) {
   const templateId = usePosterStore((s) => s.templateId);
   const vintageVariant = usePosterStore((s) => s.vintageVariant);
   const productId = usePosterStore((s) => s.productId);
+  const format = usePosterStore((s) => s.format);
+  const addFrame = usePosterStore((s) => s.addFrame);
   const addFromGeo = usePosterStore((s) => s.addFromGeo);
 
   const [notice, setNotice] = useState<string | null>(null);
@@ -46,6 +50,12 @@ export function ConfigRail({ className = "" }: { className?: string }) {
   const active = activeLookId(templateId, vintageVariant);
   const lookLabel = active ? LOOKS_BY_ID[active].label : "Custom";
   const product = PRODUCTS_BY_ID[productId];
+  const sizeAccessory =
+    format === "digital"
+      ? "Digital"
+      : addFrame
+        ? `${product.label} + frame`
+        : product.label;
 
   return (
     <aside
@@ -87,11 +97,22 @@ export function ConfigRail({ className = "" }: { className?: string }) {
 
         <DisclosureSection
           title="Size"
-          accessory={product.label}
+          accessory={sizeAccessory}
           defaultOpen
           className="order-5 px-4 lg:order-none lg:px-0"
         >
-          <SizePicker />
+          <div className="flex flex-col gap-3">
+            {format === "print" && (
+              <>
+                <SizePicker />
+                <FrameUpsellCard />
+                <p className="text-xs text-muted">
+                  High-res digital file included, free.
+                </p>
+              </>
+            )}
+            <DigitalOption />
+          </div>
         </DisclosureSection>
 
         <DisclosureSection
