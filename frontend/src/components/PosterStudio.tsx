@@ -10,6 +10,8 @@ import { VINTAGE_VARIANT_ORDER } from "@/lib/templates/vintageVariants";
 import { resolveCustomized } from "@/lib/templates/customize";
 import { PRODUCTS_BY_ID } from "@/lib/commerce/printProducts";
 import type { StudioSelection } from "@/lib/commerce/price";
+import { useCartStore } from "@/lib/store/cartStore";
+import { snapshotPosterConfig } from "@/lib/commerce/posterConfig";
 import type { TemplateId, VintageVariant } from "@/lib/templates/types";
 import { exportSvg, exportPng, slugify } from "@/lib/export";
 import { StudioHeader } from "@/components/studio/StudioHeader";
@@ -49,7 +51,9 @@ export function PosterStudio() {
   const fontsReady = useFontsReady();
   const mounted = useHydrated();
 
+  const addItem = useCartStore((s) => s.addItem);
   const [exporting, setExporting] = useState<null | "svg" | "png">(null);
+  const [justAdded, setJustAdded] = useState(false);
   const posterRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -84,8 +88,9 @@ export function PosterStudio() {
   }
 
   function addToCart(selection: StudioSelection) {
-    // SEAM: replace with real cart store + Stripe checkout when commerce ships.
-    void selection;
+    addItem({ selection, posterConfig: snapshotPosterConfig() });
+    setJustAdded(true);
+    window.setTimeout(() => setJustAdded(false), 2500);
   }
 
   const measured = useMeasuredLayout({
@@ -133,6 +138,7 @@ export function PosterStudio() {
         format={format}
         addFrame={addFrame}
         canBuy={!!home}
+        justAdded={justAdded}
         onAddToCart={addToCart}
       />
     </div>

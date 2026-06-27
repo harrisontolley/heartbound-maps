@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { Button } from "@/components/ui/Button";
 import {
   formatUsd,
@@ -14,15 +15,15 @@ import type { PrintProduct } from "@/lib/commerce/printProducts";
 /**
  * The sticky commerce strip. Shows a live total for the current selection
  * (print ± frame, or the digital file) with a small breakdown, and the single
- * ink-pill primary "Add to cart". Checkout isn't built yet, so the CTA is a
- * disabled stub — onAddToCart is the seam a real cart drops into later, handed
- * a complete StudioSelection snapshot.
+ * ink-pill primary "Add to cart" — which adds a complete StudioSelection
+ * snapshot to the cart. After an add it briefly surfaces a "View cart" link.
  */
 export function BuyBar({
   product,
   format,
   addFrame,
   canBuy,
+  justAdded = false,
   onAddToCart,
 }: {
   product: PrintProduct;
@@ -30,11 +31,13 @@ export function BuyBar({
   addFrame: boolean;
   /** False until a home is set (mirrors export gating). */
   canBuy: boolean;
+  /** True for a moment after an add, to show the confirmation link. */
+  justAdded?: boolean;
   onAddToCart: (selection: StudioSelection) => void;
 }) {
   const total = selectionTotalCents({ format, product, addFrame });
   const items = selectionLineItems({ format, product, addFrame });
-  const hint = canBuy ? "Checkout coming soon" : "Add a place to start";
+  const hint = canBuy ? "Free shipping" : "Add a place to start";
   const title = format === "digital" ? "Digital download" : product.label;
   const subtitle =
     format === "digital"
@@ -65,15 +68,26 @@ export function BuyBar({
             <div className="font-display text-2xl leading-none text-ink">
               {formatUsd(total)}
             </div>
-            <div className="mt-0.5 text-[11px] text-muted">{hint}</div>
+            <div className="mt-0.5 text-[11px] text-muted">
+              {justAdded ? (
+                <Link
+                  href="/cart"
+                  className="font-medium text-ink underline-offset-2 hover:underline"
+                >
+                  Added ✓ View cart →
+                </Link>
+              ) : (
+                hint
+              )}
+            </div>
           </div>
           <Button
             variant="primary"
             onClick={() =>
               onAddToCart(buildSelection({ format, product, addFrame }))
             }
-            disabled
-            title="Checkout coming soon"
+            disabled={!canBuy}
+            title={canBuy ? "Add to cart" : "Add a place to start"}
           >
             Add to cart
           </Button>
