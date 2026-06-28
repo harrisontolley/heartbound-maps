@@ -1,7 +1,9 @@
 import type Stripe from "stripe";
-import type { OrderStatus, OrderTracking } from "@pinprint/shared";
+import type { OrderStatus, OrderTracking, OrderShippingAddress } from "@pinprint/shared";
 import {
   advanceOrderStatus,
+  applyCheckoutDetails,
+  findOrderById,
   findOrderByProdigiId,
   findOrderByStripeCheckoutSession,
   findOrderByStripePaymentIntent,
@@ -63,6 +65,44 @@ export function extractProdigiOrder(payload: unknown): {
   };
 }
 
+// ── Stripe checkout mapping (pure) ───────────────────────────────────────────
+
+/**
+ * Pull the buyer details Stripe collected on the hosted page off a completed
+ * session. Shipping lives under `collected_information.shipping_details` in the
+ * pinned API version (note Stripe's field names: `state`/`postal_code`). Pure so
+ * it's unit-testable without a Stripe client or DB.
+ */
+export function extractCheckoutDetails(session: Stripe.Checkout.Session): {
+  email?: string;
+  paymentIntentId?: string;
+  shipping?: OrderShippingAddress;
+} {
+  const email = session.customer_details?.email ?? session.customer_email ?? undefined;
+  const paymentIntentId =
+    typeof session.payment_intent === "string"
+      ? session.payment_intent
+      : session.payment_intent?.id;
+
+  const sd = session.collected_information?.shipping_details;
+  let shipping: OrderShippingAddress | undefined;
+  if (sd) {
+    const a = sd.address;
+    shipping = {
+      name: sd.name ?? undefined,
+      line1: a?.line1 ?? undefined,
+      line2: a?.line2 ?? undefined,
+      city: a?.city ?? undefined,
+      region: a?.state ?? undefined,
+      postal: a?.postal_code ?? undefined,
+      country: a?.country ?? undefined,
+    };
+    if (!Object.values(shipping).some(Boolean)) shipping = undefined;
+  }
+
+  return { email: email ?? undefined, paymentIntentId, shipping };
+}
+
 // ── Handlers (DB-touching; no-op when unconfigured) ──────────────────────────
 
 /** Advance an order in response to a Stripe webhook event. */
@@ -70,18 +110,29 @@ export async function handleStripeEvent(event: Stripe.Event): Promise<void> {
   switch (event.type) {
     case "checkout.session.completed": {
       const s = event.data.object as Stripe.Checkout.Session;
+      // Locate by metadata.orderId first — it's set at session-creation time, so
+      // this is race-free even if the session id write hasn't committed yet.
+      const orderId =
+        (typeof s.metadata?.orderId === "string" && s.metadata.orderId) ||
+        (typeof s.client_reference_id === "string" && s.client_reference_id) ||
+        null;
+      const piId =
+        typeof s.payment_intent === "string" ? s.payment_intent : s.payment_intent?.id;
       const located =
+        (orderId ? await findOrderById(orderId) : null) ??
         (await findOrderByStripeCheckoutSession(s.id)) ??
-        (s.payment_intent
-          ? await findOrderByStripePaymentIntent(String(s.payment_intent))
-          : null);
-      if (located && located.status === "pending_payment") {
+        (piId ? await findOrderByStripePaymentIntent(piId) : null);
+      if (!located) break;
+      if (located.status === "pending_payment") {
         await advanceOrderStatus(located.id, "paid", {
           message: "Payment received",
           source: "stripe",
           payload: event,
         });
       }
+      // Persist the address + email + payment-intent id Stripe collected.
+      // Idempotent (set-if-empty / coalesce / set-once), so retries are safe.
+      await applyCheckoutDetails(located.id, extractCheckoutDetails(s));
       break;
     }
     case "payment_intent.succeeded": {

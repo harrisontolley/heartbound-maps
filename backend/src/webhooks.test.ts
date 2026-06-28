@@ -1,8 +1,11 @@
 import { describe, expect, it } from "vitest";
+import type Stripe from "stripe";
 import { app } from "./app.js";
 import {
+  extractCheckoutDetails,
   extractProdigiOrder,
   handleProdigiPayload,
+  handleStripeEvent,
   mapProdigiStage,
   trackingFromShipments,
 } from "./webhooks.js";
@@ -52,6 +55,82 @@ describe("trackingFromShipments", () => {
     expect(trackingFromShipments([])).toBeUndefined();
     expect(trackingFromShipments(undefined)).toBeUndefined();
     expect(trackingFromShipments([{}])).toBeUndefined();
+  });
+});
+
+describe("extractCheckoutDetails", () => {
+  it("maps Stripe's collected shipping, customer email, and payment intent", () => {
+    const session = {
+      id: "cs_test_1",
+      payment_intent: "pi_123",
+      customer_email: null,
+      customer_details: { email: "buyer@example.com" },
+      collected_information: {
+        shipping_details: {
+          name: "Ada Lovelace",
+          address: {
+            line1: "1 Analytical Way",
+            line2: "Floor 2",
+            city: "London",
+            state: "Greater London", // Stripe → ship_region
+            postal_code: "SW1A 1AA", // Stripe → ship_postal
+            country: "GB",
+          },
+        },
+      },
+    } as unknown as Stripe.Checkout.Session;
+    expect(extractCheckoutDetails(session)).toEqual({
+      email: "buyer@example.com",
+      paymentIntentId: "pi_123",
+      shipping: {
+        name: "Ada Lovelace",
+        line1: "1 Analytical Way",
+        line2: "Floor 2",
+        city: "London",
+        region: "Greater London",
+        postal: "SW1A 1AA",
+        country: "GB",
+      },
+    });
+  });
+
+  it("falls back to customer_email and a nested payment_intent object", () => {
+    const session = {
+      id: "cs_test_2",
+      payment_intent: { id: "pi_456" },
+      customer_email: "fallback@example.com",
+      customer_details: null,
+    } as unknown as Stripe.Checkout.Session;
+    const got = extractCheckoutDetails(session);
+    expect(got.email).toBe("fallback@example.com");
+    expect(got.paymentIntentId).toBe("pi_456");
+    expect(got.shipping).toBeUndefined();
+  });
+
+  it("returns no shipping for a digital-only session", () => {
+    const session = {
+      id: "cs_test_3",
+      payment_intent: "pi_1",
+      customer_details: { email: "d@e.com" },
+    } as unknown as Stripe.Checkout.Session;
+    expect(extractCheckoutDetails(session).shipping).toBeUndefined();
+  });
+});
+
+describe("handleStripeEvent — unconfigured DB", () => {
+  it("no-ops on checkout.session.completed without throwing", async () => {
+    const event = {
+      type: "checkout.session.completed",
+      data: {
+        object: {
+          id: "cs_x",
+          metadata: { orderId: "ord_x" },
+          payment_intent: "pi_x",
+          customer_details: { email: "a@b.com" },
+        },
+      },
+    } as unknown as Stripe.Event;
+    await expect(handleStripeEvent(event)).resolves.toBeUndefined();
   });
 });
 

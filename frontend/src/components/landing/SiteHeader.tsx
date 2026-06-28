@@ -1,6 +1,7 @@
 import { LinkButton } from "./LinkButton";
 import { MobileNav } from "./MobileNav";
 import { AccountNav } from "@/components/account/AccountNav";
+import { CartNav } from "@/components/cart/CartNav";
 import { copy, STUDIO_HREF } from "./copy";
 
 /**
@@ -32,6 +33,7 @@ export function SiteHeader() {
         </nav>
 
         <div className="flex shrink-0 items-center gap-2 sm:gap-3 md:gap-4">
+          <CartNav />
           <AccountNav />
           <LinkButton href={STUDIO_HREF} variant="primary" size="md">
             {copy.hero.primaryCta}

@@ -35,3 +35,6 @@ export type {
   TrackTimelineEntry,
   TrackResult,
 } from "./track.js";
+
+// Commerce: product catalogue, pricing, and checkout contracts (values + types).
+export * from "./commerce.js";

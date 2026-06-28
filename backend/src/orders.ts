@@ -6,6 +6,8 @@ import type {
   OrderStatus,
   OrderSummary,
   OrderTracking,
+  OrderShippingAddress,
+  CheckoutOrderStatus,
   EventSource,
 } from "@pinprint/shared";
 import { getSql } from "./db.js";
@@ -366,4 +368,70 @@ export async function findOrderByProdigiId(id: string): Promise<LocatedOrder | n
 export async function setProdigiOrderId(orderId: string, prodigiOrderId: string): Promise<void> {
   const sql = requireSql();
   await sql`update orders set prodigi_order_id = ${prodigiOrderId}, updated_at = now() where id = ${orderId}`;
+}
+
+/** Attach the Stripe Checkout Session id once the session is created. */
+export async function setStripeCheckoutSessionId(
+  orderId: string,
+  sessionId: string,
+): Promise<void> {
+  const sql = requireSql();
+  await sql`
+    update orders set stripe_checkout_session_id = ${sessionId}, updated_at = now()
+    where id = ${orderId}
+  `;
+}
+
+/** Locate an order by its internal id (webhooks resolve via metadata.orderId). */
+export async function findOrderById(id: string): Promise<LocatedOrder | null> {
+  const sql = getSql();
+  if (!sql) return null;
+  const rows = (await sql`
+    select id, status from orders where id = ${id} limit 1
+  `) as unknown as LocatedOrder[];
+  return rows[0] ?? null;
+}
+
+/** Order number + status by checkout session id (the /checkout/success read). */
+export async function getOrderStatusByCheckoutSession(
+  sessionId: string,
+): Promise<CheckoutOrderStatus | null> {
+  const sql = getSql();
+  if (!sql) return null;
+  const rows = (await sql`
+    select order_number, status from orders
+    where stripe_checkout_session_id = ${sessionId} limit 1
+  `) as unknown as { order_number: string; status: OrderStatus }[];
+  const row = rows[0];
+  return row ? { orderNumber: row.order_number, status: row.status } : null;
+}
+
+/**
+ * Persist the buyer details Stripe collected on the hosted page: backfill the
+ * email (only when the order has none — guests), set the payment-intent id once
+ * (so refunds can match), and fill the shipping address. Idempotent (coalesce /
+ * set-if-empty) and DB-guarded so the webhook stays a no-op when unconfigured.
+ */
+export async function applyCheckoutDetails(
+  orderId: string,
+  details: { email?: string; paymentIntentId?: string; shipping?: OrderShippingAddress },
+): Promise<void> {
+  const sql = getSql();
+  if (!sql) return;
+  const s = details.shipping ?? {};
+  const email = details.email?.trim() ? details.email.trim() : null;
+  await sql`
+    update orders set
+      email = case when (email is null or email = '') then coalesce(${email}, email) else email end,
+      stripe_payment_intent_id = coalesce(stripe_payment_intent_id, ${details.paymentIntentId ?? null}),
+      ship_name    = coalesce(${s.name ?? null}, ship_name),
+      ship_line1   = coalesce(${s.line1 ?? null}, ship_line1),
+      ship_line2   = coalesce(${s.line2 ?? null}, ship_line2),
+      ship_city    = coalesce(${s.city ?? null}, ship_city),
+      ship_region  = coalesce(${s.region ?? null}, ship_region),
+      ship_postal  = coalesce(${s.postal ?? null}, ship_postal),
+      ship_country = coalesce(${s.country ?? null}, ship_country),
+      updated_at = now()
+    where id = ${orderId}
+  `;
 }

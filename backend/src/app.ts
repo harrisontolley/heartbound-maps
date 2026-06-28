@@ -8,6 +8,7 @@ import { isAuthConfigured } from "./auth.js";
 import { handleProdigiPayload, handleStripeEvent } from "./webhooks.js";
 import { buildAccountRouter } from "./routes/account.js";
 import { buildTrackRouter } from "./routes/track.js";
+import { buildCheckoutRouter } from "./routes/checkout.js";
 import { buildDevRouter } from "./routes/dev.js";
 
 // The Pinprint API. Owns the Nominatim geocoding proxy (User-Agent, rate gate,
@@ -114,6 +115,7 @@ function registerRoutes(r: Hono): Hono {
 
   // Account system. Fresh router instances per mount (registerRoutes runs twice).
   r.route("/account", buildAccountRouter()); // authenticated (requireUser)
+  r.route("/checkout", buildCheckoutRouter()); // Stripe Checkout (guest-friendly)
   r.route("/track", buildTrackRouter()); // public order tracking
   r.route("/dev", buildDevRouter()); // dev-only, DEV_SEED_TOKEN-guarded
 
