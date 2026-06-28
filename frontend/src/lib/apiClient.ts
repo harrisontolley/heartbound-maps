@@ -76,3 +76,17 @@ export async function apiGet<T>(path: string): Promise<T> {
   if (!res.ok) throw new ApiError(res.status, await errorCode(res), path);
   return (await res.json()) as T;
 }
+
+/** Convenience: send a JSON body with `method`, parse JSON, throw on non-2xx. */
+export async function apiSend<T>(
+  path: string,
+  method: "POST" | "PATCH" | "DELETE",
+  body?: unknown,
+): Promise<T> {
+  const res = await apiFetch(path, {
+    method,
+    ...(body !== undefined ? { body: JSON.stringify(body) } : {}),
+  });
+  if (!res.ok) throw new ApiError(res.status, await errorCode(res), path);
+  return (await res.json().catch(() => ({}))) as T;
+}

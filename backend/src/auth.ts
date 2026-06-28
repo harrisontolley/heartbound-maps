@@ -8,7 +8,7 @@ import type { MiddlewareHandler } from "hono";
 // does same-origin in production. Env-guarded: with NEON_AUTH_JWKS_URL unset the
 // middleware fails clean (401), so routes still register and tests stay hermetic.
 
-export type AuthUser = { userId: string; email?: string };
+export type AuthUser = { userId: string; email?: string; emailVerified?: boolean };
 export type AuthVariables = { user: AuthUser | null };
 
 type KeyResolver = ReturnType<typeof createRemoteJWKSet>;
@@ -41,7 +41,11 @@ async function verifyToken(token: string): Promise<AuthUser | null> {
     const userId = typeof payload.sub === "string" ? payload.sub : "";
     if (!userId) return null;
     const email = typeof payload.email === "string" ? payload.email : undefined;
-    return { userId, email };
+    // Better Auth / Neon Auth may emit either casing; treat a missing claim as
+    // unknown (undefined), an explicit false as unverified (blocks admin).
+    const ev = payload.email_verified ?? (payload as Record<string, unknown>).emailVerified;
+    const emailVerified = typeof ev === "boolean" ? ev : undefined;
+    return { userId, email, emailVerified };
   } catch {
     return null;
   }
@@ -65,6 +69,50 @@ export const requireUser: MiddlewareHandler<{ Variables: AuthVariables }> = asyn
   const token = bearerToken(c.req.header("authorization"));
   const user = token ? await verifyToken(token) : null;
   if (!user) return c.json({ error: "unauthorized" }, 401);
+  c.set("user", user);
+  await next();
+};
+
+/** Parsed, lower-cased ADMIN_EMAILS allowlist (comma/space separated). */
+export function adminEmails(): Set<string> {
+  return new Set(
+    (process.env.ADMIN_EMAILS ?? "")
+      .split(/[,\s]+/)
+      .map((e) => e.trim().toLowerCase())
+      .filter(Boolean),
+  );
+}
+
+/** True when an admin allowlist is configured (no allowlist ⇒ admin is closed). */
+export function isAdminConfigured(): boolean {
+  return adminEmails().size > 0;
+}
+
+/**
+ * Whether a user's email is on the admin allowlist. Requires the email to not be
+ * explicitly unverified — so an attacker can't escalate by setting their account
+ * email to a known admin address without proving ownership. (A missing
+ * `email_verified` claim is treated as unknown and allowed; ensure Neon Auth
+ * requires re-verification on email change — see docs/admin.md.)
+ */
+export function isAdminUser(user: AuthUser | null): boolean {
+  if (!user?.email) return false;
+  if (user.emailVerified === false) return false;
+  return adminEmails().has(user.email.toLowerCase());
+}
+
+/**
+ * 403 unless a valid session resolves to a user whose email is on ADMIN_EMAILS.
+ * Admin is gated by a server-side env allowlist on top of normal auth — the
+ * client is never trusted. With no allowlist (or auth unconfigured) admin is
+ * closed (403), so it can't be left accidentally open.
+ */
+export const requireAdmin: MiddlewareHandler<{ Variables: AuthVariables }> = async (c, next) => {
+  if (!isAuthConfigured()) return c.json({ error: "auth_unconfigured" }, 401);
+  const token = bearerToken(c.req.header("authorization"));
+  const user = token ? await verifyToken(token) : null;
+  if (!user) return c.json({ error: "unauthorized" }, 401);
+  if (!isAdminUser(user)) return c.json({ error: "forbidden" }, 403);
   c.set("user", user);
   await next();
 };

@@ -24,6 +24,7 @@ export function BuyBar({
   addFrame,
   canBuy,
   justAdded = false,
+  busy = false,
   onAddToCart,
 }: {
   product: PrintProduct;
@@ -33,6 +34,8 @@ export function BuyBar({
   canBuy: boolean;
   /** True for a moment after an add, to show the confirmation link. */
   justAdded?: boolean;
+  /** True while the print is being rasterized + uploaded for fulfilment. */
+  busy?: boolean;
   onAddToCart: (selection: StudioSelection) => void;
 }) {
   const total = selectionTotalCents({ format, product, addFrame });
@@ -86,10 +89,10 @@ export function BuyBar({
             onClick={() =>
               onAddToCart(buildSelection({ format, product, addFrame }))
             }
-            disabled={!canBuy}
+            disabled={!canBuy || busy}
             title={canBuy ? "Add to cart" : "Add a place to start"}
           >
-            Add to cart
+            {busy ? "Preparing…" : "Add to cart"}
           </Button>
         </div>
       </div>

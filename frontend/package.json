@@ -16,6 +16,8 @@
   "dependencies": {
     "@neondatabase/auth": "0.4.2-beta",
     "@pinprint/shared": "workspace:*",
+    "@vercel/analytics": "^2.0.1",
+    "@vercel/blob": "^2.5.0",
     "leaflet": "^1.9.4",
     "next": "16.2.9",
     "posthog-js": "^1.393.4",

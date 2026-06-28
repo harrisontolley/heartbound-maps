@@ -5,7 +5,7 @@ import { findOrderByNumberAndEmail } from "../orders.js";
 // Public order tracking — no auth, looked up by order number + email. The result
 // is deliberately narrow: status, item labels, a sanitized timeline, and carrier
 // tracking only. It never exposes user ids, the email, prices, poster configs, or
-// Stripe/Prodigi identifiers. A best-effort in-memory rate limit (per client key)
+// Stripe/Artelo identifiers. A best-effort in-memory rate limit (per client key)
 // blunts enumeration; a miss always returns a generic 404.
 
 const WINDOW_MS = 60_000;

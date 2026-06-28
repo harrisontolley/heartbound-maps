@@ -2,65 +2,74 @@ import type Stripe from "stripe";
 import type { OrderStatus, OrderTracking, OrderShippingAddress } from "@pinprint/shared";
 import {
   advanceOrderStatus,
+  appendOrderEvent,
   applyCheckoutDetails,
   findOrderById,
-  findOrderByProdigiId,
+  findOrderByArteloId,
   findOrderByStripeCheckoutSession,
   findOrderByStripePaymentIntent,
+  setArteloStatus,
+  setRefundAmount,
 } from "./orders.js";
+import { submitOrderToArtelo } from "./fulfillment.js";
 
-// Order persistence driven by the Stripe and Prodigi webhooks. The DB-touching
+// Order persistence driven by the Stripe and Artelo webhooks. The DB-touching
 // handlers no-op gracefully when DATABASE_URL is unset (the find* helpers return
 // null), so an unconfigured deploy still 204s. The pure mapping helpers below are
 // exported for unit testing without a database.
 
-// ── Prodigi mapping (pure) ───────────────────────────────────────────────────
+// ── Artelo mapping (pure) ────────────────────────────────────────────────────
 
-/** Map a Prodigi fulfilment stage to our order status. */
-export function mapProdigiStage(stage: string): OrderStatus | null {
-  switch (stage) {
-    case "InProgress":
+/**
+ * Map an Artelo order status to our order status. `Received` maps to null — the
+ * order is already `paid` on our side, so there's nothing to advance.
+ */
+export function mapArteloStatus(status: string): OrderStatus | null {
+  switch (status) {
+    case "InProduction":
       return "in_production";
-    case "Complete":
-      return "shipped"; // Prodigi "Complete" == dispatched
-    case "Cancelled":
+    case "Shipped":
+      return "shipped";
+    case "Delivered":
+      return "delivered";
+    case "Canceled":
       return "cancelled";
     default:
       return null;
   }
 }
 
-type ProdigiShipment = {
-  carrier?: { name?: string; service?: string };
-  tracking?: { number?: string; url?: string };
+type ArteloShipment = {
+  carrierCode?: string;
+  trackingNumber?: string;
+  trackingUrl?: string;
 };
 
 /** Pull carrier/tracking from the first shipment, if any. */
 export function trackingFromShipments(shipments: unknown): OrderTracking | undefined {
   if (!Array.isArray(shipments) || shipments.length === 0) return undefined;
-  const s = shipments[0] as ProdigiShipment;
+  const s = shipments[0] as ArteloShipment;
   const tracking: OrderTracking = {
-    carrier: s.carrier?.name,
-    number: s.tracking?.number,
-    url: s.tracking?.url,
+    carrier: s.carrierCode,
+    number: s.trackingNumber,
+    url: s.trackingUrl,
   };
   if (!tracking.carrier && !tracking.number && !tracking.url) return undefined;
   return tracking;
 }
 
-/** Normalize a Prodigi callback (handles both the bare order and CloudEvents wrap). */
-export function extractProdigiOrder(payload: unknown): {
+/** Normalize an Artelo OrderStatusChange callback (bare order or {data:{order}}). */
+export function extractArteloOrder(payload: unknown): {
   id?: string;
-  stage?: string;
+  status?: string;
   shipments?: unknown;
 } {
   const root = (payload ?? {}) as Record<string, unknown>;
   const data = root.data as Record<string, unknown> | undefined;
   const order = ((data?.order ?? root.order ?? root) ?? {}) as Record<string, unknown>;
-  const status = order.status as Record<string, unknown> | undefined;
   return {
     id: typeof order.id === "string" ? order.id : undefined,
-    stage: typeof status?.stage === "string" ? (status.stage as string) : undefined,
+    status: typeof order.status === "string" ? (order.status as string) : undefined,
     shipments: order.shipments,
   };
 }
@@ -105,10 +114,23 @@ export function extractCheckoutDetails(session: Stripe.Checkout.Session): {
 
 // ── Handlers (DB-touching; no-op when unconfigured) ──────────────────────────
 
+/** Result of handling a webhook — the resolved order id, for the inbound log. */
+export type WebhookHandled = { handled: boolean; orderId?: string | null };
+
 /** Advance an order in response to a Stripe webhook event. */
-export async function handleStripeEvent(event: Stripe.Event): Promise<void> {
+export async function handleStripeEvent(event: Stripe.Event): Promise<WebhookHandled> {
+  // A well-formed Stripe event always carries data.object; a missing one is a
+  // malformed/irrelevant delivery, not a transient failure — ignore it (so the
+  // route 204s) rather than throwing into the 500/retry path.
+  if (!(event.data as { object?: unknown } | undefined)?.object) {
+    return { handled: false };
+  }
   switch (event.type) {
-    case "checkout.session.completed": {
+    // `completed` fires when the session finishes; for async methods (bank debits)
+    // it can arrive before funds settle, with `async_payment_succeeded` following.
+    // Treat both, but only advance to paid once payment_status is actually paid.
+    case "checkout.session.completed":
+    case "checkout.session.async_payment_succeeded": {
       const s = event.data.object as Stripe.Checkout.Session;
       // Locate by metadata.orderId first — it's set at session-creation time, so
       // this is race-free even if the session id write hasn't committed yet.
@@ -122,18 +144,29 @@ export async function handleStripeEvent(event: Stripe.Event): Promise<void> {
         (orderId ? await findOrderById(orderId) : null) ??
         (await findOrderByStripeCheckoutSession(s.id)) ??
         (piId ? await findOrderByStripePaymentIntent(piId) : null);
-      if (!located) break;
-      if (located.status === "pending_payment") {
+      if (!located) return { handled: false };
+      // Persist the address + email + payment-intent id Stripe collected first,
+      // so the order has a shipping address before we hand it to Artelo.
+      // Idempotent (set-if-empty / coalesce / set-once), so retries are safe.
+      await applyCheckoutDetails(located.id, extractCheckoutDetails(s));
+      // Only mark paid when the money is actually captured. A `completed` session
+      // with payment_status 'unpaid' (async/processing) must NOT trigger fulfilment.
+      const settled = s.payment_status === "paid" || s.payment_status === "no_payment_required";
+      if (settled && located.status === "pending_payment") {
         await advanceOrderStatus(located.id, "paid", {
           message: "Payment received",
           source: "stripe",
           payload: event,
         });
+        // Hand the paid order to Artelo. Self-guarded: no-ops when Artelo is
+        // unconfigured, idempotent (skips if already submitted), skips digital-
+        // only orders, and never throws — a fulfilment hiccup must not fail the
+        // Stripe webhook (Stripe would retry and double-charge our handlers).
+        await submitOrderToArtelo(located.id).catch((err) => {
+          console.error("[webhooks/stripe] artelo submit error", err);
+        });
       }
-      // Persist the address + email + payment-intent id Stripe collected.
-      // Idempotent (set-if-empty / coalesce / set-once), so retries are safe.
-      await applyCheckoutDetails(located.id, extractCheckoutDetails(s));
-      break;
+      return { handled: true, orderId: located.id };
     }
     case "payment_intent.succeeded": {
       const pi = event.data.object as Stripe.PaymentIntent;
@@ -145,40 +178,86 @@ export async function handleStripeEvent(event: Stripe.Event): Promise<void> {
           payload: event,
         });
       }
-      break;
+      return { handled: Boolean(located), orderId: located?.id ?? null };
     }
     case "charge.refunded": {
       const ch = event.data.object as Stripe.Charge;
       const piId =
         typeof ch.payment_intent === "string" ? ch.payment_intent : ch.payment_intent?.id;
       const located = piId ? await findOrderByStripePaymentIntent(piId) : null;
-      if (located) {
+      if (!located) return { handled: false };
+      // Stripe reports the cumulative refunded amount; record it monotonically.
+      const refunded = typeof ch.amount_refunded === "number" ? ch.amount_refunded : 0;
+      const total = typeof ch.amount === "number" ? ch.amount : refunded;
+      await setRefundAmount(located.id, refunded).catch(() => {});
+      const fullyRefunded = refunded >= total && refunded > 0;
+      if (fullyRefunded && located.status !== "refunded") {
         await advanceOrderStatus(located.id, "refunded", {
-          message: "Payment refunded",
+          message: "Payment fully refunded",
+          source: "stripe",
+          payload: event,
+        });
+      } else {
+        // Partial refund — keep the order in its fulfilment state, just note it.
+        await appendOrderEvent(located.id, {
+          message: `Partial refund recorded (${refunded} of ${total})`,
+          source: "stripe",
+          payload: event,
+        }).catch(() => {});
+      }
+      return { handled: true, orderId: located.id };
+    }
+    case "checkout.session.expired": {
+      // The buyer abandoned the hosted session. Leave the order pending_payment
+      // (a later session can still complete it) but note it for cleanup/visibility.
+      const s = event.data.object as Stripe.Checkout.Session;
+      const located = await findOrderByStripeCheckoutSession(s.id);
+      if (!located) return { handled: false };
+      if (located.status === "pending_payment") {
+        await appendOrderEvent(located.id, {
+          message: "Checkout session expired",
           source: "stripe",
           payload: event,
         });
       }
-      break;
+      return { handled: true, orderId: located.id };
+    }
+    case "charge.dispute.created": {
+      // A chargeback was opened — surface it on the order timeline for the operator.
+      const dispute = event.data.object as Stripe.Dispute;
+      const piId =
+        typeof dispute.payment_intent === "string"
+          ? dispute.payment_intent
+          : dispute.payment_intent?.id;
+      const located = piId ? await findOrderByStripePaymentIntent(piId) : null;
+      if (!located) return { handled: false };
+      await appendOrderEvent(located.id, {
+        message: `Dispute opened (${dispute.reason})`,
+        source: "stripe",
+        payload: event,
+      });
+      return { handled: true, orderId: located.id };
     }
     default:
-      break;
+      return { handled: false };
   }
 }
 
-/** Advance an order in response to a Prodigi status callback. */
-export async function handleProdigiPayload(payload: unknown): Promise<{ handled: boolean }> {
-  const { id, stage, shipments } = extractProdigiOrder(payload);
-  if (!id || !stage) return { handled: false };
-  const status = mapProdigiStage(stage);
-  if (!status) return { handled: false };
-  const located = await findOrderByProdigiId(id);
+/** Advance an order in response to an Artelo OrderStatusChange callback. */
+export async function handleArteloPayload(payload: unknown): Promise<WebhookHandled> {
+  const { id, status: arteloStatus, shipments } = extractArteloOrder(payload);
+  if (!id || !arteloStatus) return { handled: false };
+  const located = await findOrderByArteloId(id);
   if (!located) return { handled: false };
+  // Always record Artelo's raw status (even for ones we don't map), for observability.
+  await setArteloStatus(located.id, arteloStatus).catch(() => {});
+  const status = mapArteloStatus(arteloStatus);
+  if (!status) return { handled: false, orderId: located.id };
   await advanceOrderStatus(located.id, status, {
-    message: `Prodigi: ${stage}`,
-    source: "prodigi",
+    message: `Artelo: ${arteloStatus}`,
+    source: "artelo",
     payload,
     tracking: trackingFromShipments(shipments),
   });
-  return { handled: true };
+  return { handled: true, orderId: located.id };
 }

@@ -17,7 +17,7 @@ vercel link            # link this repo to the Vercel project (creates .vercel/,
 Pull per service (each workspace loads its own `.env`):
 
 ```bash
-vercel env pull backend/.env       # DATABASE_URL, STRIPE_*, PRODIGI_*, POSTHOG_*
+vercel env pull backend/.env       # DATABASE_URL, STRIPE_*, ARTELO_*, BLOB_READ_WRITE_TOKEN, POSTHOG_*
 vercel env pull frontend/.env      # NEXT_PUBLIC_* values
 ```
 
@@ -44,7 +44,10 @@ no `.env` is used.
 | `DATABASE_URL` | `NEXT_PUBLIC_BACKEND_URL` |
 | `STRIPE_SECRET_KEY` | `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` |
 | `STRIPE_WEBHOOK_SECRET` | `NEXT_PUBLIC_POSTHOG_KEY` |
-| `PRODIGI_API_KEY` | `NEXT_PUBLIC_POSTHOG_HOST` / `_UPSTREAM` |
+| `ARTELO_API_KEY` | `NEXT_PUBLIC_POSTHOG_HOST` / `_UPSTREAM` |
+| `ARTELO_WEBHOOK_SECRET` | |
+| `BLOB_READ_WRITE_TOKEN` | |
+| `ADMIN_EMAILS` (operator allowlist) | |
 | `POSTHOG_PROJECT_API_KEY` | |
 | `POSTHOG_PERSONAL_API_KEY` (for the PostHog MCP) | |
 

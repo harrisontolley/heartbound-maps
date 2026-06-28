@@ -60,6 +60,7 @@ export default function CartPage() {
           addFrame: i.selection.addFrame,
           quantity: i.quantity,
           posterConfig: i.posterConfig,
+          assetUrl: i.assetUrl,
         })),
         email: email.trim() || undefined,
       };

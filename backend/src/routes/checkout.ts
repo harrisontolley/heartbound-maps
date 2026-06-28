@@ -11,6 +11,7 @@ import {
   setStripeCheckoutSessionId,
 } from "../orders.js";
 import { CheckoutValidationError, priceCheckout } from "../checkout.js";
+import { clientKey, rateLimit } from "../rateLimit.js";
 
 // Checkout API. Creates a Stripe Checkout Session (hosted page) for the cart and
 // a matching pending_payment order; the address + email Stripe collects are
@@ -42,6 +43,10 @@ export function buildCheckoutRouter(): Hono<{ Variables: AuthVariables }> {
   r.use("*", getUser);
 
   r.post("/session", async (c) => {
+    // Speed-bump abuse: each call creates a pending order + a Stripe session.
+    if (rateLimit("checkout", clientKey(c), { max: 30, windowMs: 60_000 })) {
+      return c.json({ error: "rate_limited" }, 429);
+    }
     const stripe = getStripe();
     if (!stripe) return c.json({ error: "stripe_unconfigured" }, 503);
 

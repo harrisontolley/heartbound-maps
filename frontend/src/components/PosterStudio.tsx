@@ -13,7 +13,8 @@ import type { StudioSelection } from "@/lib/commerce/price";
 import { useCartStore } from "@/lib/store/cartStore";
 import { snapshotPosterConfig } from "@/lib/commerce/posterConfig";
 import type { TemplateId, VintageVariant } from "@/lib/templates/types";
-import { exportSvg, exportPng, slugify } from "@/lib/export";
+import { exportSvg, exportPng, exportPngBlob, slugify } from "@/lib/export";
+import { uploadPosterPng } from "@/lib/upload/uploadPosterPng";
 import { StudioHeader } from "@/components/studio/StudioHeader";
 import { ConfigRail } from "@/components/studio/ConfigRail";
 import { PosterStage } from "@/components/studio/PosterStage";
@@ -54,6 +55,7 @@ export function PosterStudio() {
   const addItem = useCartStore((s) => s.addItem);
   const [exporting, setExporting] = useState<null | "svg" | "png">(null);
   const [justAdded, setJustAdded] = useState(false);
+  const [addingToCart, setAddingToCart] = useState(false);
   const posterRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -87,8 +89,29 @@ export function PosterStudio() {
     }
   }
 
-  function addToCart(selection: StudioSelection) {
-    addItem({ selection, posterConfig: snapshotPosterConfig() });
+  async function addToCart(selection: StudioSelection) {
+    if (addingToCart) return;
+    const posterConfig = snapshotPosterConfig();
+    // For prints, rasterize the live poster to a print-ready PNG and upload it so
+    // Artelo can fetch the artwork. Best-effort: if it fails (e.g. blob storage
+    // unconfigured) we still add the item so the sale completes — fulfilment can
+    // be retried server-side. Digital downloads need no print asset.
+    let assetUrl: string | undefined;
+    if (selection.format === "print") {
+      const svg = getSvg();
+      if (svg) {
+        setAddingToCart(true);
+        try {
+          const blob = await exportPngBlob(svg, { widthIn: product.widthIn });
+          assetUrl = await uploadPosterPng(blob, slugify(home?.label ?? "poster"));
+        } catch (err) {
+          console.error("[studio] print asset upload failed", err);
+        } finally {
+          setAddingToCart(false);
+        }
+      }
+    }
+    addItem({ selection, posterConfig, assetUrl });
     setJustAdded(true);
     window.setTimeout(() => setJustAdded(false), 2500);
   }
@@ -139,6 +162,7 @@ export function PosterStudio() {
         addFrame={addFrame}
         canBuy={!!home}
         justAdded={justAdded}
+        busy={addingToCart}
         onAddToCart={addToCart}
       />
     </div>

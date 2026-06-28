@@ -17,5 +17,5 @@ anything unless I ask.
    curl -s http://localhost:8787/health/integrations
    ```
 
-   Report the JSON (`{ db, stripe, prodigi }` booleans). If the server is not
+   Report the JSON (`{ db, stripe, artelo, auth }` booleans). If the server is not
    running, say so — don't start it unless I ask.

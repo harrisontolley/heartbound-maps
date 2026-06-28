@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { DIGITAL_PRICE_CENTS, PRODUCTS_BASE_BY_ID } from "@pinprint/shared";
-import { CheckoutValidationError, priceCheckout } from "./checkout.js";
+import { CheckoutValidationError, isAllowedAssetUrl, priceCheckout } from "./checkout.js";
 
 // The checkout pricer is the security boundary: the client sends only choices
 // (productId, format, addFrame, quantity), never amounts. These assert the
@@ -83,5 +83,46 @@ describe("priceCheckout — server price authority", () => {
         { productId: "portrait-16x24", format: "poster" as never, addFrame: false, quantity: 1 },
       ]),
     ).toThrow(CheckoutValidationError);
+  });
+
+  it("rejects a print whose assetUrl is not a Vercel Blob URL (anti-SSRF)", () => {
+    expect(() =>
+      priceCheckout([
+        {
+          productId: "portrait-16x24",
+          format: "print",
+          addFrame: false,
+          quantity: 1,
+          assetUrl: "https://evil.example.com/x.png",
+        },
+      ]),
+    ).toThrow(CheckoutValidationError);
+  });
+
+  it("accepts a print with a blob.vercel-storage.com assetUrl", () => {
+    const { orderItems } = priceCheckout([
+      {
+        productId: "portrait-16x24",
+        format: "print",
+        addFrame: false,
+        quantity: 1,
+        assetUrl: "https://abc123.public.blob.vercel-storage.com/posters/x.png",
+      },
+    ]);
+    expect(orderItems[0].assetUrl).toContain("blob.vercel-storage.com");
+  });
+});
+
+describe("isAllowedAssetUrl", () => {
+  it("accepts https Vercel Blob hosts", () => {
+    expect(isAllowedAssetUrl("https://s.public.blob.vercel-storage.com/p.png")).toBe(true);
+    expect(isAllowedAssetUrl("https://blob.vercel-storage.com/p.png")).toBe(true);
+  });
+  it("rejects other hosts, http, and junk", () => {
+    expect(isAllowedAssetUrl("https://evil.com/p.png")).toBe(false);
+    expect(isAllowedAssetUrl("http://s.public.blob.vercel-storage.com/p.png")).toBe(false);
+    expect(isAllowedAssetUrl("not-a-url")).toBe(false);
+    // suffix-spoofing must not pass (host that merely contains the string)
+    expect(isAllowedAssetUrl("https://blob.vercel-storage.com.evil.com/p.png")).toBe(false);
   });
 });

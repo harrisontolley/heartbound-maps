@@ -18,18 +18,23 @@ export const PRINT_PRICE_CENTS: Record<string, number> = {
   "portrait-24x36": 8900, // premium anchor
 };
 
-/** Ready-to-hang frame upcharge by product id (added on top of the print). */
+/**
+ * Ready-to-hang frame upcharge by product id (added on top of the print). Set to
+ * protect margin against the real oak-frame COGS verified live from Artelo
+ * (framed landed cost ≈ $33.86 / $44.35 / $89.16): a +$110 24×36 upcharge keeps
+ * the framed 24×36 at ~55% margin instead of the ~6%-on-the-upcharge it was.
+ */
 export const FRAME_UPCHARGE_CENTS: Record<string, number> = {
-  "portrait-12x18": 4000,
-  "portrait-16x24": 5500,
-  "portrait-24x36": 7000,
+  "portrait-12x18": 5000, // framed total $89
+  "portrait-16x24": 6000, // framed total $119
+  "portrait-24x36": 11000, // framed total $199 (premium anchor)
 };
 
 /** Standalone digital download — also included free with any print. */
-export const DIGITAL_PRICE_CENTS = 1200;
+export const DIGITAL_PRICE_CENTS = 1900;
 
 /** Frame upcharge fallback for sizes we keep but don't currently surface. */
-export const DEFAULT_FRAME_UPCHARGE_CENTS = 5500;
+export const DEFAULT_FRAME_UPCHARGE_CENTS = 6000;
 
 // ── Catalogue (numeric base, no viewBox) ─────────────────────────────────────
 
@@ -115,12 +120,117 @@ export const OFFERED_PRODUCT_IDS = [
   "portrait-24x36",
 ] as const;
 
+// ── Artelo fulfilment mapping ────────────────────────────────────────────────
+//
+// Artelo orders don't reference a SKU — each line item carries a `productInfo`
+// object describing the print (catalog product + paper + frame + size +
+// orientation). This table maps our internal productId to those attributes so
+// the backend can build an Artelo create-order body. It's the single place to
+// retune paper/frame.
+//
+// Enum strings below are confirmed against the live Artelo validator
+// (POST /catalog/get-costs and /orders/create) — see docs/integrations/artelo.md.
+//   size       : "x12x18" | "x16x24" | "x24x36" (leading-`x` WxH inches)
+//   paperType  : "MattePoster" (Poster line; also Glossy/SemiGloss/…Photo/…FineArt)
+//   frameStyle : "Unframed" | "Oak" | "Metal" | "PremiumOak" | "PremiumMetal"
+//   frameColor : "Unframed" | "{Natural,Black,White,Walnut}Oak" | "{White,Black,Silver,Gold}Metal" (+ Premium*)
+// Default print line: Poster + Matte; default frame: black oak. Single place to retune.
+
+export type ArteloOrientation = "Vertical" | "Horizontal";
+
+export type ArteloFrameSpec = {
+  frameColor: string;
+  frameStyle: string;
+};
+
+export type ArteloProductSpec = {
+  /** Artelo catalog product enum. */
+  catalogProductId: "IndividualArtPrint";
+  /** Artelo paperType enum, e.g. "MattePoster". */
+  paperType: string;
+  /** Artelo size enum, e.g. "x12x18" (leading-`x` WxH form). */
+  size: string;
+  orientation: ArteloOrientation;
+  /** Frame attributes used when the buyer adds the ready-to-hang frame. */
+  frame: ArteloFrameSpec;
+};
+
+/** Frame applied to a framed order — a classic black wood frame. */
+const DEFAULT_FRAME: ArteloFrameSpec = {
+  frameStyle: "Oak",
+  frameColor: "BlackOak",
+};
+
+/** Artelo requires both fields even on unframed orders. */
+const UNFRAMED: ArteloFrameSpec = {
+  frameStyle: "Unframed",
+  frameColor: "Unframed",
+};
+
+/** productId → Artelo print spec (the offered 2:3 portrait ladder). */
+export const ARTELO_PRODUCT_BY_ID: Record<string, ArteloProductSpec> = {
+  "portrait-12x18": {
+    catalogProductId: "IndividualArtPrint",
+    paperType: "MattePoster",
+    size: "x12x18",
+    orientation: "Vertical",
+    frame: DEFAULT_FRAME,
+  },
+  "portrait-16x24": {
+    catalogProductId: "IndividualArtPrint",
+    paperType: "MattePoster",
+    size: "x16x24",
+    orientation: "Vertical",
+    frame: DEFAULT_FRAME,
+  },
+  "portrait-24x36": {
+    catalogProductId: "IndividualArtPrint",
+    paperType: "MattePoster",
+    size: "x24x36",
+    orientation: "Vertical",
+    frame: DEFAULT_FRAME,
+  },
+};
+
+/** The `productInfo` shape an Artelo order line item carries (sans designs). */
+export type ArteloProductInfo = {
+  catalogProductId: "IndividualArtPrint";
+  paperType: string;
+  size: string;
+  orientation: ArteloOrientation;
+  includeFramingService: boolean;
+  includeMats: boolean;
+  includeHangingPins: boolean;
+  /** Always present — Artelo requires both even when unframed ("Unframed"). */
+  frameStyle: string;
+  frameColor: string;
+};
+
 /**
- * productId → Prodigi product SKU. Placeholder for Phase 2 fulfilment; checkout
- * records whatever's here onto order_items.prodigi_sku so a print can be
- * submitted later. Empty until the Prodigi catalogue is wired.
+ * Build the Artelo `productInfo` (minus the design/image) for a product id.
+ * Returns null for products we don't fulfil through Artelo. When `addFrame` is
+ * set, the frame attributes + framing service are included; otherwise the frame
+ * fields are "Unframed" (required by Artelo's schema).
  */
-export const PRODIGI_SKU_BY_PRODUCT_ID: Record<string, string> = {};
+export function arteloProductInfoFor(
+  productId: string,
+  addFrame: boolean,
+): ArteloProductInfo | null {
+  const spec = ARTELO_PRODUCT_BY_ID[productId];
+  if (!spec) return null;
+  const frame = addFrame ? spec.frame : UNFRAMED;
+  return {
+    catalogProductId: spec.catalogProductId,
+    paperType: spec.paperType,
+    size: spec.size,
+    orientation: spec.orientation,
+    includeFramingService: addFrame,
+    includeMats: false,
+    includeHangingPins: false,
+    frameStyle: frame.frameStyle,
+    frameColor: frame.frameColor,
+  };
+}
 
 // ── Pricing (pure; identical maths on client + server) ───────────────────────
 
@@ -219,6 +329,11 @@ export type CheckoutItemInput = {
   addFrame: boolean;
   quantity: number;
   posterConfig?: Record<string, unknown>;
+  /**
+   * Public URL of the print-ready PNG (uploaded to blob storage by the browser
+   * at add-to-cart). Handed to Artelo as the design source. Print items only.
+   */
+  assetUrl?: string;
 };
 
 export type CreateCheckoutRequest = {

@@ -50,24 +50,24 @@ describe("stripe webhook", () => {
     expect(res.status).toBe(204);
   });
 
-  it("POST /webhooks/prodigi → 204 with a JSON body, 400 otherwise", async () => {
-    const ok = await app.request("/webhooks/prodigi", {
+  it("POST /webhooks/artelo → 204 with a JSON body, 400 otherwise", async () => {
+    const ok = await app.request("/webhooks/artelo", {
       method: "POST",
-      body: JSON.stringify({ id: "ord_1", status: { stage: "InProgress" } }),
+      body: JSON.stringify({ id: "ord_1", status: "InProduction" }),
       headers: { "content-type": "application/json" },
     });
     expect(ok.status).toBe(204);
 
-    const bad = await app.request("/webhooks/prodigi", { method: "POST", body: "not-json" });
+    const bad = await app.request("/webhooks/artelo", { method: "POST", body: "not-json" });
     expect(bad.status).toBe(400);
   });
 
   it("GET /health/integrations reports configured booleans", async () => {
     const res = await app.request("/health/integrations");
     expect(res.status).toBe(200);
-    const body = (await res.json()) as { stripe: boolean; prodigi: boolean; db: boolean };
+    const body = (await res.json()) as { stripe: boolean; artelo: boolean; db: boolean };
     expect(body.stripe).toBe(true);
-    expect(typeof body.prodigi).toBe("boolean");
+    expect(typeof body.artelo).toBe("boolean");
     expect(typeof body.db).toBe("boolean");
   });
 });

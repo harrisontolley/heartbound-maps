@@ -18,7 +18,7 @@ end $$;
 
 do $$ begin
   if not exists (select 1 from pg_type where typname = 'event_source') then
-    create type event_source as enum ('stripe', 'prodigi', 'system');
+    create type event_source as enum ('stripe', 'artelo', 'system');
   end if;
 end $$;
 
@@ -35,7 +35,7 @@ create table if not exists orders (
   total_cents                 integer not null default 0,
   stripe_payment_intent_id    text unique,
   stripe_checkout_session_id  text unique,
-  prodigi_order_id            text unique,
+  artelo_order_id             text unique,
   ship_name    text, ship_line1 text, ship_line2 text, ship_city text,
   ship_region  text, ship_postal text, ship_country text,
   tracking_carrier text, tracking_number text, tracking_url text,
@@ -55,7 +55,7 @@ create table if not exists order_items (
   quantity         integer not null default 1 check (quantity > 0),
   unit_price_cents integer not null,
   poster_config    jsonb not null default '{}'::jsonb,
-  prodigi_sku      text,
+  artelo_sku       text,
   asset_url        text,
   created_at       timestamptz not null default now()
 );

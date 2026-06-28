@@ -1,6 +1,6 @@
 // Public order-tracking contract — deliberately narrow. The /track endpoint is
 // unauthenticated (order number + email), so it returns only what a buyer needs
-// to see, and never user ids, emails, or Stripe/Prodigi identifiers.
+// to see, and never user ids, emails, or Stripe/Artelo identifiers.
 
 import type { OrderStatus, OrderTracking } from "./orders.js";
 
