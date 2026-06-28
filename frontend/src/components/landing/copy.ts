@@ -11,17 +11,24 @@
 export const STUDIO_HREF = "/studio";
 export const PRIMARY_CTA = "Create your poster";
 
+/** A single FAQ entry. `featured` items are surfaced on the landing-page teaser. */
+export type FaqItem = { q: string; a: string; featured?: boolean };
+/** A category of FAQ entries, rendered as one block on the /faq page. */
+export type FaqGroup = { title: string; items: readonly FaqItem[] };
+
 export const copy = {
   brand: {
     name: "Pinprint",
   },
 
   nav: {
+    // Absolute hrefs (`/#section`) so the shared header works from any route,
+    // not just the landing page. FAQ points at the dedicated page.
     links: [
-      { label: "Features", href: "#features" },
-      { label: "How it works", href: "#how-it-works" },
-      { label: "Pricing", href: "#pricing" },
-      { label: "FAQ", href: "#faq" },
+      { label: "Features", href: "/#features" },
+      { label: "How it works", href: "/#how-it-works" },
+      { label: "Pricing", href: "/#pricing" },
+      { label: "FAQ", href: "/faq" },
     ],
   },
 
@@ -264,64 +271,110 @@ export const copy = {
   },
 
   faq: {
+    // Landing-page teaser heading. Only the `featured` items below appear here;
+    // the full list lives on the dedicated /faq page (grouped by category).
     eyebrow: "Questions",
     headline: "Good to know.",
-    items: [
+    seeAll: { label: "See all questions", href: "/faq" },
+    // Heading + metadata for the dedicated /faq page.
+    page: {
+      eyebrow: "FAQ",
+      headline: "Everything you might want to know.",
+      intro:
+        "Designing your poster, sizes and framing, shipping, and what happens if something isn't right — it's all here. Still stuck? Get in touch and we'll help.",
+      metaTitle: "FAQ — Pinprint",
+      metaDescription:
+        "Answers about designing your Pinprint poster, sizes and framing, shipping and delivery, returns, and your account.",
+    },
+    // The full FAQ, grouped by category. `featured: true` marks the questions
+    // surfaced on the landing page (the biggest pre-purchase objections); they
+    // flatten in group order into: how it works → sizes → delivery → damaged → account.
+    groups: [
       {
-        q: "How are the arrows and distances worked out?",
-        a: "Each arrow points along the true compass bearing from your home to the place, and the distance is the great-circle distance — the real shortest path across the globe.",
+        title: "Designing your poster",
+        items: [
+          {
+            q: "How are the arrows and distances worked out?",
+            a: "Each arrow points along the true compass bearing from your home to the place, and the distance is the great-circle distance — the real shortest path across the globe.",
+            featured: true,
+          },
+          {
+            q: "How many places can I add?",
+            a: "As many as you like. The layout engine keeps labels from overlapping, even on a crowded map.",
+          },
+          {
+            q: "Can I change the design after I've added places?",
+            a: "Yes. Switch between all four designs at any time — your home and places stay exactly where they are.",
+          },
+        ],
       },
       {
-        q: "How many places can I add?",
-        a: "As many as you like. The layout engine keeps labels from overlapping, even on a crowded map.",
+        title: "Sizes, materials & framing",
+        items: [
+          {
+            q: "What sizes can I order?",
+            a: "Three portrait sizes: 12×18, 16×24, and 24×36 inches. The artwork is drawn as vector graphics, so every size prints razor-sharp.",
+            featured: true,
+          },
+          {
+            q: "How are the posters made?",
+            a: "Each poster is printed to order on heavyweight matte poster paper and checked by hand before it ships. Nothing is mass-produced — your print is made the moment you order it.",
+          },
+          {
+            q: "Can I get it framed?",
+            a: "Yes. Add a ready-to-hang frame at checkout: solid wood with a glass front, delivered already wired so it goes straight on the wall.",
+          },
+          {
+            q: "Can I just buy the digital file?",
+            a: "Yes. Choose the digital download for a print-ready PNG and a scalable SVG you can print yourself, at any size. Every printed order includes the digital files too.",
+          },
+        ],
       },
       {
-        q: "Can I change the design after I've added places?",
-        a: "Yes. Switch between all four designs at any time — your home and places stay exactly where they are.",
+        title: "Shipping & delivery",
+        items: [
+          {
+            q: "When will my poster arrive?",
+            a: "Most orders arrive within 5–10 business days. Your poster is printed and shipped within 2–3 business days, and you'll get a tracking link by email the moment it's on its way.",
+            featured: true,
+          },
+          {
+            q: "Where do you ship, and how much does it cost?",
+            a: "We currently ship anywhere in the United States, and shipping is free — the price you see is the price you pay, with nothing added at checkout.",
+          },
+        ],
       },
       {
-        q: "What sizes can I order?",
-        a: "Three portrait sizes: 12×18, 16×24, and 24×36 inches. The artwork is drawn as vector graphics, so every size prints razor-sharp.",
+        title: "Returns & changes",
+        items: [
+          {
+            q: "What if my poster arrives damaged or there's a printing problem?",
+            a: "We'll make it right. If your poster turns up damaged, or there's a fault with the print, email us a quick photo and we'll send a free replacement or refund you — no need to post the original back.",
+            featured: true,
+          },
+          {
+            q: "Can I return it if I change my mind?",
+            a: "Because every poster is made to order from your own design, we can't take change-of-mind returns. Preview your poster as much as you like before you buy — and if anything's wrong with what arrives, we'll always sort it out.",
+          },
+          {
+            q: "Can I change my order or shipping address after I've paid?",
+            a: "Get in touch as soon as you can. We can update or cancel an order while it's still in the queue, but once it's gone into production it's locked in and on its way.",
+          },
+        ],
       },
       {
-        q: "How are the posters made?",
-        a: "Each poster is printed to order on heavyweight matte poster paper and checked by hand before it ships. Nothing is mass-produced — your print is made the moment you order it.",
-      },
-      {
-        q: "Can I get it framed?",
-        a: "Yes. Add a ready-to-hang frame at checkout: solid wood with a glass front, delivered already wired so it goes straight on the wall.",
-      },
-      {
-        q: "Can I just buy the digital file?",
-        a: "Yes. Choose the digital download for a print-ready PNG and a scalable SVG you can print yourself, at any size. Every printed order includes the digital files too.",
-      },
-      {
-        q: "When will my poster arrive?",
-        a: "Most orders arrive within 5–10 business days. Your poster is printed and shipped within 2–3 business days, and you'll get a tracking link by email the moment it's on its way.",
-      },
-      {
-        q: "Where do you ship, and how much does it cost?",
-        a: "We currently ship anywhere in the United States, and shipping is free — the price you see is the price you pay, with nothing added at checkout.",
-      },
-      {
-        q: "What if my poster arrives damaged or there's a printing problem?",
-        a: "We'll make it right. If your poster turns up damaged, or there's a fault with the print, email us a quick photo and we'll send a free replacement or refund you — no need to post the original back.",
-      },
-      {
-        q: "Can I return it if I change my mind?",
-        a: "Because every poster is made to order from your own design, we can't take change-of-mind returns. Preview your poster as much as you like before you buy — and if anything's wrong with what arrives, we'll always sort it out.",
-      },
-      {
-        q: "Can I change my order or shipping address after I've paid?",
-        a: "Get in touch as soon as you can. We can update or cancel an order while it's still in the queue, but once it's gone into production it's locked in and on its way.",
-      },
-      {
-        q: "Do I need an account to try it?",
-        a: "No. Build and preview your poster straight away. An account only matters when you want to save your work or export without a watermark.",
-      },
-      {
-        q: "Is my location data private?",
-        a: "Your places are only ever used to render your poster — we don't sell them or share them with anyone.",
+        title: "Account & privacy",
+        items: [
+          {
+            q: "Do I need an account to try it?",
+            a: "No. Build and preview your poster straight away. An account only matters when you want to save your work or export without a watermark.",
+            featured: true,
+          },
+          {
+            q: "Is my location data private?",
+            a: "Your places are only ever used to render your poster — we don't sell them or share them with anyone.",
+          },
+        ],
       },
     ],
   },
@@ -338,16 +391,16 @@ export const copy = {
       {
         title: "Product",
         links: [
-          { label: "Features", href: "#features" },
-          { label: "How it works", href: "#how-it-works" },
-          { label: "Pricing", href: "#pricing" },
+          { label: "Features", href: "/#features" },
+          { label: "How it works", href: "/#how-it-works" },
+          { label: "Pricing", href: "/#pricing" },
           { label: "Create a poster", href: STUDIO_HREF },
         ],
       },
       {
         title: "Resources",
         links: [
-          { label: "FAQ", href: "#faq" },
+          { label: "FAQ", href: "/faq" },
           { label: "Print guide", href: "#" },
           { label: "Gift ideas", href: "#" },
           { label: "Contact", href: "#" },

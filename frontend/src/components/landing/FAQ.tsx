@@ -1,13 +1,20 @@
+import Link from "next/link";
 import { Section } from "./Section";
 import { SectionLabel } from "./SectionLabel";
-import { copy } from "./copy";
+import { FaqAccordion } from "./FaqAccordion";
+import { copy, type FaqGroup } from "./copy";
 
 /**
- * FAQ accordion. Uses native <details>/<summary> so the section stays a server
- * component — no client JS needed for the disclosure behavior.
+ * Landing-page FAQ teaser. Shows only the `featured` questions (the biggest
+ * pre-purchase objections) and links to the full /faq page for everything else.
  */
 export function FAQ() {
   const { faq } = copy;
+  const groups: readonly FaqGroup[] = faq.groups;
+  const featured = groups.flatMap((group) =>
+    group.items.filter((item) => item.featured),
+  );
+
   return (
     <Section id="faq">
       <div className="grid gap-10 md:grid-cols-[0.8fr_1.2fr] md:gap-16">
@@ -18,26 +25,14 @@ export function FAQ() {
           </h2>
         </div>
 
-        <div className="flex flex-col border-t border-hairline">
-          {faq.items.map((item) => (
-            <details
-              key={item.q}
-              className="group border-b border-hairline py-5"
-            >
-              <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-[18px] font-medium text-ink marker:hidden">
-                {item.q}
-                <span
-                  aria-hidden
-                  className="text-muted transition-transform group-open:rotate-45"
-                >
-                  +
-                </span>
-              </summary>
-              <p className="mt-3 max-w-[60ch] text-[16px] leading-[1.5] tracking-[0.16px] text-body">
-                {item.a}
-              </p>
-            </details>
-          ))}
+        <div className="flex flex-col gap-6">
+          <FaqAccordion items={featured} />
+          <Link
+            href={faq.seeAll.href}
+            className="text-[16px] font-medium text-ink underline-offset-4 hover:underline"
+          >
+            {faq.seeAll.label} &rarr;
+          </Link>
         </div>
       </div>
     </Section>
