@@ -1,12 +1,13 @@
-import { describe, expect, it } from "vitest";
+import { createHmac } from "node:crypto";
+import { afterEach, describe, expect, it } from "vitest";
 import type Stripe from "stripe";
 import { app } from "./app.js";
 import {
+  extractArteloOrder,
   extractCheckoutDetails,
-  extractProdigiOrder,
-  handleProdigiPayload,
+  handleArteloPayload,
   handleStripeEvent,
-  mapProdigiStage,
+  mapArteloStatus,
   trackingFromShipments,
 } from "./webhooks.js";
 
@@ -14,32 +15,34 @@ import {
 // no-op-when-unconfigured behavior (no DATABASE_URL in the hermetic test env, so
 // order lookups return null and the handlers don't throw).
 
-describe("prodigi stage mapping", () => {
-  it("maps known stages", () => {
-    expect(mapProdigiStage("InProgress")).toBe("in_production");
-    expect(mapProdigiStage("Complete")).toBe("shipped");
-    expect(mapProdigiStage("Cancelled")).toBe("cancelled");
+describe("artelo status mapping", () => {
+  it("maps known statuses", () => {
+    expect(mapArteloStatus("InProduction")).toBe("in_production");
+    expect(mapArteloStatus("Shipped")).toBe("shipped");
+    expect(mapArteloStatus("Delivered")).toBe("delivered");
+    expect(mapArteloStatus("Canceled")).toBe("cancelled");
   });
-  it("returns null for unknown stages", () => {
-    expect(mapProdigiStage("Whatever")).toBeNull();
+  it("returns null for Received (already paid) and unknown statuses", () => {
+    expect(mapArteloStatus("Received")).toBeNull();
+    expect(mapArteloStatus("Whatever")).toBeNull();
   });
 });
 
-describe("extractProdigiOrder", () => {
+describe("extractArteloOrder", () => {
   it("reads a bare order payload", () => {
-    expect(extractProdigiOrder({ id: "ord_1", status: { stage: "Complete" } })).toMatchObject({
+    expect(extractArteloOrder({ id: "ord_1", status: "Shipped" })).toMatchObject({
       id: "ord_1",
-      stage: "Complete",
+      status: "Shipped",
     });
   });
-  it("reads a CloudEvents-wrapped payload", () => {
-    const got = extractProdigiOrder({
-      data: { order: { id: "ord_2", status: { stage: "InProgress" }, shipments: [] } },
+  it("reads a {data:{order}}-wrapped payload", () => {
+    const got = extractArteloOrder({
+      data: { order: { id: "ord_2", status: "InProduction", shipments: [] } },
     });
-    expect(got).toMatchObject({ id: "ord_2", stage: "InProgress" });
+    expect(got).toMatchObject({ id: "ord_2", status: "InProduction" });
   });
   it("tolerates junk", () => {
-    expect(extractProdigiOrder(null)).toEqual({ id: undefined, stage: undefined, shipments: undefined });
+    expect(extractArteloOrder(null)).toEqual({ id: undefined, status: undefined, shipments: undefined });
   });
 });
 
@@ -47,7 +50,7 @@ describe("trackingFromShipments", () => {
   it("pulls carrier + tracking from the first shipment", () => {
     expect(
       trackingFromShipments([
-        { carrier: { name: "DPD" }, tracking: { number: "X1", url: "https://t/X1" } },
+        { carrierCode: "DPD", trackingNumber: "X1", trackingUrl: "https://t/X1" },
       ]),
     ).toEqual({ carrier: "DPD", number: "X1", url: "https://t/X1" });
   });
@@ -130,31 +133,36 @@ describe("handleStripeEvent — unconfigured DB", () => {
         },
       },
     } as unknown as Stripe.Event;
-    await expect(handleStripeEvent(event)).resolves.toBeUndefined();
+    // No DB → the order lookups return null, so nothing is handled (and no throw).
+    await expect(handleStripeEvent(event)).resolves.toEqual({ handled: false });
   });
 });
 
-describe("handleProdigiPayload — unconfigured DB", () => {
+describe("handleArteloPayload — unconfigured DB", () => {
   it("no-ops (handled:false) without throwing", async () => {
     await expect(
-      handleProdigiPayload({ id: "ord_x", status: { stage: "Complete" } }),
+      handleArteloPayload({ id: "ord_x", status: "Shipped" }),
     ).resolves.toEqual({ handled: false });
   });
 });
 
 describe("webhook routes", () => {
+  afterEach(() => {
+    delete process.env.ARTELO_WEBHOOK_SECRET;
+  });
+
   for (const base of ["", "/_/backend"]) {
-    it(`prodigi: valid JSON → 204 (${base || "/"})`, async () => {
-      const res = await app.request(`${base}/webhooks/prodigi`, {
+    it(`artelo: valid JSON → 204 when no secret configured (${base || "/"})`, async () => {
+      const res = await app.request(`${base}/webhooks/artelo`, {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ id: "ord_1", status: { stage: "Complete" } }),
+        body: JSON.stringify({ id: "ord_1", status: "Shipped" }),
       });
       expect(res.status).toBe(204);
     });
 
-    it(`prodigi: invalid JSON → 400 (${base || "/"})`, async () => {
-      const res = await app.request(`${base}/webhooks/prodigi`, {
+    it(`artelo: invalid JSON → 400 (${base || "/"})`, async () => {
+      const res = await app.request(`${base}/webhooks/artelo`, {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: "not json",
@@ -170,4 +178,30 @@ describe("webhook routes", () => {
       expect(res.status).toBe(400);
     });
   }
+
+  it("artelo: rejects a bad signature when a secret is configured", async () => {
+    process.env.ARTELO_WEBHOOK_SECRET = "whsec_artelo";
+    const res = await app.request("/webhooks/artelo", {
+      method: "POST",
+      headers: { "content-type": "application/json", "x-artelo-signature": "deadbeef" },
+      body: JSON.stringify({ id: "ord_1", status: "Shipped" }),
+    });
+    expect(res.status).toBe(400);
+  });
+
+  it("artelo: accepts a correctly-signed body when a secret is configured", async () => {
+    const secret = "whsec_artelo";
+    process.env.ARTELO_WEBHOOK_SECRET = secret;
+    const payload = JSON.stringify({ id: "ord_1", status: "Shipped" });
+    // Mirror Artelo's scheme: HMAC over JSON.stringify(JSON.parse(body)).
+    const sig = createHmac("sha256", secret)
+      .update(JSON.stringify(JSON.parse(payload)))
+      .digest("hex");
+    const res = await app.request("/webhooks/artelo", {
+      method: "POST",
+      headers: { "content-type": "application/json", "x-artelo-signature": sig },
+      body: payload,
+    });
+    expect(res.status).toBe(204);
+  });
 });

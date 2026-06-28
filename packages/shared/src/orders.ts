@@ -1,8 +1,8 @@
 // Order contract types — the shape of a Pinprint order as it crosses the
-// frontend <-> backend boundary. The backend persists richer rows (Stripe/Prodigi
+// frontend <-> backend boundary. The backend persists richer rows (Stripe/Artelo
 // ids, raw event payloads); only the fields below are ever sent to the client.
 
-/** Lifecycle of an order, from payment through Prodigi fulfilment. */
+/** Lifecycle of an order, from payment through Artelo fulfilment. */
 export type OrderStatus =
   | "pending_payment"
   | "paid"
@@ -13,7 +13,7 @@ export type OrderStatus =
   | "refunded";
 
 /** Who emitted a timeline event. */
-export type EventSource = "stripe" | "prodigi" | "system";
+export type EventSource = "stripe" | "artelo" | "system";
 
 /**
  * A line item. `posterConfig` is the immutable snapshot of the poster definition
@@ -25,7 +25,7 @@ export type OrderItem = {
   productLabel: string;
   quantity: number;
   unitPriceCents: number;
-  prodigiSku?: string;
+  arteloSku?: string;
   assetUrl?: string;
   posterConfig: Record<string, unknown>;
 };

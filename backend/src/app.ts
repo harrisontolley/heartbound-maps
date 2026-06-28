@@ -3,13 +3,16 @@ import { cors } from "hono/cors";
 import { geocodeReverse, geocodeSearch } from "./nominatim.js";
 import { pingDb } from "./db.js";
 import { constructWebhookEvent, isStripeConfigured } from "./stripe.js";
-import { isProdigiConfigured } from "./prodigi.js";
-import { isAuthConfigured } from "./auth.js";
-import { handleProdigiPayload, handleStripeEvent } from "./webhooks.js";
+import { isArteloConfigured, verifyArteloWebhookSignature } from "./artelo.js";
+import { isAdminConfigured, isAuthConfigured } from "./auth.js";
+import { extractArteloOrder, handleArteloPayload, handleStripeEvent } from "./webhooks.js";
+import { finalizeWebhookEvent, recordWebhookEvent } from "./observability.js";
 import { buildAccountRouter } from "./routes/account.js";
 import { buildTrackRouter } from "./routes/track.js";
 import { buildCheckoutRouter } from "./routes/checkout.js";
 import { buildDevRouter } from "./routes/dev.js";
+import { buildUploadsRouter } from "./routes/uploads.js";
+import { buildAdminRouter } from "./routes/admin.js";
 
 // The Pinprint API. Owns the Nominatim geocoding proxy (User-Agent, rate gate,
 // LRU cache live in ./nominatim) and the Neon connectivity check.
@@ -36,14 +39,15 @@ function registerRoutes(r: Hono): Hono {
     c.json({
       db: await pingDb(),
       stripe: isStripeConfigured(),
-      prodigi: isProdigiConfigured(),
+      artelo: isArteloConfigured(),
       auth: isAuthConfigured(),
+      admin: isAdminConfigured(),
     }),
   );
 
   // Stripe webhook. Signature verification needs the RAW body (see stripe.ts) —
   // do not parse before verifying. Bad/missing signature → 400. Handling the
-  // event (e.g. payment_intent.succeeded → Prodigi order) comes with checkout.
+  // event (payment_intent.succeeded / checkout.session.completed → Artelo order).
   r.post("/webhooks/stripe", async (c) => {
     const signature = c.req.header("stripe-signature");
     if (!signature) return c.json({ error: "missing_signature" }, 400);
@@ -54,34 +58,87 @@ function registerRoutes(r: Hono): Hono {
     } catch {
       return c.json({ error: "invalid_signature" }, 400);
     }
+    // Log the raw event first and dedupe on Stripe's event id — Stripe retries on
+    // non-2xx, so a re-delivery must not re-run side effects (re-submit fulfilment,
+    // double-record a refund). A duplicate 204s without handling.
+    const logged = await recordWebhookEvent({
+      provider: "stripe",
+      eventType: event.type,
+      eventId: event.id,
+      signatureValid: true,
+      payload: event,
+    });
+    if (logged.duplicate) return c.body(null, 204);
     // Persist the order transition. Never fail the webhook on a downstream/DB
     // error — Stripe retries on non-2xx, and the handlers are idempotent. With
     // DATABASE_URL unset this is a no-op (the order lookups return null).
     try {
-      await handleStripeEvent(event);
+      const res = await handleStripeEvent(event);
+      await finalizeWebhookEvent(logged.id, {
+        status: res.handled ? "processed" : "ignored",
+        orderId: res.orderId,
+      });
     } catch (err) {
+      // Mark the event un-finished and 500 so Stripe retries — the dedupe path
+      // reprocesses a 'received'/'error' row rather than skipping it as a dup.
       console.error("[webhooks/stripe] handler error", err);
+      await finalizeWebhookEvent(logged.id, {
+        status: "error",
+        error: err instanceof Error ? err.message : "unknown",
+      });
+      return c.json({ error: "handler_error" }, 500);
     }
     return c.body(null, 204);
   });
 
-  // Prodigi status callback. Prodigi posts order status changes here; we advance
-  // the matching order and append a tracking-timeline event. Always 204 (Prodigi
-  // retries on non-2xx); no-op when the order/DB is unconfigured.
-  r.post("/webhooks/prodigi", async (c) => {
+  // Artelo status callback (topic OrderStatusChange). Artelo posts order status
+  // changes here; we verify the HMAC signature against the RAW body, then advance
+  // the matching order and append a tracking-timeline event. Always 204 on a valid
+  // request (Artelo retries on non-2xx, up to 20× with backoff); no-op when the
+  // order/DB is unconfigured. Bad signature/payload → 400.
+  r.post("/webhooks/artelo", async (c) => {
+    const raw = await c.req.text();
+    const signatureValid = verifyArteloWebhookSignature(raw, c.req.header("x-artelo-signature"));
+    if (!signatureValid) {
+      return c.json({ error: "invalid_signature" }, 400);
+    }
     let payload: unknown;
     try {
-      payload = await c.req.json();
+      payload = JSON.parse(raw);
     } catch {
       return c.json({ error: "invalid_payload" }, 400);
     }
     if (!payload || typeof payload !== "object") {
       return c.json({ error: "invalid_payload" }, 400);
     }
+    // Artelo has no native event id; dedupe on (artelo order id + status) so each
+    // distinct status transition is processed once even though Artelo retries the
+    // same callback up to ~20×. Unknown shapes fall back to no dedupe key.
+    const { id: arteloId, status: arteloStatus } = extractArteloOrder(payload);
+    const eventId = arteloId && arteloStatus ? `${arteloId}:${arteloStatus}` : null;
+    const logged = await recordWebhookEvent({
+      provider: "artelo",
+      eventType: arteloStatus ?? "OrderStatusChange",
+      eventId,
+      signatureValid,
+      payload,
+    });
+    if (logged.duplicate) return c.body(null, 204);
     try {
-      await handleProdigiPayload(payload);
+      const res = await handleArteloPayload(payload);
+      await finalizeWebhookEvent(logged.id, {
+        status: res.handled ? "processed" : "ignored",
+        orderId: res.orderId,
+      });
     } catch (err) {
-      console.error("[webhooks/prodigi] handler error", err);
+      // 500 so Artelo retries (up to ~20×); the dedupe path reprocesses the
+      // un-finished row instead of skipping it.
+      console.error("[webhooks/artelo] handler error", err);
+      await finalizeWebhookEvent(logged.id, {
+        status: "error",
+        error: err instanceof Error ? err.message : "unknown",
+      });
+      return c.json({ error: "handler_error" }, 500);
     }
     return c.body(null, 204);
   });
@@ -117,6 +174,8 @@ function registerRoutes(r: Hono): Hono {
   r.route("/account", buildAccountRouter()); // authenticated (requireUser)
   r.route("/checkout", buildCheckoutRouter()); // Stripe Checkout (guest-friendly)
   r.route("/track", buildTrackRouter()); // public order tracking
+  r.route("/uploads", buildUploadsRouter()); // print-asset blob upload tokens
+  r.route("/admin", buildAdminRouter()); // operator-only (requireAdmin / ADMIN_EMAILS)
   r.route("/dev", buildDevRouter()); // dev-only, DEV_SEED_TOKEN-guarded
 
   return r;

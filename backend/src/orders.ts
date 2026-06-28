@@ -12,7 +12,7 @@ import type {
 } from "@pinprint/shared";
 import { getSql } from "./db.js";
 
-// Order persistence + the helpers the Stripe/Prodigi webhooks and the dev/seed
+// Order persistence + the helpers the Stripe/Artelo webhooks and the dev/seed
 // endpoints share. Every function is env-guarded: with DATABASE_URL unset getSql()
 // is null and reads return [] / null while writes throw a clear error (callers in
 // webhooks swallow it so an unconfigured deploy still 204s).
@@ -63,7 +63,7 @@ type ItemRow = {
   quantity: number;
   unit_price_cents: number;
   poster_config: Record<string, unknown>;
-  prodigi_sku: string | null;
+  artelo_sku: string | null;
   asset_url: string | null;
 };
 
@@ -105,7 +105,7 @@ function mapItem(it: ItemRow): OrderItem {
     productLabel: it.product_label,
     quantity: it.quantity,
     unitPriceCents: it.unit_price_cents,
-    prodigiSku: it.prodigi_sku ?? undefined,
+    arteloSku: it.artelo_sku ?? undefined,
     assetUrl: it.asset_url ?? undefined,
     posterConfig: it.poster_config ?? {},
   };
@@ -170,7 +170,7 @@ async function loadOrder(row: OrderRow | undefined): Promise<Order | null> {
   if (!sql || !row) return null;
   const items = (await sql`
     select product_id, product_label, quantity, unit_price_cents, poster_config,
-           prodigi_sku, asset_url
+           artelo_sku, asset_url
     from order_items where order_id = ${row.id} order by created_at asc
   `) as unknown as ItemRow[];
   const events = (await sql`
@@ -216,7 +216,7 @@ export type NewOrderItem = {
   quantity: number;
   unitPriceCents: number;
   posterConfig?: Record<string, unknown>;
-  prodigiSku?: string;
+  arteloSku?: string;
   assetUrl?: string;
 };
 
@@ -228,7 +228,7 @@ export type NewOrder = {
   shippingCents?: number;
   stripePaymentIntentId?: string;
   stripeCheckoutSessionId?: string;
-  prodigiOrderId?: string;
+  arteloOrderId?: string;
   shipping?: {
     name?: string;
     line1?: string;
@@ -264,13 +264,13 @@ export async function createOrder(input: NewOrder): Promise<{ id: string; orderN
     insert into orders (
       id, order_number, user_id, email, status, currency,
       subtotal_cents, shipping_cents, total_cents,
-      stripe_payment_intent_id, stripe_checkout_session_id, prodigi_order_id,
+      stripe_payment_intent_id, stripe_checkout_session_id, artelo_order_id,
       ship_name, ship_line1, ship_line2, ship_city, ship_region, ship_postal, ship_country,
       created_at, updated_at
     ) values (
       ${id}, ${orderNumber}, ${input.userId ?? null}, ${input.email}, ${status}, ${input.currency ?? "usd"},
       ${subtotal}, ${shipping}, ${total},
-      ${input.stripePaymentIntentId ?? null}, ${input.stripeCheckoutSessionId ?? null}, ${input.prodigiOrderId ?? null},
+      ${input.stripePaymentIntentId ?? null}, ${input.stripeCheckoutSessionId ?? null}, ${input.arteloOrderId ?? null},
       ${s.name ?? null}, ${s.line1 ?? null}, ${s.line2 ?? null}, ${s.city ?? null},
       ${s.region ?? null}, ${s.postal ?? null}, ${s.country ?? null},
       ${createdAt}, ${createdAt}
@@ -280,10 +280,10 @@ export async function createOrder(input: NewOrder): Promise<{ id: string; orderN
     await sql`
       insert into order_items (
         order_id, product_id, product_label, quantity, unit_price_cents,
-        poster_config, prodigi_sku, asset_url, created_at
+        poster_config, artelo_sku, asset_url, created_at
       ) values (
         ${id}, ${it.productId}, ${it.productLabel}, ${it.quantity}, ${it.unitPriceCents},
-        ${JSON.stringify(it.posterConfig ?? {})}::jsonb, ${it.prodigiSku ?? null}, ${it.assetUrl ?? null}, ${createdAt}
+        ${JSON.stringify(it.posterConfig ?? {})}::jsonb, ${it.arteloSku ?? null}, ${it.assetUrl ?? null}, ${createdAt}
       )
     `;
   }
@@ -318,9 +318,14 @@ export async function advanceOrderStatus(
 ): Promise<void> {
   const sql = requireSql();
   const t = opts.tracking;
+  // Stamp the lifecycle timestamp matching this transition (set-once via coalesce)
+  // so "when was this paid/cancelled/refunded" is a column read, not an event scan.
   await sql`
     update orders set
       status = ${status},
+      paid_at      = case when ${status} = 'paid'      then coalesce(paid_at, now())      else paid_at end,
+      cancelled_at = case when ${status} = 'cancelled' then coalesce(cancelled_at, now()) else cancelled_at end,
+      refunded_at  = case when ${status} = 'refunded'  then coalesce(refunded_at, now())  else refunded_at end,
       tracking_carrier = coalesce(${t?.carrier ?? null}, tracking_carrier),
       tracking_number = coalesce(${t?.number ?? null}, tracking_number),
       tracking_url = coalesce(${t?.url ?? null}, tracking_url),
@@ -355,19 +360,210 @@ export async function findOrderByStripeCheckoutSession(id: string): Promise<Loca
   return rows[0] ?? null;
 }
 
-export async function findOrderByProdigiId(id: string): Promise<LocatedOrder | null> {
+export async function findOrderByArteloId(id: string): Promise<LocatedOrder | null> {
   const sql = getSql();
   if (!sql) return null;
   const rows = (await sql`
-    select id, status from orders where prodigi_order_id = ${id} limit 1
+    select id, status from orders where artelo_order_id = ${id} limit 1
   `) as unknown as LocatedOrder[];
   return rows[0] ?? null;
 }
 
-/** Attach a Prodigi order id to an order (set once when fulfilment is submitted). */
-export async function setProdigiOrderId(orderId: string, prodigiOrderId: string): Promise<void> {
+/** Attach an Artelo order id to an order (set once when fulfilment is submitted). */
+export async function setArteloOrderId(orderId: string, arteloOrderId: string): Promise<void> {
   const sql = requireSql();
-  await sql`update orders set prodigi_order_id = ${prodigiOrderId}, updated_at = now() where id = ${orderId}`;
+  await sql`
+    update orders set artelo_order_id = ${arteloOrderId}, artelo_submitted_at = now(), updated_at = now()
+    where id = ${orderId}
+  `;
+}
+
+/** Record Artelo's raw fulfilment status (distinct from our order_status enum). */
+export async function setArteloStatus(orderId: string, arteloStatus: string): Promise<void> {
+  const sql = requireSql();
+  await sql`update orders set artelo_status = ${arteloStatus}, updated_at = now() where id = ${orderId}`;
+}
+
+/**
+ * Record the cumulative refunded amount on an order (in cents). Monotonic via
+ * greatest() so the admin refund call and the later `charge.refunded` webhook —
+ * which both report Stripe's cumulative `amount_refunded` — converge idempotently
+ * without double-counting. Does not change status; the caller decides whether a
+ * full refund should advance the order to `refunded`.
+ */
+export async function setRefundAmount(orderId: string, cumulativeCents: number): Promise<void> {
+  const sql = requireSql();
+  await sql`
+    update orders set
+      amount_refunded_cents = greatest(amount_refunded_cents, ${cumulativeCents}),
+      updated_at = now()
+    where id = ${orderId}
+  `;
+}
+
+/** The Stripe payment-intent id + paid total for an order (for refunds). */
+export async function getOrderPaymentInfo(
+  orderId: string,
+): Promise<{ paymentIntentId: string | null; totalCents: number; amountRefundedCents: number; status: OrderStatus } | null> {
+  const sql = getSql();
+  if (!sql) return null;
+  const rows = (await sql`
+    select stripe_payment_intent_id, total_cents, amount_refunded_cents, status
+    from orders where id = ${orderId} limit 1
+  `) as unknown as {
+    stripe_payment_intent_id: string | null;
+    total_cents: number;
+    amount_refunded_cents: number;
+    status: OrderStatus;
+  }[];
+  const row = rows[0];
+  if (!row) return null;
+  return {
+    paymentIntentId: row.stripe_payment_intent_id,
+    totalCents: row.total_cents,
+    amountRefundedCents: row.amount_refunded_cents ?? 0,
+    status: row.status,
+  };
+}
+
+/** The Artelo order id for an order (for cancel/sync), or null. */
+export async function getArteloOrderId(orderId: string): Promise<string | null> {
+  const sql = getSql();
+  if (!sql) return null;
+  const rows = (await sql`
+    select artelo_order_id from orders where id = ${orderId} limit 1
+  `) as unknown as { artelo_order_id: string | null }[];
+  return rows[0]?.artelo_order_id ?? null;
+}
+
+/** Overwrite an order's shipping address (admin correction). */
+export async function updateOrderShipping(
+  orderId: string,
+  shipping: OrderShippingAddress,
+): Promise<void> {
+  const sql = requireSql();
+  await sql`
+    update orders set
+      ship_name    = ${shipping.name ?? null},
+      ship_line1   = ${shipping.line1 ?? null},
+      ship_line2   = ${shipping.line2 ?? null},
+      ship_city    = ${shipping.city ?? null},
+      ship_region  = ${shipping.region ?? null},
+      ship_postal  = ${shipping.postal ?? null},
+      ship_country = ${shipping.country ?? null},
+      updated_at = now()
+    where id = ${orderId}
+  `;
+}
+
+/** Clear the Artelo order id so a failed/cancelled order can be re-submitted. */
+export async function clearArteloOrderId(orderId: string): Promise<void> {
+  const sql = requireSql();
+  await sql`
+    update orders set artelo_order_id = null, artelo_submitted_at = null, updated_at = now()
+    where id = ${orderId}
+  `;
+}
+
+// ── Fulfilment (Artelo submission audit + COGS) ──────────────────────────────
+
+/** Full order shape the fulfilment submitter needs to build an Artelo order. */
+export type FulfillmentOrder = {
+  id: string;
+  orderNumber: string;
+  email: string;
+  currency: string;
+  totalCents: number;
+  arteloOrderId: string | null;
+  shipping: OrderShippingAddress;
+  items: {
+    productId: string;
+    productLabel: string;
+    quantity: number;
+    unitPriceCents: number;
+    assetUrl: string | null;
+    posterConfig: Record<string, unknown>;
+  }[];
+};
+
+/** Load everything needed to submit an order to Artelo (null when unconfigured/absent). */
+export async function getOrderForFulfillment(orderId: string): Promise<FulfillmentOrder | null> {
+  const sql = getSql();
+  if (!sql) return null;
+  const rows = (await sql`
+    select id, order_number, email, currency, total_cents, artelo_order_id,
+           ship_name, ship_line1, ship_line2, ship_city, ship_region, ship_postal, ship_country
+    from orders where id = ${orderId} limit 1
+  `) as unknown as (OrderRow & { total_cents: number })[];
+  const row = rows[0];
+  if (!row) return null;
+  const items = (await sql`
+    select product_id, product_label, quantity, unit_price_cents, poster_config, asset_url
+    from order_items where order_id = ${orderId} order by created_at asc
+  `) as unknown as (ItemRow & { poster_config: Record<string, unknown> })[];
+  return {
+    id: row.id,
+    orderNumber: row.order_number,
+    email: row.email,
+    currency: row.currency,
+    totalCents: row.total_cents,
+    arteloOrderId: (row as unknown as { artelo_order_id: string | null }).artelo_order_id ?? null,
+    shipping: {
+      name: row.ship_name ?? undefined,
+      line1: row.ship_line1 ?? undefined,
+      line2: row.ship_line2 ?? undefined,
+      city: row.ship_city ?? undefined,
+      region: row.ship_region ?? undefined,
+      postal: row.ship_postal ?? undefined,
+      country: row.ship_country ?? undefined,
+    },
+    items: items.map((it) => ({
+      productId: it.product_id,
+      productLabel: it.product_label,
+      quantity: it.quantity,
+      unitPriceCents: it.unit_price_cents,
+      assetUrl: it.asset_url ?? null,
+      posterConfig: it.poster_config ?? {},
+    })),
+  };
+}
+
+export type FulfillmentAttempt = {
+  orderId: string;
+  status: "submitted" | "failed";
+  isTest: boolean;
+  arteloOrderId?: string | null;
+  currency?: string;
+  productionCostCents?: number | null;
+  shippingCostCents?: number | null;
+  taxCents?: number | null;
+  requestPayload?: unknown;
+  responsePayload?: unknown;
+  error?: string | null;
+};
+
+/** Log one Artelo submission attempt (request/response + COGS) for observability. */
+export async function recordFulfillmentAttempt(attempt: FulfillmentAttempt): Promise<void> {
+  const sql = getSql();
+  if (!sql) return;
+  const priorRows = (await sql`
+    select count(*)::int as n from fulfillments where order_id = ${attempt.orderId}
+  `) as unknown as { n: number }[];
+  const attemptCount = (priorRows[0]?.n ?? 0) + 1;
+  await sql`
+    insert into fulfillments (
+      order_id, provider, artelo_order_id, status, is_test, attempt_count, currency,
+      production_cost_cents, shipping_cost_cents, tax_cents,
+      request_payload, response_payload, error
+    ) values (
+      ${attempt.orderId}, 'artelo', ${attempt.arteloOrderId ?? null}, ${attempt.status},
+      ${attempt.isTest}, ${attemptCount}, ${attempt.currency ?? "usd"},
+      ${attempt.productionCostCents ?? null}, ${attempt.shippingCostCents ?? null}, ${attempt.taxCents ?? null},
+      ${attempt.requestPayload === undefined ? null : JSON.stringify(attempt.requestPayload)}::jsonb,
+      ${attempt.responsePayload === undefined ? null : JSON.stringify(attempt.responsePayload)}::jsonb,
+      ${attempt.error ?? null}
+    )
+  `;
 }
 
 /** Attach the Stripe Checkout Session id once the session is created. */

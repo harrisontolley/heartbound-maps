@@ -68,3 +68,40 @@ export const requireUser: MiddlewareHandler<{ Variables: AuthVariables }> = asyn
   c.set("user", user);
   await next();
 };
+
+/** Parsed, lower-cased ADMIN_EMAILS allowlist (comma/space separated). */
+export function adminEmails(): Set<string> {
+  return new Set(
+    (process.env.ADMIN_EMAILS ?? "")
+      .split(/[,\s]+/)
+      .map((e) => e.trim().toLowerCase())
+      .filter(Boolean),
+  );
+}
+
+/** True when an admin allowlist is configured (no allowlist ⇒ admin is closed). */
+export function isAdminConfigured(): boolean {
+  return adminEmails().size > 0;
+}
+
+/** Whether a verified user's email is on the admin allowlist. */
+export function isAdminUser(user: AuthUser | null): boolean {
+  if (!user?.email) return false;
+  return adminEmails().has(user.email.toLowerCase());
+}
+
+/**
+ * 403 unless a valid session resolves to a user whose email is on ADMIN_EMAILS.
+ * Admin is gated by a server-side env allowlist on top of normal auth — the
+ * client is never trusted. With no allowlist (or auth unconfigured) admin is
+ * closed (403), so it can't be left accidentally open.
+ */
+export const requireAdmin: MiddlewareHandler<{ Variables: AuthVariables }> = async (c, next) => {
+  if (!isAuthConfigured()) return c.json({ error: "auth_unconfigured" }, 401);
+  const token = bearerToken(c.req.header("authorization"));
+  const user = token ? await verifyToken(token) : null;
+  if (!user) return c.json({ error: "unauthorized" }, 401);
+  if (!isAdminUser(user)) return c.json({ error: "forbidden" }, 403);
+  c.set("user", user);
+  await next();
+};

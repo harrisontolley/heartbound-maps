@@ -38,3 +38,18 @@ export type {
 
 // Commerce: product catalogue, pricing, and checkout contracts (values + types).
 export * from "./commerce.js";
+
+// Admin dashboard contracts (operator-only; richer than the customer Order).
+export type {
+  AdminOrderSummary,
+  AdminOrderListResponse,
+  AdminFulfillment,
+  AdminWebhookEvent,
+  AdminActionEntry,
+  AdminOrderDetail,
+  AdminMetrics,
+  AdminRefundRequest,
+  AdminCancelRequest,
+  AdminAddressUpdateRequest,
+  AdminActionResult,
+} from "./admin.js";
