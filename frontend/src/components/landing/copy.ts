@@ -272,24 +272,56 @@ export const copy = {
         a: "Each arrow points along the true compass bearing from your home to the place, and the distance is the great-circle distance — the real shortest path across the globe.",
       },
       {
-        q: "What sizes can I print?",
-        a: "The SVG export scales to any size without losing sharpness, from A4 to large-format. The PNG export is rendered at full print resolution.",
+        q: "How many places can I add?",
+        a: "As many as you like. The layout engine keeps labels from overlapping, even on a crowded map.",
       },
       {
-        q: "How many places can I add?",
-        a: "As many as you want. The layout engine keeps labels from overlapping even on dense maps.",
+        q: "Can I change the design after I've added places?",
+        a: "Yes. Switch between all four designs at any time — your home and places stay exactly where they are.",
+      },
+      {
+        q: "What sizes can I order?",
+        a: "Three portrait sizes: 12×18, 16×24, and 24×36 inches. The artwork is drawn as vector graphics, so every size prints razor-sharp.",
+      },
+      {
+        q: "How are the posters made?",
+        a: "Each poster is printed to order on heavyweight matte poster paper and checked by hand before it ships. Nothing is mass-produced — your print is made the moment you order it.",
+      },
+      {
+        q: "Can I get it framed?",
+        a: "Yes. Add a ready-to-hang frame at checkout: solid wood with a glass front, delivered already wired so it goes straight on the wall.",
+      },
+      {
+        q: "Can I just buy the digital file?",
+        a: "Yes. Choose the digital download for a print-ready PNG and a scalable SVG you can print yourself, at any size. Every printed order includes the digital files too.",
+      },
+      {
+        q: "When will my poster arrive?",
+        a: "Most orders arrive within 5–10 business days. Your poster is printed and shipped within 2–3 business days, and you'll get a tracking link by email the moment it's on its way.",
+      },
+      {
+        q: "Where do you ship, and how much does it cost?",
+        a: "We currently ship anywhere in the United States, and shipping is free — the price you see is the price you pay, with nothing added at checkout.",
+      },
+      {
+        q: "What if my poster arrives damaged or there's a printing problem?",
+        a: "We'll make it right. If your poster turns up damaged, or there's a fault with the print, email us a quick photo and we'll send a free replacement or refund you — no need to post the original back.",
+      },
+      {
+        q: "Can I return it if I change my mind?",
+        a: "Because every poster is made to order from your own design, we can't take change-of-mind returns. Preview your poster as much as you like before you buy — and if anything's wrong with what arrives, we'll always sort it out.",
+      },
+      {
+        q: "Can I change my order or shipping address after I've paid?",
+        a: "Get in touch as soon as you can. We can update or cancel an order while it's still in the queue, but once it's gone into production it's locked in and on its way.",
       },
       {
         q: "Do I need an account to try it?",
-        a: "No. You can build and preview a poster straight away. An account is only needed to save your work and export without a watermark.",
-      },
-      {
-        q: "Can I change the style after I've added places?",
-        a: "Yes. Switch between all four styles at any time — your places and home stay put.",
+        a: "No. Build and preview your poster straight away. An account only matters when you want to save your work or export without a watermark.",
       },
       {
         q: "Is my location data private?",
-        a: "Your places are used to render your poster and nothing else. Placeholder — confirm against the real privacy policy before launch.",
+        a: "Your places are only ever used to render your poster — we don't sell them or share them with anyone.",
       },
     ],
   },
