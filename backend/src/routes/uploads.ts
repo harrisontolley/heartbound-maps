@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import { handleUpload, type HandleUploadBody } from "@vercel/blob/client";
 import { type AuthVariables, getUser } from "../auth.js";
-import { clientKey, rateLimit } from "../rateLimit.js";
+import { enforce } from "../rateLimit.js";
 
 // Print-asset uploads. The browser rasterizes the poster to a PNG and uploads it
 // straight to Vercel Blob via the client-upload flow (so large files never pass
@@ -31,7 +31,7 @@ export function buildUploadsRouter(): Hono<{ Variables: AuthVariables }> {
 
   r.post("/token", async (c) => {
     // Speed-bump anonymous abuse of this unauthenticated mint endpoint.
-    if (rateLimit("uploads", clientKey(c), { max: 60, windowMs: 60_000 })) {
+    if (await enforce(c, "uploads", { max: 60, windowMs: 60_000 })) {
       return c.json({ error: "rate_limited" }, 429);
     }
     const token = process.env.BLOB_READ_WRITE_TOKEN;

@@ -1,9 +1,16 @@
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { app } from "../app.js";
 import { __resetTrackRateLimit } from "./track.js";
 
 // Hermetic: no DATABASE_URL, so order lookups return null and /track returns a
 // generic 404 (the same response a wrong email gets — no enumeration signal).
+// Ensure Upstash is unset so enforce() uses the deterministic in-memory fallback
+// even on a machine whose shell exported the keys.
+
+beforeAll(() => {
+  delete process.env.UPSTASH_REDIS_REST_URL;
+  delete process.env.UPSTASH_REDIS_REST_TOKEN;
+});
 
 beforeEach(() => {
   __resetTrackRateLimit();

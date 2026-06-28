@@ -12,6 +12,7 @@ the exact command to verify your change.
 | **Stripe** | Payments | [stripe.md](./stripe.md) | `backend/src/stripe.ts` | `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` (Stripe.js, later) |
 | **Artelo** | Print-on-demand fulfilment | [artelo.md](./artelo.md) | `backend/src/artelo.ts`, `backend/src/fulfillment.ts` | `frontend/src/lib/upload/*` |
 | **PostHog** | Analytics, replay, flags, errors | [posthog.md](./posthog.md) | optional | `frontend/src/app/providers.tsx` |
+| **Redis (Upstash)** | Distributed rate limiting, geocode cache + Nominatim gate, checkout idempotency | [redis.md](./redis.md) | `backend/src/redis.ts`, `backend/src/rateLimit.ts`, `backend/src/nominatim.ts` | `frontend/src/lib/redis.ts` (auth-proxy only) |
 
 Operator tooling (refunds, cancel, retry, observability) lives in the admin dashboard —
 see [../admin.md](../admin.md). Secrets workflow for all of them: [secrets.md](./secrets.md).
@@ -39,5 +40,7 @@ see [../admin.md](../admin.md). Secrets workflow for all of them: [secrets.md](.
 Stripe Checkout and Artelo fulfilment are **wired into the order flow**: a paid order is
 submitted to Artelo (see [artelo.md](./artelo.md)), with status callbacks advancing the
 order and a `fulfillments` audit/COGS table for observability. PostHog is client-side
-provider wiring. Each integration still follows the env-guarded `db.ts` pattern, so the
-app builds and tests stay hermetic without keys.
+provider wiring. Rate limiting and geocoding are now **distributed via Upstash Redis**
+(see [redis.md](./redis.md)) so they hold correctly across serverless instances, with
+checkout idempotency on top. Each integration still follows the env-guarded `db.ts`
+pattern, so the app builds and tests stay hermetic without keys.

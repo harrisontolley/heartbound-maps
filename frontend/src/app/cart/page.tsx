@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import Link from "next/link";
 import { SignedIn, SignedOut } from "@neondatabase/auth/react/ui";
 import type { CreateCheckoutResponse } from "@pinprint/shared";
@@ -40,6 +40,10 @@ export default function CartPage() {
   const [email, setEmail] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Per-attempt idempotency key, kept against a signature of the cart. Reused while
+  // the cart is unchanged (so a double-click / retry can't create a duplicate order
+  // or Stripe session), regenerated once the cart changes (a fresh attempt).
+  const idempotency = useRef<{ key: string; sig: string } | null>(null);
 
   // Read once on the client only (mounted is false during SSR + first paint, so
   // this never causes a hydration mismatch and needs no setState-in-effect).
@@ -52,6 +56,14 @@ export default function CartPage() {
     if (items.length === 0) return;
     setSubmitting(true);
     setError(null);
+    // Reuse the key while the cart is unchanged (retry of the same attempt);
+    // regenerate it once the cart changes.
+    const sig = items
+      .map((i) => `${i.id}:${i.quantity}:${i.assetUrl ?? ""}`)
+      .join("|");
+    const attemptKey =
+      idempotency.current?.sig === sig ? idempotency.current.key : crypto.randomUUID();
+    idempotency.current = { key: attemptKey, sig };
     try {
       const payload = {
         items: items.map((i) => ({
@@ -66,6 +78,7 @@ export default function CartPage() {
       };
       const res = await apiFetch("/checkout/session", {
         method: "POST",
+        headers: { "Idempotency-Key": attemptKey },
         body: JSON.stringify(payload),
       });
       if (!res.ok) {

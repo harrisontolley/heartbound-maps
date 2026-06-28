@@ -5,6 +5,7 @@ import { pingDb } from "./db.js";
 import { constructWebhookEvent, isStripeConfigured } from "./stripe.js";
 import { isArteloConfigured, verifyArteloWebhookSignature } from "./artelo.js";
 import { isAdminConfigured, isAuthConfigured } from "./auth.js";
+import { isRedisConfigured, pingRedis } from "./redis.js";
 import { extractArteloOrder, handleArteloPayload, handleStripeEvent } from "./webhooks.js";
 import { finalizeWebhookEvent, recordWebhookEvent } from "./observability.js";
 import { buildAccountRouter } from "./routes/account.js";
@@ -33,6 +34,8 @@ function registerRoutes(r: Hono): Hono {
 
   r.get("/health/db", async (c) => c.json({ ok: await pingDb() }));
 
+  r.get("/health/redis", async (c) => c.json({ ok: await pingRedis() }));
+
   // Readiness for every integration — which keys are configured, no external
   // calls. Extends the /health/db convention as services are added.
   r.get("/health/integrations", async (c) =>
@@ -42,6 +45,7 @@ function registerRoutes(r: Hono): Hono {
       artelo: isArteloConfigured(),
       auth: isAuthConfigured(),
       admin: isAdminConfigured(),
+      redis: isRedisConfigured(),
     }),
   );
 
