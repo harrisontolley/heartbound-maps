@@ -65,9 +65,15 @@ describe("stripe webhook", () => {
   it("GET /health/integrations reports configured booleans", async () => {
     const res = await app.request("/health/integrations");
     expect(res.status).toBe(200);
-    const body = (await res.json()) as { stripe: boolean; artelo: boolean; db: boolean };
+    const body = (await res.json()) as {
+      stripe: boolean;
+      artelo: boolean;
+      db: boolean;
+      sentry: boolean;
+    };
     expect(body.stripe).toBe(true);
     expect(typeof body.artelo).toBe("boolean");
     expect(typeof body.db).toBe("boolean");
+    expect(typeof body.sentry).toBe("boolean");
   });
 });

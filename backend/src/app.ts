@@ -14,6 +14,8 @@ import { buildCheckoutRouter } from "./routes/checkout.js";
 import { buildDevRouter } from "./routes/dev.js";
 import { buildUploadsRouter } from "./routes/uploads.js";
 import { buildAdminRouter } from "./routes/admin.js";
+import { buildJobsRouter } from "./routes/jobs.js";
+import { initSentry, captureError, isSentryConfigured } from "./sentry.js";
 
 // The Pinprint API. Owns the Nominatim geocoding proxy (User-Agent, rate gate,
 // LRU cache live in ./nominatim) and the Neon connectivity check.
@@ -46,6 +48,7 @@ function registerRoutes(r: Hono): Hono {
       auth: isAuthConfigured(),
       admin: isAdminConfigured(),
       redis: isRedisConfigured(),
+      sentry: isSentryConfigured(),
     }),
   );
 
@@ -85,6 +88,7 @@ function registerRoutes(r: Hono): Hono {
     } catch (err) {
       // Mark the event un-finished and 500 so Stripe retries — the dedupe path
       // reprocesses a 'received'/'error' row rather than skipping it as a dup.
+      captureError(err);
       console.error("[webhooks/stripe] handler error", err);
       await finalizeWebhookEvent(logged.id, {
         status: "error",
@@ -137,6 +141,7 @@ function registerRoutes(r: Hono): Hono {
     } catch (err) {
       // 500 so Artelo retries (up to ~20×); the dedupe path reprocesses the
       // un-finished row instead of skipping it.
+      captureError(err);
       console.error("[webhooks/artelo] handler error", err);
       await finalizeWebhookEvent(logged.id, {
         status: "error",
@@ -181,14 +186,28 @@ function registerRoutes(r: Hono): Hono {
   r.route("/uploads", buildUploadsRouter()); // print-asset blob upload tokens
   r.route("/admin", buildAdminRouter()); // operator-only (requireAdmin / ADMIN_EMAILS)
   r.route("/dev", buildDevRouter()); // dev-only, DEV_SEED_TOKEN-guarded
+  r.route("/jobs", buildJobsRouter()); // cron-only, CRON_SECRET-guarded (blob GC)
 
   return r;
 }
+
+// Initialize error tracking before the app handles any request. Env-guarded — a
+// no-op without SENTRY_DSN (see ./sentry). Errors-only.
+initSentry();
 
 export const app = new Hono();
 app.use("*", cors());
 app.route("/", registerRoutes(new Hono()));
 app.route(SERVICE_PREFIX, registerRoutes(new Hono()));
+
+// Catch-all for errors that escape a handler (covers both mounts). Report to
+// Sentry, then return a generic 500 — never leak internals to the client. Routes
+// that catch their own errors (the webhooks) report via captureError directly.
+app.onError((err, c) => {
+  captureError(err);
+  console.error("[app] unhandled error", err);
+  return c.json({ error: "internal_error" }, 500);
+});
 
 // Default export is what Vercel's Hono runtime wraps as the function handler.
 export default app;
