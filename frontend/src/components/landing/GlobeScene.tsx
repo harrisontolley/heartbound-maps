@@ -12,7 +12,7 @@ import {
   Vector3,
 } from "three";
 import Globe, { type GlobeMethods } from "react-globe.gl";
-import { SEED_HOME, SEED_PLACES } from "@/lib/seed";
+import type { Place } from "@/lib/types";
 import {
   buildGlobeData,
   formatReadout,
@@ -23,12 +23,14 @@ import {
 /**
  * The actual react-globe.gl (three.js) scene. This is the ONLY module that pulls
  * three.js into a bundle, so it is always loaded via dynamic(ssr:false) from
- * GlobeDemo — never imported on the server. Sizing is driven by the parent.
+ * GlobeDemo — never imported on the server. Sizing + the (live-editable) home and
+ * places are driven by the parent.
  *
  * Design: a "measured globe". Vector country outlines on a neutral sphere; arcs
  * from home to each place with chevron arrowheads; and an on-brand HTML callout
  * at each destination showing the EXACT bearing + great-circle distance. It
- * settles into a composed frame on reveal, then holds still so the numbers read.
+ * glides to frame the home then holds still so the readouts are legible; when the
+ * home changes (the search widget), it recomputes and glides to the new home.
  */
 
 // Brand palette (globals.css @theme): neutral stone globe so the pastel orbs
@@ -38,10 +40,16 @@ const LAND_FILL = "#ffffff"; // --color-surface-card
 const LAND_SIDE = "rgba(120,113,108,0.18)"; // muted, faint extrusion edge
 const BORDER = "#a8a29e"; // --color-muted-soft
 
-// Composed home frame, and the off-angle it eases in FROM on reveal.
-const FINAL_POV = { lat: 26, lng: -48, altitude: 1.9 };
-const START_LNG_OFFSET = -55;
-const SETTLE_MS = 1500;
+const POV_MS = 1200; // camera glide duration
+
+/** Camera framing centered on the home (clamped off the poles). */
+function homePov(home: Place) {
+  return {
+    lat: Math.max(-55, Math.min(70, home.lat)),
+    lng: home.lng,
+    altitude: 2.2,
+  };
+}
 
 /** Natural Earth feature — only the fields we touch. */
 type GeoFeature = { geometry: { type: string; coordinates: unknown } };
@@ -126,13 +134,25 @@ type Props = {
   width: number;
   height: number;
   reduceMotion: boolean;
+  home: Place;
+  places: Place[];
 };
 
-export default function GlobeScene({ width, height, reduceMotion }: Props) {
+export default function GlobeScene({
+  width,
+  height,
+  reduceMotion,
+  home,
+  places,
+}: Props) {
   const globeRef = useRef<GlobeMethods | undefined>(undefined);
   const mountedRef = useRef(true);
   const [ready, setReady] = useState(false);
   const [settled, setSettled] = useState(false);
+  const { arcs, points } = useMemo(
+    () => buildGlobeData(home, places),
+    [home, places],
+  );
 
   // Guard async globe callbacks against StrictMode/HMR unmounts (dev only).
   useEffect(() => {
@@ -141,10 +161,6 @@ export default function GlobeScene({ width, height, reduceMotion }: Props) {
       mountedRef.current = false;
     };
   }, []);
-  const { arcs, points } = useMemo(
-    () => buildGlobeData(SEED_HOME, SEED_PLACES),
-    [],
-  );
 
   // Solid ocean sphere; country polygons sit just above it.
   const globeMaterial = useMemo(
@@ -167,10 +183,9 @@ export default function GlobeScene({ width, height, reduceMotion }: Props) {
     };
   }, []);
 
-  // Settle, then hold: once the globe is ready, ease the camera from an off-angle
-  // into the composed home frame and STOP (no perpetual auto-rotate). The arcs
-  // animate on during the settle, then freeze solid. Reduced motion jumps
-  // straight to the held, annotated frame.
+  // Frame the home and hold — glides in on reveal and to the new home whenever it
+  // changes (the search widget). No perpetual auto-rotate; drag stays enabled.
+  // Reduced motion jumps instantly.
   useEffect(() => {
     if (!ready) return;
     const g = globeRef.current;
@@ -179,21 +194,15 @@ export default function GlobeScene({ width, height, reduceMotion }: Props) {
     controls.enableZoom = false;
     controls.enablePan = false;
     controls.autoRotate = false;
+    g.pointOfView(homePov(home), reduceMotion ? 0 : POV_MS);
+  }, [ready, home, reduceMotion]);
 
-    if (reduceMotion) {
-      // arcsAnimating is already false when reduceMotion is true, so the arcs
-      // render solid without touching `settled`.
-      g.pointOfView(FINAL_POV, 0);
-      return;
-    }
-
-    g.pointOfView({ ...FINAL_POV, lng: FINAL_POV.lng + START_LNG_OFFSET }, 0);
-    const raf = requestAnimationFrame(() => g.pointOfView(FINAL_POV, SETTLE_MS));
-    const t = window.setTimeout(() => setSettled(true), SETTLE_MS + 400);
-    return () => {
-      cancelAnimationFrame(raf);
-      window.clearTimeout(t);
-    };
+  // Let the arcs march on briefly, then freeze solid. Skipped under reduced
+  // motion (arcs render solid from the start) and not re-run on home changes.
+  useEffect(() => {
+    if (!ready || reduceMotion) return;
+    const t = window.setTimeout(() => setSettled(true), POV_MS + 600);
+    return () => window.clearTimeout(t);
   }, [ready, reduceMotion]);
 
   // Chevron arrowheads as a custom three.js layer: one flat chevron at each
@@ -228,7 +237,7 @@ export default function GlobeScene({ width, height, reduceMotion }: Props) {
     mesh.position.copy(end.multiplyScalar(R * CHEVRON_ALT));
   };
 
-  // Arcs march on during the settle, then hold solid.
+  // Arcs march on during the intro, then hold solid.
   const arcsAnimating = !reduceMotion && !settled;
 
   return (

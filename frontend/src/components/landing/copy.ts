@@ -155,8 +155,8 @@ export const copy = {
   globe: {
     eyebrow: "Why Pinprint",
     headline: "The exact bearing. The real distance.",
-    body: "Most map prints just drop a pin. Pinprint measures the true compass bearing and the great-circle distance from home to every place, then draws each one to scale. The numbers on the globe are exactly what we print on your poster.",
-    caption: "Example measured from New York. Your poster measures from your home.",
+    body: "Most map prints just drop a pin. Pinprint measures the true compass bearing and great-circle distance from home to every place, then draws each one to scale — the same numbers we print on your poster. Search your own home town and watch every reading change.",
+    tryLabel: "Try it — measure from your home town",
   },
 
   showcase: {
