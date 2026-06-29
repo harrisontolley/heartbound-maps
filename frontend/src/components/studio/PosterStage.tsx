@@ -42,12 +42,12 @@ export function PosterStage({
 }) {
   return (
     <div
-      className={`relative flex flex-1 items-center justify-center p-6 lg:p-10 ${className}`}
+      className={`relative flex items-center justify-center p-4 sm:p-6 lg:p-10 ${className}`}
     >
       <GradientOrbs preset="preview" />
       <div
         ref={posterRef}
-        className="relative z-10 h-full max-h-[calc(100vh-220px)] max-w-full overflow-hidden rounded-sm bg-surface-card shadow-2xl"
+        className="relative z-10 h-full max-h-full max-w-full overflow-hidden rounded-sm bg-surface-card shadow-2xl"
         style={{ aspectRatio: `${width} / ${height}` }}
       >
         <Poster

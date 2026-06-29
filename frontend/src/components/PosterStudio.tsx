@@ -15,18 +15,29 @@ import { snapshotPosterConfig } from "@/lib/commerce/posterConfig";
 import type { TemplateId, VintageVariant } from "@/lib/templates/types";
 import { exportSvg, exportPng, exportPngBlob, slugify } from "@/lib/export";
 import { uploadPosterPng } from "@/lib/upload/uploadPosterPng";
+import { STEPS, STEP_INDEX } from "@/lib/studio/steps";
 import { StudioHeader } from "@/components/studio/StudioHeader";
-import { ConfigRail } from "@/components/studio/ConfigRail";
 import { PosterStage } from "@/components/studio/PosterStage";
 import { BuyBar } from "@/components/studio/BuyBar";
+import { WizardProgress } from "@/components/studio/wizard/WizardProgress";
+import { WizardNav, type NavAction } from "@/components/studio/wizard/WizardNav";
+import { StepStyle } from "@/components/studio/wizard/steps/StepStyle";
+import { StepPlaces } from "@/components/studio/wizard/steps/StepPlaces";
+import { StepSize } from "@/components/studio/wizard/steps/StepSize";
+import { StepCustomize } from "@/components/studio/wizard/steps/StepCustomize";
+import { StepReview } from "@/components/studio/wizard/steps/StepReview";
 
 /**
- * Studio shell: header (export) + config rail + live poster stage + sticky buy
- * bar. The rail and stage own their internals; this component only resolves the
- * active template/size, derives the measured geometry, and wires export + the
- * ?template/?variant deep links. Desktop is a fixed two-pane viewport; mobile
- * dissolves the rail into one scrolling column (Design → Places → preview →
- * Advanced → Size) under a sticky buy bar, reordered via flex `order`.
+ * Studio shell — a staged builder. A header + progress stepper sit above a fixed
+ * two-region body: the live poster stage (always visible) and the current step's
+ * panel, with a bottom bar (WizardNav, or BuyBar on Review). The flow is
+ * Style → Places → Size → Review, with an optional Personalize (Customize) detour
+ * off Size. This component owns the cross-step concerns — the active template/
+ * size, measured geometry, export, add-to-cart, the ?template/?variant deep
+ * links, and the step cursor — while each step panel composes the store-driven
+ * controls. Desktop is a two-pane viewport (panel left, preview right); mobile
+ * stacks preview-on-top over the step panel, both bounded so only the panel
+ * scrolls and the bottom bar stays in reach.
  */
 export function PosterStudio() {
   const home = usePosterStore((s) => s.home);
@@ -58,17 +69,53 @@ export function PosterStudio() {
   const [addingToCart, setAddingToCart] = useState(false);
   const posterRef = useRef<HTMLDivElement>(null);
 
+  // Step cursor. `furthest` is the highest step reached — it bounds which steps
+  // the progress bar lets you jump back to.
+  const [step, setStep] = useState(0);
+  const [furthest, setFurthest] = useState(0);
+  const headingRef = useRef<HTMLHeadingElement>(null);
+  const firstFocus = useRef(true);
+
+  const goTo = (i: number) => {
+    const clamped = Math.max(0, Math.min(STEPS.length - 1, i));
+    setStep(clamped);
+    setFurthest((f) => Math.max(f, clamped));
+  };
+  const next = () => goTo(step + 1);
+  const back = () => goTo(step - 1);
+
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const tpl = params.get("template");
+    let preselected = false;
     if (tpl && (TEMPLATE_ORDER as string[]).includes(tpl)) {
       setTemplate(tpl as TemplateId);
+      preselected = true;
     }
     const variant = params.get("variant");
     if (variant && (VINTAGE_VARIANT_ORDER as string[]).includes(variant)) {
       setVintageVariant(variant as VintageVariant);
     }
+    // A deep link that pre-picks a style lands the user on Places — the look is
+    // already chosen, so their next decision is which places to add. Applied
+    // post-mount (like the template/variant above) so the server-rendered step 0
+    // and the client agree — initializing from `window` would mismatch hydration.
+    if (preselected) {
+      /* eslint-disable react-hooks/set-state-in-effect */
+      setStep(STEP_INDEX.places);
+      setFurthest(STEP_INDEX.places);
+      /* eslint-enable react-hooks/set-state-in-effect */
+    }
   }, [setTemplate, setVintageVariant]);
+
+  // Move focus to the step heading on step change (skip the initial mount).
+  useEffect(() => {
+    if (firstFocus.current) {
+      firstFocus.current = false;
+      return;
+    }
+    headingRef.current?.focus();
+  }, [step]);
 
   function getSvg(): SVGSVGElement | null {
     return posterRef.current?.querySelector("svg") ?? null;
@@ -129,19 +176,81 @@ export function PosterStudio() {
   });
   const items = mounted ? measured : [];
 
+  const current = STEPS[step];
+  const isReview = current.id === "review";
+
+  function renderStep() {
+    switch (current.id) {
+      case "style":
+        return <StepStyle />;
+      case "places":
+        return <StepPlaces />;
+      case "size":
+        return <StepSize />;
+      case "customize":
+        return <StepCustomize />;
+      case "review":
+        return (
+          <StepReview
+            onDownload={handleDownload}
+            exporting={exporting}
+            canDownload={!!home}
+          />
+        );
+    }
+  }
+
+  function renderBottom() {
+    if (isReview) {
+      return (
+        <BuyBar
+          product={product}
+          format={format}
+          addFrame={addFrame}
+          canBuy={!!home}
+          justAdded={justAdded}
+          busy={addingToCart}
+          onAddToCart={addToCart}
+        />
+      );
+    }
+    let primary: NavAction;
+    let secondary: NavAction | undefined;
+    if (current.id === "size") {
+      primary = { label: "Review →", onClick: () => goTo(STEP_INDEX.review) };
+      secondary = {
+        label: "Personalize",
+        onClick: () => goTo(STEP_INDEX.customize),
+      };
+    } else if (current.id === "customize") {
+      primary = { label: "Done → Review", onClick: () => goTo(STEP_INDEX.review) };
+    } else {
+      primary = { label: "Next →", onClick: next };
+    }
+    return (
+      <WizardNav
+        showBack={step > 0}
+        onBack={back}
+        primary={primary}
+        secondary={secondary}
+      />
+    );
+  }
+
   return (
-    <div className="flex min-h-screen flex-col lg:h-screen lg:min-h-0">
-      <StudioHeader
-        onDownload={handleDownload}
-        exporting={exporting}
-        canDownload={!!home}
-        className="sticky top-0 lg:static"
+    <div className="flex h-[100dvh] flex-col overflow-hidden">
+      <StudioHeader />
+
+      <WizardProgress
+        steps={STEPS}
+        current={step}
+        furthest={furthest}
+        onJump={goTo}
       />
 
       <div className="flex min-h-0 flex-1 flex-col lg:flex-row">
-        <ConfigRail className="lg:order-1 lg:overflow-y-auto" />
         <PosterStage
-          className="order-3 min-h-[55vh] lg:order-2 lg:min-h-0 lg:overflow-auto"
+          className="order-1 h-[38dvh] shrink-0 lg:order-2 lg:h-auto lg:min-h-0 lg:flex-1 lg:overflow-auto"
           home={home}
           items={items}
           template={template}
@@ -154,17 +263,35 @@ export function PosterStudio() {
           display={display}
           posterRef={posterRef}
         />
-      </div>
 
-      <BuyBar
-        product={product}
-        format={format}
-        addFrame={addFrame}
-        canBuy={!!home}
-        justAdded={justAdded}
-        busy={addingToCart}
-        onAddToCart={addToCart}
-      />
+        <section
+          aria-label={`Step ${step + 1}: ${current.label}`}
+          className="order-2 flex min-h-0 flex-1 flex-col lg:order-1 lg:w-[400px] lg:flex-none lg:border-r lg:border-hairline lg:bg-canvas-soft"
+        >
+          <div className="min-h-0 flex-1 overflow-y-auto px-5 py-5">
+            <div className="mb-4 flex items-center gap-3">
+              {isReview && (
+                <button
+                  type="button"
+                  onClick={back}
+                  className="text-sm text-muted transition-colors hover:text-ink"
+                >
+                  ← Back
+                </button>
+              )}
+              <h2
+                ref={headingRef}
+                tabIndex={-1}
+                className="font-display text-xl leading-none text-ink outline-none"
+              >
+                {current.title}
+              </h2>
+            </div>
+            {renderStep()}
+          </div>
+          {renderBottom()}
+        </section>
+      </div>
     </div>
   );
 }

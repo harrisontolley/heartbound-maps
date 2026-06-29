@@ -51,16 +51,20 @@ export function SizeCard({
         />
       </span>
       <span className="text-sm font-medium text-ink">{product.label}</span>
-      <span className="flex items-baseline gap-1.5 text-sm">
+      {/* Stacked so the anchored list price + sale + discount never overflow a
+          narrow card (the size grid is 3-up, ~110px per card on a phone). */}
+      <span className="flex flex-col gap-0.5">
         {off > 0 && (
-          <span className="text-muted line-through">
+          <span className="text-xs text-muted line-through">
             {formatUsd(product.listPriceCents)}
           </span>
         )}
-        <span className="text-body-strong">{formatUsd(product.priceCents)}</span>
-        {off > 0 && (
-          <span className="font-semibold text-success">−{off}%</span>
-        )}
+        <span className="flex items-baseline gap-1 text-sm">
+          <span className="text-body-strong">{formatUsd(product.priceCents)}</span>
+          {off > 0 && (
+            <span className="text-xs font-semibold text-success">−{off}%</span>
+          )}
+        </span>
       </span>
     </button>
   );
