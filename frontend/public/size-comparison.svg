@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="690" viewBox="0 0 1400 690" font-family="Inter, Helvetica, Arial, sans-serif">
+  <!--
+    Pinprint poster size comparison — drawn to scale.
+    Scale: 0.42 px per mm. Baseline y=620.
+    Sizes (mm):  A4 210x297 | 12x18 304.8x457.2 | 16x24 406.4x609.6 | 24x36 609.6x914.4
+  -->
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#0f172a"/>
+      <stop offset="1" stop-color="#1e293b"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1400" height="690" fill="url(#bg)"/>
+
+  <!-- Title -->
+  <text x="60" y="60" fill="#f8fafc" font-size="32" font-weight="700">Pinprint poster sizes — to scale</text>
+  <text x="60" y="90" fill="#94a3b8" font-size="16">Every print is portrait 2:3. A4 paper shown for reference. Drawn at 0.42&#8202;px / mm.</text>
+
+  <!-- ============ Relative-area callouts (top-right) ============ -->
+  <text x="720" y="146" fill="#f8fafc" font-size="20" font-weight="700">How much wall does it cover?</text>
+  <g font-size="15">
+    <rect x="720" y="166" width="40" height="14" fill="#e2e8f0" fill-opacity="0.35"/>
+    <text x="772" y="178" fill="#e2e8f0">A4 &#8212; 1.0&#215;  (0.062 m&#178;)</text>
+
+    <rect x="720" y="194" width="60" height="14" fill="#67e8f9" fill-opacity="0.5"/>
+    <text x="792" y="206" fill="#a5f3fc">12&#215;18&#8243; &#8212; 2.2&#215; A4  (0.139 m&#178;)</text>
+
+    <rect x="720" y="222" width="100" height="14" fill="#38bdf8" fill-opacity="0.5"/>
+    <text x="832" y="234" fill="#7dd3fc">16&#215;24&#8243; &#8212; 4.0&#215; A4  (0.248 m&#178;)</text>
+
+    <rect x="720" y="250" width="180" height="14" fill="#3b82f6" fill-opacity="0.5"/>
+    <text x="912" y="262" fill="#60a5fa">24&#215;36&#8243; &#8212; 8.9&#215; A4  (0.557 m&#178;)</text>
+  </g>
+  <text x="720" y="296" fill="#64748b" font-size="13">Each step up (12&#8594;16&#8594;24&#8243;) roughly doubles the wall area.</text>
+
+  <!-- ============ LEFT: nested overlay, corner-aligned, baseline y=620 ============ -->
+  <!-- 24x36: 256.0 x 384.0 -->
+  <rect x="70" y="236" width="256.0" height="384.0" fill="#1d4ed8" fill-opacity="0.18" stroke="#3b82f6" stroke-width="2.5"/>
+  <text x="334" y="256" fill="#60a5fa" font-size="16" font-weight="600">24&#215;36&#8243; &#183; Premium</text>
+  <text x="334" y="276" fill="#64748b" font-size="13">610 &#215; 914 mm</text>
+  <!-- 16x24: 170.7 x 256.0 -->
+  <rect x="70" y="364" width="170.7" height="256.0" fill="#0ea5e9" fill-opacity="0.20" stroke="#38bdf8" stroke-width="2.5"/>
+  <text x="248" y="384" fill="#7dd3fc" font-size="16" font-weight="600">16&#215;24&#8243; &#183; Popular</text>
+  <text x="248" y="404" fill="#64748b" font-size="13">406 &#215; 610 mm</text>
+  <!-- 12x18: 128.0 x 192.0 -->
+  <rect x="70" y="428" width="128.0" height="192.0" fill="#22d3ee" fill-opacity="0.22" stroke="#67e8f9" stroke-width="2.5"/>
+  <text x="206" y="448" fill="#a5f3fc" font-size="16" font-weight="600">12&#215;18&#8243;</text>
+  <text x="206" y="468" fill="#64748b" font-size="13">305 &#215; 457 mm</text>
+  <!-- A4: 88.2 x 124.7 -->
+  <rect x="70" y="495.3" width="88.2" height="124.7" fill="#f1f5f9" fill-opacity="0.30" stroke="#e2e8f0" stroke-width="2.5" stroke-dasharray="6 4"/>
+  <text x="166" y="515" fill="#e2e8f0" font-size="16" font-weight="600">A4</text>
+  <text x="166" y="535" fill="#64748b" font-size="13">210 &#215; 297 mm</text>
+
+  <text x="70" y="658" fill="#94a3b8" font-size="14" font-weight="600">Nested &#183; all corner-aligned</text>
+
+  <!-- ============ RIGHT: side-by-side, baseline aligned y=620 ============ -->
+  <!-- A4 -->
+  <rect x="720" y="495.3" width="88.2" height="124.7" fill="#f1f5f9" fill-opacity="0.12" stroke="#e2e8f0" stroke-width="2" stroke-dasharray="6 4"/>
+  <text x="764.1" y="642" fill="#e2e8f0" font-size="14" font-weight="600" text-anchor="middle">A4</text>
+  <!-- 12x18 -->
+  <rect x="820.2" y="428" width="128.0" height="192.0" fill="#22d3ee" fill-opacity="0.16" stroke="#67e8f9" stroke-width="2"/>
+  <text x="884.2" y="642" fill="#a5f3fc" font-size="14" font-weight="600" text-anchor="middle">12&#215;18&#8243;</text>
+  <!-- 16x24 -->
+  <rect x="960.2" y="364" width="170.7" height="256.0" fill="#0ea5e9" fill-opacity="0.16" stroke="#38bdf8" stroke-width="2"/>
+  <text x="1045.5" y="642" fill="#7dd3fc" font-size="14" font-weight="600" text-anchor="middle">16&#215;24&#8243;</text>
+  <!-- 24x36 -->
+  <rect x="1142.9" y="236" width="256.0" height="384.0" fill="#1d4ed8" fill-opacity="0.16" stroke="#3b82f6" stroke-width="2"/>
+  <text x="1270.9" y="642" fill="#60a5fa" font-size="14" font-weight="600" text-anchor="middle">24&#215;36&#8243;</text>
+
+  <text x="720" y="676" fill="#94a3b8" font-size="14" font-weight="600">Side by side &#183; baseline aligned</text>
+</svg>
