@@ -2,10 +2,12 @@
 
 import { useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
+import Link from "next/link";
 import { Section } from "./Section";
 import { SectionLabel } from "./SectionLabel";
+import { LandingPoster } from "./LandingPoster";
 import { PlaceSearch } from "@/components/controls/PlaceSearch";
-import { copy } from "./copy";
+import { copy, STUDIO_HREF } from "./copy";
 import { GLOBE_DEMO_HOME, GLOBE_DEMO_PLACES } from "@/lib/globe/demoData";
 import type { GeoResult, Place } from "@/lib/types";
 
@@ -92,62 +94,74 @@ export function GlobeDemo() {
 
   return (
     <Section id="globe" orbs="preview">
-      <div className="grid items-center gap-10 md:grid-cols-2 md:gap-12">
-        {/* Left: the differentiation, in words + a live "try it" search. */}
-        <div className="flex flex-col items-start gap-4">
-          <SectionLabel>{globe.eyebrow}</SectionLabel>
-          <h2 className="font-display text-[clamp(1.75rem,4vw,36px)] font-normal leading-[1.17] tracking-[-0.36px] text-ink">
-            {globe.headline}
-          </h2>
-          <p className="max-w-[52ch] text-[16px] leading-[1.5] tracking-[0.16px] text-body">
-            {globe.body}
-          </p>
+      {/* Intro + the live "try it from your home" search. */}
+      <div className="flex max-w-2xl flex-col items-start gap-4">
+        <SectionLabel>{globe.eyebrow}</SectionLabel>
+        <h2 className="font-display text-[clamp(1.75rem,4vw,36px)] font-normal leading-[1.17] tracking-[-0.36px] text-ink">
+          {globe.headline}
+        </h2>
+        <p className="text-[16px] leading-[1.5] tracking-[0.16px] text-body">
+          {globe.body}
+        </p>
 
-          <div className="mt-2 w-full max-w-sm">
-            <p className="mb-1.5 text-[13px] font-medium text-body-strong">
-              {globe.tryLabel}
-            </p>
-            <PlaceSearch
-              onSelect={handleSelectHome}
-              placeholder="Search your home town…"
+        <div className="mt-2 w-full max-w-sm">
+          <p className="mb-1.5 text-[13px] font-medium text-body-strong">
+            {globe.tryLabel}
+          </p>
+          <PlaceSearch
+            onSelect={handleSelectHome}
+            placeholder="Search your home town…"
+          />
+          <p className="mt-2 text-[13px] text-muted">
+            Measuring from{" "}
+            <span className="font-medium text-body-strong">{home.label}</span>
+            {home.id !== GLOBE_DEMO_HOME.id && (
+              <>
+                {" · "}
+                <button
+                  type="button"
+                  onClick={() => setHome(GLOBE_DEMO_HOME)}
+                  className="underline underline-offset-2 transition-colors hover:text-body"
+                >
+                  reset
+                </button>
+              </>
+            )}
+          </p>
+        </div>
+      </div>
+
+      {/* The measurement (globe) and its output (poster), both from the same
+          home — change it above and watch both update. */}
+      <div className="mt-12 grid items-center gap-8 md:grid-cols-2 md:gap-10">
+        {/* Square box reserves height so the late mount causes no layout shift. */}
+        <div
+          ref={wrapRef}
+          className="relative mx-auto aspect-square w-full max-w-[560px]"
+          aria-hidden
+        >
+          {ready && (
+            <GlobeScene
+              width={size.width}
+              height={size.height}
+              reduceMotion={reduceMotion}
+              home={home}
+              places={GLOBE_DEMO_PLACES}
             />
-            <p className="mt-2 text-[13px] text-muted">
-              Measuring from{" "}
-              <span className="font-medium text-body-strong">{home.label}</span>
-              {home.id !== GLOBE_DEMO_HOME.id && (
-                <>
-                  {" · "}
-                  <button
-                    type="button"
-                    onClick={() => setHome(GLOBE_DEMO_HOME)}
-                    className="underline underline-offset-2 transition-colors hover:text-body"
-                  >
-                    reset
-                  </button>
-                </>
-              )}
-            </p>
-          </div>
+          )}
         </div>
 
-        {/* Right: the measured globe. Square box reserves height so the late
-            mount causes no layout shift. */}
-        <div className="flex justify-center md:justify-end">
-          <div
-            ref={wrapRef}
-            className="relative aspect-square w-full max-w-[560px]"
-            aria-hidden
+        <div className="mx-auto flex w-full max-w-[400px] flex-col items-center gap-3">
+          <p className="self-start text-[13px] font-medium uppercase tracking-[0.08em] text-muted">
+            {globe.posterLabel}
+          </p>
+          <LandingPoster home={home} places={GLOBE_DEMO_PLACES} />
+          <Link
+            href={STUDIO_HREF}
+            className="text-[14px] font-medium text-ink underline underline-offset-4 transition-colors hover:text-body"
           >
-            {ready && (
-              <GlobeScene
-                width={size.width}
-                height={size.height}
-                reduceMotion={reduceMotion}
-                home={home}
-                places={GLOBE_DEMO_PLACES}
-              />
-            )}
-          </div>
+            {globe.posterCta} →
+          </Link>
         </div>
       </div>
     </Section>

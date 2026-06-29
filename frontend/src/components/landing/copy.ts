@@ -157,6 +157,8 @@ export const copy = {
     headline: "The exact bearing. The real distance.",
     body: "Most map prints just drop a pin. Pinprint measures the true compass bearing and great-circle distance from home to every place, then draws each one to scale — the same numbers we print on your poster. Search your own home town and watch every reading change.",
     tryLabel: "Try it — measure from your home town",
+    posterLabel: "The poster it makes",
+    posterCta: "Make your own",
   },
 
   showcase: {

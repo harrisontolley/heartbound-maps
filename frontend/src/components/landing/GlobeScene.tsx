@@ -1,16 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import {
-  DoubleSide,
-  Matrix4,
-  Mesh,
-  MeshBasicMaterial,
-  MeshPhongMaterial,
-  Shape,
-  ShapeGeometry,
-  Vector3,
-} from "three";
+import { MeshPhongMaterial } from "three";
 import Globe, { type GlobeMethods } from "react-globe.gl";
 import type { Place } from "@/lib/types";
 import {
@@ -26,19 +17,18 @@ import {
  * GlobeDemo — never imported on the server. Sizing + the (live-editable) home and
  * places are driven by the parent.
  *
- * Design: a "measured globe". Vector country outlines on a neutral sphere; arcs
- * from home to each place with chevron arrowheads; and an on-brand HTML callout
- * at each destination showing the EXACT bearing + great-circle distance. It
- * glides to frame the home then holds still so the readouts are legible; when the
+ * Design: a "measured globe". Vector country outlines on a green/blue earth;
+ * pulsing arcs from home to each place; and an on-brand HTML callout at each
+ * destination showing the EXACT bearing + great-circle distance. It glides to
+ * frame the home then holds still (no spin) so the readouts are legible; when the
  * home changes (the search widget), it recomputes and glides to the new home.
  */
 
-// Brand palette (globals.css @theme): neutral stone globe so the pastel orbs
-// behind and the affiliation-colored arcs carry the color.
-const OCEAN = "#d6d3d1"; // --color-hairline-strong
-const LAND_FILL = "#ffffff"; // --color-surface-card
-const LAND_SIDE = "rgba(120,113,108,0.18)"; // muted, faint extrusion edge
-const BORDER = "#a8a29e"; // --color-muted-soft
+// Earth palette: green land, blue ocean.
+const OCEAN = "#3f6fa3"; // ocean blue
+const LAND_FILL = "#5b9c6b"; // continent green
+const LAND_SIDE = "rgba(40,80,50,0.25)"; // faint extruded edge
+const BORDER = "#3a6b4f"; // darker green country lines
 
 const POV_MS = 1200; // camera glide duration
 
@@ -53,23 +43,6 @@ function homePov(home: Place) {
 
 /** Natural Earth feature — only the fields we touch. */
 type GeoFeature = { geometry: { type: string; coordinates: unknown } };
-
-// A flat ">" chevron pointing toward +x (the direction of travel), built once
-// and shared by every arrowhead; each arc clones it with its own color/transform.
-function buildChevronGeometry(): ShapeGeometry {
-  const s = new Shape();
-  s.moveTo(0, 0); // apex (tip)
-  s.lineTo(-1, 0.8); // upper outer
-  s.lineTo(-0.55, 0.8); // upper end cap
-  s.lineTo(-0.2, 0); // inner notch — keeps it an open chevron, not a triangle
-  s.lineTo(-0.55, -0.8); // lower end cap
-  s.lineTo(-1, -0.8); // lower outer
-  s.lineTo(0, 0);
-  return new ShapeGeometry(s);
-}
-const CHEVRON_GEOMETRY = buildChevronGeometry();
-const CHEVRON_SCALE = 0.075; // fraction of the globe radius
-const CHEVRON_ALT = 1.03; // radius multiplier — sits just above the surface
 
 /**
  * Brand-styled DOM callout for a city: name + (for destinations) the exact
@@ -94,7 +67,7 @@ function buildCallout(p: GlobePoint): HTMLElement {
   chip.style.borderRadius = "10px";
   chip.style.border = "1px solid #e7e5e4";
   chip.style.background = "rgba(255,255,255,0.92)";
-  chip.style.boxShadow = "0 4px 14px rgba(12,10,9,0.10)";
+  chip.style.boxShadow = "0 4px 14px rgba(12,10,9,0.16)";
   chip.style.fontFamily = "var(--font-inter), system-ui, sans-serif";
   chip.style.whiteSpace = "nowrap";
 
@@ -148,7 +121,6 @@ export default function GlobeScene({
   const globeRef = useRef<GlobeMethods | undefined>(undefined);
   const mountedRef = useRef(true);
   const [ready, setReady] = useState(false);
-  const [settled, setSettled] = useState(false);
   const { arcs, points } = useMemo(
     () => buildGlobeData(home, places),
     [home, places],
@@ -164,7 +136,7 @@ export default function GlobeScene({
 
   // Solid ocean sphere; country polygons sit just above it.
   const globeMaterial = useMemo(
-    () => new MeshPhongMaterial({ color: OCEAN, shininess: 6 }),
+    () => new MeshPhongMaterial({ color: OCEAN, shininess: 8 }),
     [],
   );
 
@@ -197,49 +169,6 @@ export default function GlobeScene({
     g.pointOfView(homePov(home), reduceMotion ? 0 : POV_MS);
   }, [ready, home, reduceMotion]);
 
-  // Let the arcs march on briefly, then freeze solid. Skipped under reduced
-  // motion (arcs render solid from the start) and not re-run on home changes.
-  useEffect(() => {
-    if (!ready || reduceMotion) return;
-    const t = window.setTimeout(() => setSettled(true), POV_MS + 600);
-    return () => window.clearTimeout(t);
-  }, [ready, reduceMotion]);
-
-  // Chevron arrowheads as a custom three.js layer: one flat chevron at each
-  // arc's destination, oriented along the great-circle bearing (direction of
-  // travel) so it reads as an arrow arriving at the city.
-  const makeChevron = (d: object) => {
-    const a = d as GlobeArc;
-    return new Mesh(
-      CHEVRON_GEOMETRY,
-      new MeshBasicMaterial({ color: a.color[1], side: DoubleSide }),
-    );
-  };
-
-  const placeChevron = (obj: object, d: object) => {
-    const g = globeRef.current;
-    if (!g) return;
-    const a = d as GlobeArc;
-    const mesh = obj as Mesh;
-    const R = g.getGlobeRadius();
-    const ec = g.getCoords(a.endLat, a.endLng, 0);
-    const sc = g.getCoords(a.startLat, a.startLng, 0);
-    const end = new Vector3(ec.x, ec.y, ec.z).normalize();
-    const start = new Vector3(sc.x, sc.y, sc.z).normalize();
-    // Tangent at the destination, pointing in the direction of travel.
-    const planeN = new Vector3().crossVectors(start, end).normalize();
-    const forward = new Vector3().crossVectors(planeN, end).normalize();
-    const side = new Vector3().crossVectors(end, forward).normalize();
-    mesh.quaternion.setFromRotationMatrix(
-      new Matrix4().makeBasis(forward, side, end),
-    );
-    mesh.scale.setScalar(R * CHEVRON_SCALE);
-    mesh.position.copy(end.multiplyScalar(R * CHEVRON_ALT));
-  };
-
-  // Arcs march on during the intro, then hold solid.
-  const arcsAnimating = !reduceMotion && !settled;
-
   return (
     <Globe
       ref={globeRef}
@@ -249,8 +178,8 @@ export default function GlobeScene({
       globeImageUrl={null}
       globeMaterial={globeMaterial}
       showAtmosphere
-      atmosphereColor="#cfcbc6"
-      atmosphereAltitude={0.2}
+      atmosphereColor="#9cc0e0"
+      atmosphereAltitude={0.22}
       onGlobeReady={() => {
         if (mountedRef.current) setReady(true);
       }}
@@ -262,7 +191,8 @@ export default function GlobeScene({
       polygonStrokeColor={() => BORDER}
       polygonAltitude={0.012}
       polygonsTransitionDuration={0}
-      // Arcs: home -> each place, gradient-colored home-ink -> affiliation.
+      // Arcs: home -> each place, gradient-colored home-ink -> affiliation,
+      // pulsing continuously (solid under reduced motion).
       arcsData={arcs}
       arcStartLat={(d) => (d as GlobeArc).startLat}
       arcStartLng={(d) => (d as GlobeArc).startLng}
@@ -270,11 +200,11 @@ export default function GlobeScene({
       arcEndLng={(d) => (d as GlobeArc).endLng}
       arcColor={(d: object) => (d as GlobeArc).color}
       arcLabel={(d) => (d as GlobeArc).label}
-      arcStroke={0.55}
+      arcStroke={0.6}
       arcAltitudeAutoScale={0.35}
-      arcDashLength={arcsAnimating ? 0.5 : 1}
-      arcDashGap={arcsAnimating ? 0.22 : 0}
-      arcDashAnimateTime={arcsAnimating ? 2200 : 0}
+      arcDashLength={reduceMotion ? 1 : 0.5}
+      arcDashGap={reduceMotion ? 0 : 0.25}
+      arcDashAnimateTime={reduceMotion ? 0 : 2000}
       // City markers.
       pointsData={points}
       pointLat={(d) => (d as GlobePoint).lat}
@@ -292,10 +222,6 @@ export default function GlobeScene({
       htmlElementVisibilityModifier={(el, isVisible) => {
         (el as HTMLElement).style.opacity = isVisible ? "1" : "0";
       }}
-      // Chevron arrowheads at each destination (built once the globe is ready).
-      customLayerData={ready ? arcs : []}
-      customThreeObject={makeChevron}
-      customThreeObjectUpdate={placeChevron}
     />
   );
 }
