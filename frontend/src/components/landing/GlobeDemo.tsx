@@ -140,6 +140,11 @@ export function GlobeDemo() {
           className="relative mx-auto aspect-square w-full max-w-[560px]"
           aria-hidden
         >
+          {/* Soft contact shadow grounds the (transparent-background) globe. */}
+          <div
+            className="pointer-events-none absolute inset-x-[12%] bottom-[6%] h-[12%] rounded-[50%] bg-[radial-gradient(ellipse_at_center,rgba(12,10,9,0.28),rgba(12,10,9,0)_70%)] blur-md"
+            aria-hidden
+          />
           {ready && (
             <GlobeScene
               width={size.width}
@@ -151,7 +156,7 @@ export function GlobeDemo() {
           )}
         </div>
 
-        <div className="mx-auto flex w-full max-w-[400px] flex-col items-center gap-3">
+        <div className="mx-auto flex w-full max-w-[520px] flex-col items-center gap-3">
           <p className="self-start text-[13px] font-medium uppercase tracking-[0.08em] text-muted">
             {globe.posterLabel}
           </p>

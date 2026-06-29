@@ -1,7 +1,12 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { MeshPhongMaterial } from "three";
+import {
+  AmbientLight,
+  Color,
+  DirectionalLight,
+  MeshPhongMaterial,
+} from "three";
 import Globe, { type GlobeMethods } from "react-globe.gl";
 import type { Place } from "@/lib/types";
 import {
@@ -134,9 +139,16 @@ export default function GlobeScene({
     };
   }, []);
 
-  // Solid ocean sphere; country polygons sit just above it.
+  // Solid ocean sphere; country polygons sit just above it. A cool specular
+  // highlight + tighter shininess give the ocean a moving sheen under the
+  // directional "sun" (set up once the globe is ready) rather than a flat fill.
   const globeMaterial = useMemo(
-    () => new MeshPhongMaterial({ color: OCEAN, shininess: 8 }),
+    () =>
+      new MeshPhongMaterial({
+        color: OCEAN,
+        specular: new Color("#bcd8f0"),
+        shininess: 22,
+      }),
     [],
   );
 
@@ -154,6 +166,20 @@ export default function GlobeScene({
       alive = false;
     };
   }, []);
+
+  // Replace react-globe's flat default lighting with a fixed-in-world "sun": a warm
+  // directional light from the upper-left plus a softer ambient fill, so the sphere
+  // gets a real day/night terminator and the ocean sheen reads. World-space (added to
+  // the scene, not the camera) so the shaded side stays put as the globe glides.
+  useEffect(() => {
+    if (!ready) return;
+    const g = globeRef.current;
+    if (!g) return;
+    const ambient = new AmbientLight(0xffffff, 0.6);
+    const sun = new DirectionalLight(0xfff4e6, 2.1);
+    sun.position.set(-1.4, 0.9, 1.6);
+    g.lights([ambient, sun]);
+  }, [ready]);
 
   // Frame the home and hold — glides in on reveal and to the new home whenever it
   // changes (the search widget). No perpetual auto-rotate; drag stays enabled.
@@ -178,8 +204,8 @@ export default function GlobeScene({
       globeImageUrl={null}
       globeMaterial={globeMaterial}
       showAtmosphere
-      atmosphereColor="#9cc0e0"
-      atmosphereAltitude={0.22}
+      atmosphereColor="#a9cdec"
+      atmosphereAltitude={0.2}
       onGlobeReady={() => {
         if (mountedRef.current) setReady(true);
       }}
