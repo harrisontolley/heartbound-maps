@@ -214,27 +214,9 @@ export function PosterStudio() {
         />
       );
     }
-    let primary: NavAction;
-    let secondary: NavAction | undefined;
-    if (current.id === "size") {
-      primary = { label: "Review →", onClick: () => goTo(STEP_INDEX.review) };
-      secondary = {
-        label: "Personalize",
-        onClick: () => goTo(STEP_INDEX.customize),
-      };
-    } else if (current.id === "customize") {
-      primary = { label: "Done → Review", onClick: () => goTo(STEP_INDEX.review) };
-    } else {
-      primary = { label: "Next →", onClick: next };
-    }
-    return (
-      <WizardNav
-        showBack={step > 0}
-        onBack={back}
-        primary={primary}
-        secondary={secondary}
-      />
-    );
+    // Linear flow: Style → Places → Customize → Size → Review.
+    const primary: NavAction = { label: "Next →", onClick: next };
+    return <WizardNav showBack={step > 0} onBack={back} primary={primary} />;
   }
 
   return (

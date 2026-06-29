@@ -13,6 +13,7 @@ import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { usePosterStore } from "@/lib/store/posterStore";
 import { apiUrl } from "@/lib/api";
+import { AFFILIATIONS } from "@/lib/affiliations";
 import type { GeoResult } from "@/lib/types";
 
 function dot(color: string, ring: string): L.DivIcon {
@@ -24,7 +25,11 @@ function dot(color: string, ring: string): L.DivIcon {
   });
 }
 const homeIcon = dot("#0c0a09", "rgba(0,0,0,.4)");
-const placeIcon = dot("#e4572e", "rgba(0,0,0,.25)");
+// Place markers are tinted by tie type; cache one icon per color.
+const placeIconCache: Record<string, L.DivIcon> = {};
+function placeIconFor(color: string): L.DivIcon {
+  return (placeIconCache[color] ??= dot(color, "rgba(0,0,0,.2)"));
+}
 
 function ClickToAdd() {
   const addFromGeo = usePosterStore((s) => s.addFromGeo);
@@ -82,11 +87,12 @@ export default function MapPicker() {
       zoom={2}
       worldCopyJump
       className="h-full w-full"
-      style={{ background: "#aadaff" }}
+      style={{ background: "#e9e9ea" }}
     >
       <TileLayer
-        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        attribution='&copy; OpenStreetMap contributors'
+        url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png"
+        subdomains="abcd"
+        attribution='&copy; OpenStreetMap contributors &copy; CARTO'
       />
       <ClickToAdd />
       <FitBounds pts={pts} />
@@ -96,7 +102,11 @@ export default function MapPicker() {
         </Marker>
       )}
       {places.map((p) => (
-        <Marker key={p.id} position={[p.lat, p.lng]} icon={placeIcon}>
+        <Marker
+          key={p.id}
+          position={[p.lat, p.lng]}
+          icon={placeIconFor(AFFILIATIONS[p.affiliation].color)}
+        >
           <Tooltip>{p.label}</Tooltip>
         </Marker>
       ))}

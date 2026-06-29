@@ -1,10 +1,9 @@
 /**
  * The staged studio flow. One decision per screen, with the live poster preview
- * visible at every step (see PosterStudio). `customize` is optional — the forward
- * path runs Style → Places → Size → Review, and Size offers a "Personalize" detour
- * into Customize. Order here is the order shown in the progress stepper.
+ * visible at every step (see PosterStudio). The path is linear: Style → Places →
+ * Customize → Size → Review. Order here is the order shown in the progress stepper.
  */
-export type StepId = "style" | "places" | "size" | "customize" | "review";
+export type StepId = "style" | "places" | "customize" | "size" | "review";
 
 export type StepMeta = {
   id: StepId;
@@ -19,8 +18,8 @@ export type StepMeta = {
 export const STEPS: StepMeta[] = [
   { id: "style", label: "Style", title: "Pick a style" },
   { id: "places", label: "Places", title: "Add your places" },
+  { id: "customize", label: "Customize", title: "Make it yours" },
   { id: "size", label: "Size", title: "Choose a size" },
-  { id: "customize", label: "Customize", title: "Make it yours", optional: true },
   { id: "review", label: "Review", title: "Review & order" },
 ];
 
