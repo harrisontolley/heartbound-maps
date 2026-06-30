@@ -56,7 +56,7 @@ describe("buildCreateOrderBody", () => {
     expect(item.unitPrice).toBe(59);
     expect(item.productInfo).toMatchObject({
       catalogProductId: "IndividualArtPrint",
-      paperType: "MattePoster",
+      paperType: "HotPressFineArt",
       size: "x16x24",
       orientation: "Vertical",
       includeFramingService: false,
@@ -81,6 +81,7 @@ describe("buildCreateOrderBody", () => {
     });
     const body = buildCreateOrderBody(o, false);
     expect(body.items[0].productInfo).toMatchObject({
+      paperType: "ArchivalMatteFineArt",
       includeFramingService: true,
       frameStyle: "Oak",
       frameColor: "BlackOak",

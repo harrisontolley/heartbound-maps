@@ -290,7 +290,7 @@ export const copy = {
           },
           {
             q: "How is each print made?",
-            a: "Every print is made to order and checked by hand before it ships. Nothing is mass-produced — your piece is printed the moment you order it.",
+            a: "Made to order with archival pigment inks on heavyweight fine-art paper that resists fading for decades. Loose prints are 300gsm 100% cotton rag; framed pieces use a smooth archival fine-art paper that looks its best behind glass. Printed the moment you order — checked by hand, never mass-produced.",
           },
           {
             q: "Can I get it framed?",

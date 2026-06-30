@@ -15,7 +15,7 @@ import type { OrderStatus } from "./orders.js";
 export const PRINT_PRICE_CENTS: Record<string, number> = {
   "portrait-12x18": 4500, // good (lifted off the under-market $39 entry)
   "portrait-16x24": 5900, // popular / hero
-  "portrait-24x36": 8900, // premium anchor
+  "portrait-24x36": 9500, // premium anchor (lifted $89→$95 to hold ~60% on cotton rag)
 };
 
 /**
@@ -30,19 +30,21 @@ export const PRINT_PRICE_CENTS: Record<string, number> = {
 export const LIST_PRICE_CENTS: Record<string, number> = {
   "portrait-12x18": 6000, // 25% off $45
   "portrait-16x24": 7900, // 25% off $59 (true 25.3%, floored to 25)
-  "portrait-24x36": 11900, // 25% off $89 (true 25.2%, floored to 25)
+  "portrait-24x36": 12700, // 25% off $95 (true 25.2%, floored to 25)
 };
 
 /**
- * Ready-to-hang frame upcharge by product id (added on top of the print). Set to
- * protect margin against the real oak-frame COGS verified live from Artelo
- * (framed landed cost ≈ $33.86 / $44.35 / $89.16): the +$100 24×36 upcharge keeps
- * the framed 24×36 ($189) at ~53% margin instead of the ~6%-on-the-upcharge it was.
+ * Ready-to-hang frame upcharge by product id (added on top of the print). Framed
+ * prints are fulfilled on Archival Matte fine-art paper, not the 100% cotton rag
+ * used for loose prints: behind glass the cotton-rag texture is invisible while
+ * its framed COGS run much higher, so Archival Matte holds the frame tier's price
+ * and margin. Live Artelo framed (Oak) landed COGS ≈ $35.91 / $46.98 / $93.46 keep
+ * framed totals $95 / $119 / $195 at ~62% / 60% / 52% margin.
  */
 export const FRAME_UPCHARGE_CENTS: Record<string, number> = {
-  "portrait-12x18": 5000, // framed total $95
-  "portrait-16x24": 6000, // framed total $119
-  "portrait-24x36": 10000, // framed total $189 (~53% margin, off the top-of-market ceiling)
+  "portrait-12x18": 5000, // framed total $95 (~62% margin)
+  "portrait-16x24": 6000, // framed total $119 (~60% margin)
+  "portrait-24x36": 10000, // framed total $195 (~52% margin, off the top-of-market ceiling)
 };
 
 /** Standalone digital download — also included free with any print. */
@@ -56,8 +58,8 @@ export const DEFAULT_FRAME_UPCHARGE_CENTS = 6000;
 
 /**
  * Shipping policy: free standard shipping on every order, no threshold. The
- * per-size Artelo COGS already include US shipping, so margins (~62–73%) absorb
- * it, and most orders are a single poster (a threshold would only add friction).
+ * per-size Artelo COGS already include US shipping, so margins (~52–63%) absorb
+ * it, and most orders are a single print (a threshold would only add friction).
  * Checkout charges $0 shipping (`shippingCents: 0`); this flag single-sources the
  * customer-facing "Free shipping" copy so the policy lives in one place.
  */
@@ -183,10 +185,12 @@ export const OFFERED_PRODUCT_IDS = [
 // Enum strings below are confirmed against the live Artelo validator
 // (POST /catalog/get-costs and /orders/create) — see docs/integrations/artelo.md.
 //   size       : "x12x18" | "x16x24" | "x24x36" (leading-`x` WxH inches)
-//   paperType  : "MattePoster" (Poster line; also Glossy/SemiGloss/…Photo/…FineArt)
+//   paperType  : loose = "HotPressFineArt" (100% cotton rag); framed = "ArchivalMatteFineArt"
+//                (the Poster/Photo/…FineArt lines all exist — this is the single place to retune)
 //   frameStyle : "Unframed" | "Oak" | "Metal" | "PremiumOak" | "PremiumMetal"
 //   frameColor : "Unframed" | "{Natural,Black,White,Walnut}Oak" | "{White,Black,Silver,Gold}Metal" (+ Premium*)
-// Default print line: Poster + Matte; default frame: black oak. Single place to retune.
+// Default print line: Fine Art (Hot Press cotton rag loose / Archival Matte framed);
+// default frame: black oak. Single place to retune.
 
 export type ArteloOrientation = "Vertical" | "Horizontal";
 
@@ -198,8 +202,10 @@ export type ArteloFrameSpec = {
 export type ArteloProductSpec = {
   /** Artelo catalog product enum. */
   catalogProductId: "IndividualArtPrint";
-  /** Artelo paperType enum, e.g. "MattePoster". */
+  /** Artelo paperType for a loose (unframed) print, e.g. "HotPressFineArt". */
   paperType: string;
+  /** Artelo paperType for a framed print (behind glass), e.g. "ArchivalMatteFineArt". */
+  framedPaperType: string;
   /** Artelo size enum, e.g. "x12x18" (leading-`x` WxH form). */
   size: string;
   orientation: ArteloOrientation;
@@ -219,25 +225,38 @@ const UNFRAMED: ArteloFrameSpec = {
   frameColor: "Unframed",
 };
 
+/**
+ * Print substrates (both are genuine archival fine-art papers, pigment inks):
+ *  - loose prints are the tactile hero on 300gsm 100% cotton rag;
+ *  - framed prints use 230gsm Archival Matte — invisible behind glass, and its
+ *    much lower framed COGS hold the frame tier's price + margin (see
+ *    FRAME_UPCHARGE_CENTS).
+ */
+const LOOSE_PAPER_TYPE = "HotPressFineArt";
+const FRAMED_PAPER_TYPE = "ArchivalMatteFineArt";
+
 /** productId → Artelo print spec (the offered 2:3 portrait ladder). */
 export const ARTELO_PRODUCT_BY_ID: Record<string, ArteloProductSpec> = {
   "portrait-12x18": {
     catalogProductId: "IndividualArtPrint",
-    paperType: "MattePoster",
+    paperType: LOOSE_PAPER_TYPE,
+    framedPaperType: FRAMED_PAPER_TYPE,
     size: "x12x18",
     orientation: "Vertical",
     frame: DEFAULT_FRAME,
   },
   "portrait-16x24": {
     catalogProductId: "IndividualArtPrint",
-    paperType: "MattePoster",
+    paperType: LOOSE_PAPER_TYPE,
+    framedPaperType: FRAMED_PAPER_TYPE,
     size: "x16x24",
     orientation: "Vertical",
     frame: DEFAULT_FRAME,
   },
   "portrait-24x36": {
     catalogProductId: "IndividualArtPrint",
-    paperType: "MattePoster",
+    paperType: LOOSE_PAPER_TYPE,
+    framedPaperType: FRAMED_PAPER_TYPE,
     size: "x24x36",
     orientation: "Vertical",
     frame: DEFAULT_FRAME,
@@ -261,8 +280,9 @@ export type ArteloProductInfo = {
 /**
  * Build the Artelo `productInfo` (minus the design/image) for a product id.
  * Returns null for products we don't fulfil through Artelo. When `addFrame` is
- * set, the frame attributes + framing service are included; otherwise the frame
- * fields are "Unframed" (required by Artelo's schema).
+ * set, the frame attributes + framing service are included and the print runs on
+ * the framed paper (Archival Matte); otherwise the frame fields are "Unframed"
+ * (required by Artelo's schema) and the print runs on the loose paper (cotton rag).
  */
 export function arteloProductInfoFor(
   productId: string,
@@ -273,7 +293,7 @@ export function arteloProductInfoFor(
   const frame = addFrame ? spec.frame : UNFRAMED;
   return {
     catalogProductId: spec.catalogProductId,
-    paperType: spec.paperType,
+    paperType: addFrame ? spec.framedPaperType : spec.paperType,
     size: spec.size,
     orientation: spec.orientation,
     includeFramingService: addFrame,

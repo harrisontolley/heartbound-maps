@@ -55,7 +55,9 @@ export function BuyBar({
   const subtitle =
     format === "digital"
       ? "High-resolution digital download"
-      : `Fine art print · digital file included${addFrame ? " · framed" : ""}`;
+      : addFrame
+        ? "Framed archival fine art print · digital file included"
+        : "Cotton-rag fine art print · digital file included";
 
   return (
     <div

@@ -58,24 +58,30 @@ Verified end-to-end against the **live** Artelo API with the production key:
   (`isTestOrder:true`) return `status:"Ignored"` with the COGS breakdown in `details`.
 - `GET /orders/get-by-id?orderId=…` and `DELETE /orders/cancel?id=…` confirmed.
 
-Live landed COGS (production + US shipping), Matte Poster 2:3 — used for pricing/margins:
+Live landed COGS (production + US shipping), 2:3 — used for pricing/margins. **Substrate
+updated 2026-06-30**: loose prints → Hot Press 100% cotton rag; framed prints → Archival
+Matte (behind glass). Re-verified live 2026-06-30:
 
-| size | unframed | framed (Oak) |
+| size | unframed (Hot Press) | framed Oak (Archival Matte) |
 | --- | --- | --- |
-| 12×18 | $11.62 | $33.86 |
-| 16×24 | $14.14 | $44.35 |
-| 24×36 | $23.55 | $89.16 |
+| 12×18 | $16.74 | $35.91 |
+| 16×24 | $22.51 | $46.98 |
+| 24×36 | $38.55 | $93.46 |
+
+(Prior Matte Poster COGS, for reference: unframed $11.62 / $14.14 / $23.55, framed Oak
+$33.86 / $44.35 / $89.16.)
 
 ## Product mapping (confirmed against the live validator)
 
 An Artelo order line references a product by **attributes**, not a SKU. The offered
-2:3 portrait ladder maps to the **Poster + Matte** line:
+2:3 portrait ladder maps to the **Fine Art** line — loose prints on Hot Press 100% cotton
+rag, framed prints on Archival Matte (commerce.ts `LOOSE_PAPER_TYPE` / `FRAMED_PAPER_TYPE`):
 
-| productId | catalogProductId | paperType | size | orientation |
-| --- | --- | --- | --- | --- |
-| `portrait-12x18` | `IndividualArtPrint` | `MattePoster` | `x12x18` | `Vertical` |
-| `portrait-16x24` | `IndividualArtPrint` | `MattePoster` | `x16x24` | `Vertical` |
-| `portrait-24x36` | `IndividualArtPrint` | `MattePoster` | `x24x36` | `Vertical` |
+| productId | catalogProductId | paperType (loose) | paperType (framed) | size | orientation |
+| --- | --- | --- | --- | --- | --- |
+| `portrait-12x18` | `IndividualArtPrint` | `HotPressFineArt` | `ArchivalMatteFineArt` | `x12x18` | `Vertical` |
+| `portrait-16x24` | `IndividualArtPrint` | `HotPressFineArt` | `ArchivalMatteFineArt` | `x16x24` | `Vertical` |
+| `portrait-24x36` | `IndividualArtPrint` | `HotPressFineArt` | `ArchivalMatteFineArt` | `x24x36` | `Vertical` |
 
 Confirmed enum values (from `POST /catalog/get-costs` and `/orders/create` validation errors):
 - **size**: leading-`x` WxH inches, e.g. `x12x18`, `x16x24`, `x24x36` (and many more).
@@ -87,6 +93,24 @@ Confirmed enum values (from `POST /catalog/get-costs` and `/orders/create` valid
   `{White,Black,Silver,Gold}Metal`, plus the `Premium*` variants. Default framed = `Oak`/`BlackOak`.
 
 To retune paper/frame, edit `ARTELO_PRODUCT_BY_ID` in `packages/shared/src/commerce.ts`.
+
+## Canvas is NOT available via the open API
+
+Artelo markets canvas / gallery wraps on its website, but the **open API we fulfil through
+does not expose canvas** — verified live (2026-06-30) against `POST /catalog/get-costs`:
+
+- `catalogProductId` accepts only `IndividualArtPrint`, `SetOf{2,3,4,5,6,8,9,10,12,15}ArtPrints`,
+  the place-named framed lines `Brighton|Bristol|Camden|Hudson|Kent|Warwick|Windsor|York`,
+  `PictureFrame`, `SetOf{2,3,4,6,9,12}Frames`. No canvas.
+- `paperType` accepts only the papers above + `Foil`. No canvas material.
+- The `size` enum (~180 inch/metric values) has no canvas product, and there is no
+  catalog-list endpoint (`/catalog`, `/catalog/products`, `/catalog/get-products` → 404).
+
+Canvas is Shopify/Etsy/dashboard-only. **To revisit:** ask Artelo dev support whether canvas
+is orderable via the open API and, if so, which `catalogProductId` + `paperType` to use (and
+whether it's enabled for our account). If enabled, the wiring is small — model canvas as new
+`productId`s reusing the portrait 2:3 viewBox, add `ARTELO_PRODUCT_BY_ID` entries, widen the
+`catalogProductId` literal type to a union, surface via a parallel offered list, keep it unframed.
 
 ## Canonical flow
 
