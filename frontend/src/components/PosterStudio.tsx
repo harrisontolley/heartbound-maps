@@ -5,9 +5,13 @@ import { usePosterStore } from "@/lib/store/posterStore";
 import { useFontsReady } from "@/hooks/useFontsReady";
 import { useHydrated } from "@/hooks/useHydrated";
 import { useMeasuredLayout } from "@/hooks/useMeasuredLayout";
-import { getActiveTemplate, TEMPLATE_ORDER } from "@/lib/templates/registry";
+import {
+  getActiveTemplate,
+  TEMPLATE_ORDER,
+  DEFAULT_TEMPLATE_ID,
+} from "@/lib/templates/registry";
 import { VINTAGE_VARIANT_ORDER } from "@/lib/templates/vintageVariants";
-import { resolveCustomized } from "@/lib/templates/customize";
+import { resolveCustomized, isCustomized } from "@/lib/templates/customize";
 import { PRODUCTS_BY_ID } from "@/lib/commerce/printProducts";
 import type { StudioSelection } from "@/lib/commerce/price";
 import { useCartStore } from "@/lib/store/cartStore";
@@ -18,6 +22,7 @@ import { exportSvg, exportPng, exportPngBlob, slugify } from "@/lib/export";
 import { uploadPosterPng } from "@/lib/upload/uploadPosterPng";
 import { STEPS, STEP_INDEX } from "@/lib/studio/steps";
 import { StudioHeader } from "@/components/studio/StudioHeader";
+import { ConfirmDialog } from "@/components/ui/Dialog";
 import { PosterStage } from "@/components/studio/PosterStage";
 import { BuyBar } from "@/components/studio/BuyBar";
 import { WizardProgress } from "@/components/studio/wizard/WizardProgress";
@@ -54,6 +59,7 @@ export function PosterStudio() {
   const format = usePosterStore((s) => s.format);
   const addFrame = usePosterStore((s) => s.addFrame);
   const customization = usePosterStore((s) => s.customization);
+  const resetDesign = usePosterStore((s) => s.resetDesign);
 
   const base = getActiveTemplate(templateId, vintageVariant);
   const { template, display, text } = useMemo(
@@ -75,6 +81,7 @@ export function PosterStudio() {
   // the progress bar lets you jump back to.
   const [step, setStep] = useState(0);
   const [furthest, setFurthest] = useState(0);
+  const [confirmingReset, setConfirmingReset] = useState(false);
   const headingRef = useRef<HTMLHeadingElement>(null);
   const firstFocus = useRef(true);
 
@@ -85,6 +92,21 @@ export function PosterStudio() {
   };
   const next = () => goTo(step + 1);
   const back = () => goTo(step - 1);
+
+  // "Start over" wipes the design back to a fresh studio and returns to step 1.
+  // Only offered once there's actually something to reset (mirrors the header's
+  // leave guard), and confirmed first since it can't be undone.
+  const hasWork =
+    home != null ||
+    places.length > 0 ||
+    templateId !== DEFAULT_TEMPLATE_ID ||
+    isCustomized(customization);
+  const startOver = () => {
+    resetDesign();
+    setStep(0);
+    setFurthest(0);
+    setConfirmingReset(false);
+  };
 
   useEffect(() => {
     // Restore the auto-saved draft first, then layer any ?template/?variant deep
@@ -190,6 +212,7 @@ export function PosterStudio() {
     fontsReady,
     bearingMode,
     scaleByDistance: customization.scaleArrowsByDistance,
+    showDistances: display.distances,
   });
   const items = mounted ? measured : [];
 
@@ -288,12 +311,32 @@ export function PosterStudio() {
               >
                 {current.title}
               </h2>
+              {hasWork && (
+                <button
+                  type="button"
+                  onClick={() => setConfirmingReset(true)}
+                  className="ml-auto shrink-0 text-xs text-muted-soft transition-colors hover:text-error"
+                >
+                  Start over
+                </button>
+              )}
             </div>
             {renderStep()}
           </div>
           {renderBottom()}
         </section>
       </div>
+
+      <ConfirmDialog
+        open={confirmingReset}
+        title="Start over?"
+        body="This clears your home, places, and style so you can begin a fresh design. It can't be undone."
+        confirmLabel="Start over"
+        cancelLabel="Keep editing"
+        emphasis="cancel"
+        onConfirm={startOver}
+        onCancel={() => setConfirmingReset(false)}
+      />
     </div>
   );
 }

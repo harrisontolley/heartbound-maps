@@ -82,6 +82,9 @@ type PosterState = {
   clearPlaces: () => void;
   /** Reset to an empty studio (no home, no places). */
   resetAll: () => void;
+  /** Start a fresh design: clear home, places, style, and size back to defaults.
+   *  Keeps display preferences (units, bearing mode). */
+  resetDesign: () => void;
   /** Restore the showcase seed. */
   loadSeed: () => void;
   /** Add a geocoder result; first add becomes home. Returns the outcome. */
@@ -152,6 +155,18 @@ export const usePosterStore = create<PosterState>()(
   resetCustomization: () => set({ customization: DEFAULT_CUSTOMIZATION }),
   clearPlaces: () => set({ places: [] }),
   resetAll: () => set({ home: null, places: [] }),
+  resetDesign: () =>
+    set({
+      home: null,
+      places: [],
+      templateId: DEFAULT_TEMPLATE_ID,
+      vintageVariant: "classic",
+      sizeId: DEFAULT_POSTER_SIZE_ID,
+      productId: DEFAULT_PRODUCT_ID,
+      format: "print",
+      addFrame: false,
+      customization: DEFAULT_CUSTOMIZATION,
+    }),
   loadSeed: () => set({ home: SEED_HOME, places: SEED_PLACES }),
   addFromGeo: (r, affiliation = "visited") => {
     const s = get();

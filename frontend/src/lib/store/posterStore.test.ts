@@ -1,5 +1,7 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { usePosterStore } from "./posterStore";
+import { DEFAULT_TEMPLATE_ID } from "../templates/registry";
+import { DEFAULT_CUSTOMIZATION } from "../templates/customize";
 import type { Place } from "../types";
 
 const p = (over: Partial<Place> & { id: string }): Place => ({
@@ -64,5 +66,26 @@ describe("posterStore", () => {
     const s = usePosterStore.getState();
     expect(s.home?.id).toBe("h");
     expect(s.places).toHaveLength(0);
+  });
+
+  it("resetDesign wipes the design to defaults but keeps display prefs", () => {
+    usePosterStore.setState({
+      home: p({ id: "h" }),
+      places: [p({ id: "a" })],
+      units: "mi",
+      templateId: "bold-modern",
+      addFrame: true,
+    });
+    usePosterStore.getState().setCustomization({ scaleArrowsByDistance: false });
+
+    usePosterStore.getState().resetDesign();
+
+    const s = usePosterStore.getState();
+    expect(s.home).toBeNull();
+    expect(s.places).toHaveLength(0);
+    expect(s.templateId).toBe(DEFAULT_TEMPLATE_ID);
+    expect(s.addFrame).toBe(false);
+    expect(s.customization).toEqual(DEFAULT_CUSTOMIZATION);
+    expect(s.units).toBe("mi"); // display preference is preserved, not a design field
   });
 });

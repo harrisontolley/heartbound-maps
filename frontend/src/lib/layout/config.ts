@@ -34,7 +34,9 @@ export function defaultLayoutConfig(
     labelGap: 16,
     pushStep: 10,
     perpStep: 12,
-    maxIters: 600,
+    // Generous cap: the symmetric pass and the asymmetric fallback each resolve
+    // monotonically, so this is a convergence backstop, not a tuning knob.
+    maxIters: 800,
     boxPadding: 6,
     ...overrides,
   };

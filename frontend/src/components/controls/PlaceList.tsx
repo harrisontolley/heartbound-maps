@@ -178,7 +178,6 @@ function PlaceRow({ place, home }: { place: Place; home: Place | null }) {
 export function PlaceList() {
   const home = usePosterStore((s) => s.home);
   const places = usePosterStore((s) => s.places);
-  const resetAll = usePosterStore((s) => s.resetAll);
 
   if (!home && places.length === 0) {
     return (
@@ -203,13 +202,6 @@ export function PlaceList() {
           <PlaceRow key={p.id} place={p} home={home} />
         ))}
       </ul>
-      <button
-        type="button"
-        onClick={resetAll}
-        className="self-end text-xs text-muted-soft transition-colors hover:text-error"
-      >
-        Start over
-      </button>
     </div>
   );
 }

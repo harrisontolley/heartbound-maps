@@ -50,7 +50,17 @@ function measureWidth(text: string, font: string, letterSpacing: number): number
   return lsApplied ? w : w + Math.max(0, text.length - 1) * letterSpacing;
 }
 
-export function createMeasurer(t: TemplateSpec, units: Units): MeasureFn {
+/**
+ * Build a measurer for this template. `showDistances` mirrors the render-time
+ * toggle so the label box matches what's actually drawn: with distances hidden a
+ * label is one line tall (just the name), which both fixes the icon's vertical
+ * centring in PlaceLabel and shrinks the box the collision engine reasons about.
+ */
+export function createMeasurer(
+  t: TemplateSpec,
+  units: Units,
+  showDistances = true,
+): MeasureFn {
   const nameFamily = resolveFamily(t.nameFamily);
   const distFamily = resolveFamily(t.distFamily);
   const variant = t.nameTransform === "smallcaps" ? "small-caps " : "";
@@ -60,8 +70,13 @@ export function createMeasurer(t: TemplateSpec, units: Units): MeasureFn {
   return (item: Computed): LabelSize => {
     const { name, dist } = labelStrings(item, t, units);
     const nameW = measureWidth(name, nameFont, t.nameLetterSpacing);
-    const distW = measureWidth(dist, distFont, t.distLetterSpacing);
+    const distW = showDistances
+      ? measureWidth(dist, distFont, t.distLetterSpacing)
+      : 0;
     const textW = Math.max(nameW, distW);
-    return { w: t.iconSize + LABEL_ICON_GAP + textW, h: 2 * t.lineHeight };
+    return {
+      w: t.iconSize + LABEL_ICON_GAP + textW,
+      h: (showDistances ? 2 : 1) * t.lineHeight,
+    };
   };
 }

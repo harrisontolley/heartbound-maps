@@ -1,7 +1,15 @@
 import type { Computed } from "../types";
 import { bearingToVec } from "../geo/projection";
-import { rectsOverlap } from "./aabb";
+import { rectsOverlap, segIntersectsRect } from "./aabb";
 import { distanceRadius } from "./magnitude";
+
+/**
+ * Two spokes whose directions are at least this aligned (|dir·dir| ≥ cos≈16°) are
+ * "near-collinear": growing a label's radius just slides it along the shared line,
+ * so it can only be cleared by a perpendicular nudge. Set a touch wider than the
+ * bearing-cluster threshold so a whole same-direction fan resolves by nudging.
+ */
+const NEAR_COLLINEAR_COS = 0.96;
 import type {
   LabelBox,
   LabelSize,
@@ -68,10 +76,20 @@ function clamp(v: number, min: number, max: number): number {
 }
 
 function labelCenter(l: LaidOut): { x: number; y: number } {
-  return {
-    x: l.labelBox.x + l.labelBox.w / 2,
-    y: l.labelBox.y + l.labelBox.h / 2,
-  };
+  return { x: l.labelBox.x + l.labelBox.w / 2, y: l.labelBox.y + l.labelBox.h / 2 };
+}
+
+/**
+ * Nudge a label one fixed `perpStep` along its perpendicular, locking the sign on
+ * first use so movement is monotonic and the relaxation can't oscillate. The first
+ * call always passes the *away-from-obstacle* direction, so the locked sign is
+ * correct — two labels nudged apart can never end up sliding together, and the nudge
+ * is free to grow until they clear (a clamp here would stall an unresolved overlap).
+ */
+function nudgePerp(l: LaidOut, desiredSign: number, cfg: LayoutConfig): void {
+  const sign = l.perp !== 0 ? (l.perp > 0 ? 1 : -1) : desiredSign >= 0 ? 1 : -1;
+  l.perp += sign * cfg.perpStep;
+  l.needsLeader = true;
 }
 
 /**
@@ -143,40 +161,134 @@ export function computeLayout(
   // STEP 2 — place each label box.
   laid.forEach((l) => placeLabel(l, cfg, sizes.get(l.id)!));
 
-  // STEP 3 — iterative relaxation. While two label boxes overlap, push the one
-  // with the smaller radius outward along its own bearing (angle stays exact).
-  // Once it reaches maxRadius, nudge it perpendicular (away from the other) and
-  // flag a leader line. Perp direction locks once chosen to guarantee convergence.
-  for (let iter = 0; iter < cfg.maxIters; iter++) {
-    let moved = false;
+  // STEP 3 — resolve overlaps. The bearing is sacred; only a label's length (radius)
+  // and a perpendicular nudge (which draws a leader line) ever move. Two obstacle
+  // classes per pass: (a) label box vs label box, (b) label box vs another arrow's
+  // *line* (center → tip — the line is sacred, so only the label yields there).
+  //
+  // Two passes. Pass 1 is *symmetric*: when two cities overlap it moves BOTH (grow
+  // both diverging spokes, or nudge both apart) so neither flies off alone — "split
+  // the difference". That is best-effort: moving both breaks the radius ordering the
+  // convergence proof leans on, so a crowded poster can fail to settle. So if any
+  // overlap remains, we reset to the seeded layout and run the proven *asymmetric*
+  // resolver (only the shorter-radius label yields), which always reaches zero.
+  // Sparse posters — the common case — settle symmetrically in pass 1 and never touch
+  // the fallback; only dense tangles trade some symmetry for the hard guarantee.
+  const center = { x: cfg.cx, y: cfg.cy };
+  const collinear = (a: LaidOut, b: LaidOut): boolean =>
+    Math.abs(a.dir.x * b.dir.x + a.dir.y * b.dir.y) > NEAR_COLLINEAR_COS;
+  const place = (l: LaidOut): void => placeLabel(l, cfg, sizes.get(l.id)!);
+  /** Lengthen an arrow one step (no leader). Returns false if already maxed out. */
+  const grow = (l: LaidOut): boolean => {
+    if (l.radius >= cfg.maxRadius) return false;
+    l.radius = Math.min(l.radius + cfg.pushStep, cfg.maxRadius);
+    place(l);
+    return true;
+  };
+  /** Nudge one label along its perpendicular, away from another. */
+  const nudgeFrom = (t: LaidOut, other: LaidOut): void => {
+    const tc = labelCenter(t);
+    const oc = labelCenter(other);
+    nudgePerp(t, (tc.x - oc.x) * -t.dir.y + (tc.y - oc.y) * t.dir.x, cfg);
+    place(t);
+  };
+  /** Split two labels apart along their own perpendiculars — opposite signs, so even
+   * a shared spoke separates, with the work (and the leader lengths) shared. */
+  const nudgeApart = (a: LaidOut, b: LaidOut): void => {
+    const ac = labelCenter(a);
+    const bc = labelCenter(b);
+    let s = (ac.x - bc.x) * -a.dir.y + (ac.y - bc.y) * a.dir.x;
+    if (Math.abs(s) < 1e-6) s = 1; // centres coincide along the spoke: pick a side
+    nudgePerp(a, s, cfg);
+    nudgePerp(b, -s, cfg);
+    place(a);
+    place(b);
+  };
+  /** Push label t off arrow o's sacred line. The line never moves, so this is always
+   * one-sided: grow t clear when the spokes diverge, else nudge it to its own side. */
+  const clearLine = (t: LaidOut, o: LaidOut): void => {
+    if (collinear(t, o) || !grow(t)) {
+      const n = { x: -o.dir.y, y: o.dir.x }; // normal to o's spoke
+      const tc = labelCenter(t);
+      const side = (tc.x - center.x) * n.x + (tc.y - center.y) * n.y;
+      const along = -t.dir.y * n.x + t.dir.x * n.y; // t's perp axis · n
+      nudgePerp(t, (side >= 0 ? 1 : -1) * (along >= 0 ? 1 : -1), cfg);
+      place(t);
+    }
+  };
+
+  const relax = (symmetric: boolean): void => {
+    for (let iter = 0; iter < cfg.maxIters; iter++) {
+      let moved = false;
+
+      // (a) label vs label
+      for (let i = 0; i < laid.length; i++) {
+        for (let j = i + 1; j < laid.length; j++) {
+          const a = laid[i];
+          const b = laid[j];
+          if (!rectsOverlap(a.labelBox, b.labelBox, cfg.boxPadding)) continue;
+          if (symmetric) {
+            // Move both: stack the farther one on a shared spoke, else grow both
+            // diverging spokes; once everything is maxed, split sideways.
+            if (collinear(a, b)) {
+              if (!grow(a.radius >= b.radius ? a : b)) nudgeApart(a, b);
+            } else {
+              const grewA = grow(a);
+              const grewB = grow(b);
+              if (!grewA && !grewB) nudgeApart(a, b);
+            }
+          } else {
+            // Proven resolver: only the shorter-radius label yields.
+            const shorter = a.radius <= b.radius ? a : b;
+            if (!grow(shorter)) nudgeFrom(shorter, shorter === a ? b : a);
+          }
+          moved = true;
+        }
+      }
+
+      // (b) label vs line — including the label's OWN line. A label sits a `labelGap`
+      // beyond its own tip normally, but the margin clamp can drag a far corner label
+      // back over its own tip; the own line is tested at pad 0 (a literal overlap, the
+      // arrow ending under its own text) so clean near-vertical labels — whose box
+      // grazes within `boxPadding` of their tip — don't pick up a needless leader.
+      for (let i = 0; i < laid.length; i++) {
+        for (let j = 0; j < laid.length; j++) {
+          const pad = i === j ? 0 : cfg.boxPadding;
+          if (!segIntersectsRect(center, laid[j].tip, laid[i].labelBox, pad)) continue;
+          clearLine(laid[i], laid[j]);
+          moved = true;
+        }
+      }
+
+      if (!moved) break;
+    }
+  };
+
+  const overlapsRemain = (): boolean => {
     for (let i = 0; i < laid.length; i++) {
       for (let j = i + 1; j < laid.length; j++) {
-        if (!rectsOverlap(laid[i].labelBox, laid[j].labelBox, cfg.boxPadding))
-          continue;
-        const t = laid[i].radius <= laid[j].radius ? laid[i] : laid[j];
-        const other = t === laid[i] ? laid[j] : laid[i];
-
-        if (t.radius < cfg.maxRadius) {
-          t.radius = Math.min(t.radius + cfg.pushStep, cfg.maxRadius);
-        } else {
-          const perp = { x: -t.dir.y, y: t.dir.x };
-          let sign: number;
-          if (t.perp !== 0) {
-            sign = t.perp > 0 ? 1 : -1;
-          } else {
-            const tc = labelCenter(t);
-            const oc = labelCenter(other);
-            const away = (tc.x - oc.x) * perp.x + (tc.y - oc.y) * perp.y;
-            sign = away >= 0 ? 1 : -1;
-          }
-          t.perp += sign * cfg.perpStep;
-          t.needsLeader = true;
-        }
-        placeLabel(t, cfg, sizes.get(t.id)!);
-        moved = true;
+        if (rectsOverlap(laid[i].labelBox, laid[j].labelBox, cfg.boxPadding)) return true;
+      }
+      for (let j = 0; j < laid.length; j++) {
+        const pad = j === i ? 0 : cfg.boxPadding; // own line: literal overlap only
+        if (segIntersectsRect(center, laid[j].tip, laid[i].labelBox, pad)) return true;
       }
     }
-    if (!moved) break;
+    return false;
+  };
+
+  const seedRadius = laid.map((l) => l.radius);
+  relax(true); // symmetric "split the difference" — best effort
+  if (overlapsRemain()) {
+    // Pass 1 left a crowded poster unsettled — restart from the seed and let the
+    // proven asymmetric resolver guarantee zero overlap.
+    laid.forEach((l, k) => {
+      l.radius = seedRadius[k];
+      l.perp = 0;
+      l.needsLeader = false;
+      place(l);
+    });
+    relax(false);
   }
 
   return laid;
