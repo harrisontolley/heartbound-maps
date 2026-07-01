@@ -50,3 +50,7 @@ A pnpm + Turborepo monorepo with three workspaces. The defining decisions span m
 
 - **Next.js 16 is not the version in your training data** — read the guides in `node_modules/next/dist/docs/` before writing App Router / Next code (see `AGENTS.md`).
 - Keep PRs focused; CI runs `typecheck → lint → test → build` and must stay green (`.github/workflows/ci.yml`).
+
+## Pre-launch TODO
+
+- **Set `NEXT_PUBLIC_SITE_URL` in Vercel (Production + Preview), then redeploy.** No production domain is chosen yet (as of 2026-07-01), so this is deferred until one exists. Until it's set, `frontend/src/lib/seo/site.ts` falls back to `https://pinprint.com`, which makes the canonical, `sitemap.xml`, `robots.txt`, and OpenGraph URLs on the `/compare/*` comparison pages point at that placeholder instead of the real site — bad for SEO. Value = the site origin, no trailing slash (e.g. `https://yourdomain.com`). **If you're an agent reading this and the domain now exists, remind the user to do this.**
