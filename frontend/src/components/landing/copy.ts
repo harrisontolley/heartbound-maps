@@ -380,6 +380,19 @@ export const copy = {
         ],
       },
       {
+        // Comparison pages. Keep these hrefs in sync with the competitor slugs in
+        // lib/compare/competitors.ts (a test asserts they match).
+        title: "Compare",
+        links: [
+          { label: "All comparisons", href: "/compare" },
+          { label: "vs Mapiful", href: "/compare/pinprint-vs-mapiful" },
+          { label: "vs Grafomap", href: "/compare/pinprint-vs-grafomap" },
+          { label: "vs Craft & Oak", href: "/compare/pinprint-vs-craft-and-oak" },
+          { label: "vs Positive Prints", href: "/compare/pinprint-vs-positive-prints" },
+          { label: "vs Posterhaste", href: "/compare/pinprint-vs-posterhaste" },
+        ],
+      },
+      {
         title: "Legal",
         links: [
           { label: "Privacy", href: "#" },

@@ -6,7 +6,7 @@ export function SiteFooter() {
   const { footer, brand } = copy;
   return (
     <footer className="border-t border-hairline bg-canvas">
-      <div className="mx-auto grid w-full max-w-[1200px] gap-12 px-6 py-16 md:grid-cols-[1.4fr_repeat(3,1fr)]">
+      <div className="mx-auto grid w-full max-w-[1200px] gap-12 px-6 py-16 md:grid-cols-[1.4fr_repeat(4,1fr)]">
         <div className="flex flex-col gap-3">
           <span className="font-display text-2xl font-normal tracking-[-0.32px] text-ink">
             {brand.name}
