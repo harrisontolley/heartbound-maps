@@ -54,34 +54,38 @@ Verified end-to-end against the **live** Artelo API with the production key:
 
 - `authentication/check` → `200 {success:true}`.
 - `POST /catalog/get-costs` and `POST /orders/create` accept our exact mapping for all three
-  sizes, unframed **and** framed (`frameStyle:"Oak"`, `frameColor:"BlackOak"`). Test orders
+  sizes, unframed **and** framed (`frameStyle:"PremiumOak"`, `frameColor:"NaturalOak"`). Test orders
   (`isTestOrder:true`) return `status:"Ignored"` with the COGS breakdown in `details`.
 - `GET /orders/get-by-id?orderId=…` and `DELETE /orders/cancel?id=…` confirmed.
 
-Live landed COGS (production + US shipping), 2:3 — used for pricing/margins. **Substrate
-updated 2026-06-30**: loose prints → Hot Press 100% cotton rag; framed prints → Archival
-Matte (behind glass). Re-verified live 2026-06-30:
+Live landed COGS (production + US shipping), 2:3 — used for pricing/margins. **Substrates
+updated 2026-07-01**: loose prints use Hahnemühle German Etching 310gsm (`GermanEtchingFineArt`);
+framed prints use Hot Press 300gsm 100% cotton rag (`HotPressFineArt`) with a premium natural-oak
+ready-to-hang frame (`PremiumOak`/`NaturalOak`, framing service on). Verified live 2026-07-01:
 
-| size | unframed (Hot Press) | framed Oak (Archival Matte) |
+| size | unframed (German Etching 310gsm) | framed Premium Oak Natural (Hot Press cotton rag) |
 | --- | --- | --- |
-| 12×18 | $16.74 | $35.91 |
-| 16×24 | $22.51 | $46.98 |
-| 24×36 | $38.55 | $93.46 |
+| 12×18 | $27.21 | $49.47 |
+| 16×24 | $41.14 | $67.88 |
+| 24×36 | $74.14 | $115.98 |
 
-(Prior Matte Poster COGS, for reference: unframed $11.62 / $14.14 / $23.55, framed Oak
-$33.86 / $44.35 / $89.16.)
+(Prior loose Hot Press unframed COGS, for reference: $16.74 / $22.51 / $38.55.
+Prior framed Archival Matte Oak COGS, for reference: $35.91 / $46.98 / $93.46.
+Prior Matte Poster unframed COGS, for reference: $11.62 / $14.14 / $23.55.)
 
 ## Product mapping (confirmed against the live validator)
 
 An Artelo order line references a product by **attributes**, not a SKU. The offered
-2:3 portrait ladder maps to the **Fine Art** line — loose prints on Hot Press 100% cotton
-rag, framed prints on Archival Matte (commerce.ts `LOOSE_PAPER_TYPE` / `FRAMED_PAPER_TYPE`):
+2:3 portrait ladder maps to the **Fine Art** line — loose prints use Hahnemühle German Etching
+310gsm (`GermanEtchingFineArt`); framed prints use Hot Press 100% cotton rag (`HotPressFineArt`)
+which reads cleaner behind glass; framed orders add a premium natural-oak frame and framing service
+(commerce.ts `LOOSE_PAPER_TYPE` / `FRAMED_PAPER_TYPE`):
 
 | productId | catalogProductId | paperType (loose) | paperType (framed) | size | orientation |
 | --- | --- | --- | --- | --- | --- |
-| `portrait-12x18` | `IndividualArtPrint` | `HotPressFineArt` | `ArchivalMatteFineArt` | `x12x18` | `Vertical` |
-| `portrait-16x24` | `IndividualArtPrint` | `HotPressFineArt` | `ArchivalMatteFineArt` | `x16x24` | `Vertical` |
-| `portrait-24x36` | `IndividualArtPrint` | `HotPressFineArt` | `ArchivalMatteFineArt` | `x24x36` | `Vertical` |
+| `portrait-12x18` | `IndividualArtPrint` | `GermanEtchingFineArt` | `HotPressFineArt` | `x12x18` | `Vertical` |
+| `portrait-16x24` | `IndividualArtPrint` | `GermanEtchingFineArt` | `HotPressFineArt` | `x16x24` | `Vertical` |
+| `portrait-24x36` | `IndividualArtPrint` | `GermanEtchingFineArt` | `HotPressFineArt` | `x24x36` | `Vertical` |
 
 Confirmed enum values (from `POST /catalog/get-costs` and `/orders/create` validation errors):
 - **size**: leading-`x` WxH inches, e.g. `x12x18`, `x16x24`, `x24x36` (and many more).
@@ -90,7 +94,7 @@ Confirmed enum values (from `POST /catalog/get-costs` and `/orders/create` valid
   `ArchivalMatteFineArt`/`HotPressFineArt`/`ColdPressFineArt`/`WatercolorFineArt`/`VelvetFineArt`/`PearlFineArt`/`GermanEtchingFineArt`, `Foil`.
 - **frameStyle**: `Unframed`, `Oak`, `Metal`, `PremiumOak`, `PremiumMetal`.
 - **frameColor** (required even when unframed): `Unframed`, `{Natural,Black,White,Walnut}Oak`,
-  `{White,Black,Silver,Gold}Metal`, plus the `Premium*` variants. Default framed = `Oak`/`BlackOak`.
+  `{White,Black,Silver,Gold}Metal`, plus the `Premium*` variants. Default framed = `PremiumOak`/`NaturalOak`.
 
 To retune paper/frame, edit `ARTELO_PRODUCT_BY_ID` in `packages/shared/src/commerce.ts`.
 

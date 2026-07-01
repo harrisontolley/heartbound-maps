@@ -36,7 +36,7 @@ export const COMPETITORS: readonly Competitor[] = [
     tldr: [
       "Mapiful makes a gorgeous poster of one place. Pinprint maps many places on a single print, with a real bearing and distance from home to each — a more personal story for a gift.",
       "Pinprint includes the digital files with every print and sells a standalone download; Mapiful is print-and-ship only, with no digital option.",
-      "Loose Pinprint prints are 300gsm 100% cotton rag; Mapiful's posters are 200gsm matte. Both are matte, fine-art-style paper — Pinprint's is the heavier, genuine cotton-rag stock.",
+      "Loose Pinprint prints are on Hahnemühle German Etching 310gsm — a textured fine-art paper; Mapiful's posters are 200gsm matte. Pinprint's is the heavier, more premium fine-art stock.",
       "Mapiful ships worldwide; Pinprint currently ships within the US only. If you're outside the US, that may settle it.",
     ],
     atAGlance: [
@@ -61,7 +61,7 @@ export const COMPETITORS: readonly Competitor[] = [
       },
       {
         attribute: "Paper (loose print)",
-        pinprint: "300gsm 100% cotton rag, archival pigment inks",
+        pinprint: "Hahnemühle German Etching 310gsm, archival pigment inks",
         competitor: "200gsm matte, FSC-certified, “museum-grade”",
         advantage: "pinprint",
       },
@@ -111,10 +111,10 @@ export const COMPETITORS: readonly Competitor[] = [
         heading: "Paper and print quality",
         body: [
           "Mapiful prints on 200gsm matte paper, FSC-certified, which it describes as “museum-grade.” It's a genuinely nice, weighty matte stock and the print quality is well reviewed.",
-          "Pinprint's loose prints go heavier: 300gsm, 100% cotton rag — a true fine-art paper — with archival pigment inks, made to order. Framed pieces switch to a 230gsm archival matte that sits perfectly behind glass. Because the artwork is drawn as vectors, every size prints razor-sharp.",
-          "Both are matte, archival-leaning papers; the honest difference is weight and material. Pinprint's cotton rag is the more premium substrate, and it names the stock specifically rather than leaning on “museum-grade” language.",
+          "Pinprint's loose prints are on Hahnemühle German Etching 310gsm — a heavily textured fine-art paper — with archival pigment inks, made to order. Framed prints use 300gsm 100% cotton-rag paper (smooth behind glass) with a premium natural-oak ready-to-hang frame. Because the artwork is drawn as vectors, every size prints razor-sharp.",
+          "Both are archival fine-art papers; the honest difference is weight and character. Pinprint's German Etching 310gsm is the heavier, more textured substrate, and it names the paper specifically rather than leaning on \"museum-grade\" language.",
         ],
-        takeaway: "Pinprint's edge: genuine 300gsm cotton rag vs. 200gsm matte.",
+        takeaway: "Pinprint's edge: Hahnemühle German Etching 310gsm vs. 200gsm matte.",
       },
       {
         id: "styles",
@@ -172,7 +172,7 @@ export const COMPETITORS: readonly Competitor[] = [
       ],
     },
     verdict:
-      "For a single, gorgeously styled city map — especially shipped overseas — Mapiful is a safe, well-reviewed choice. But if the point is the places that made you, and the directions and distances between them, Pinprint is the better buy: it's the only one of the two that maps many locations on a single print, each measured from home, on heavier 300gsm cotton-rag paper, with the digital files included. For a gift that tells a story rather than decorates a wall, start with Pinprint.",
+      "For a single, gorgeously styled city map — especially shipped overseas — Mapiful is a safe, well-reviewed choice. But if the point is the places that made you, and the directions and distances between them, Pinprint is the better buy: it's the only one of the two that maps many locations on a single print, each measured from home, on Hahnemühle German Etching 310gsm fine-art paper, with the digital files included. For a gift that tells a story rather than decorates a wall, start with Pinprint.",
     faq: [
       {
         q: "Can Mapiful map more than one location on a single poster?",
@@ -188,7 +188,7 @@ export const COMPETITORS: readonly Competitor[] = [
       },
       {
         q: "What paper does each one use?",
-        a: "Mapiful prints on 200gsm matte, FSC-certified paper. Pinprint's loose prints are 300gsm 100% cotton rag with archival pigment inks; framed prints use 230gsm archival matte behind glass.",
+        a: "Mapiful prints on 200gsm matte, FSC-certified paper. Pinprint's loose prints are on Hahnemühle German Etching 310gsm with archival pigment inks; framed prints use 300gsm 100% cotton-rag paper behind a premium natural-oak ready-to-hang frame.",
       },
       {
         q: "Does Pinprint ship internationally like Mapiful?",
@@ -198,7 +198,7 @@ export const COMPETITORS: readonly Competitor[] = [
     meta: {
       title: "Pinprint vs Mapiful: Custom Map Print Comparison",
       description:
-        "Pinprint vs Mapiful, compared honestly: multi-place measured maps vs single-location posters, 300gsm cotton rag vs 200gsm matte, plus pricing and shipping.",
+        "Pinprint vs Mapiful: multi-place measured maps vs single-location posters — Hahnemühle German Etching 310gsm vs 200gsm matte. Pricing and shipping compared.",
     },
   },
 
@@ -218,7 +218,7 @@ export const COMPETITORS: readonly Competitor[] = [
     },
     tldr: [
       "Grafomap prints one location as an affordable poster; Pinprint maps many places on one print, each with a true bearing and distance from home.",
-      "Grafomap's current live prints are on genuine photo paper; Pinprint's loose prints are 300gsm 100% cotton rag with archival pigment inks.",
+      "Grafomap's current live prints are on genuine photo paper; Pinprint's loose prints are on Hahnemühle German Etching 310gsm with archival pigment inks.",
       "Grafomap has no digital download and starts cheap; Pinprint starts higher but includes the digital files and sells a standalone download.",
       "Grafomap is the budget single-map pick; Pinprint is the fine-art, multi-place gift.",
     ],
@@ -237,7 +237,7 @@ export const COMPETITORS: readonly Competitor[] = [
       },
       {
         attribute: "Paper (loose print)",
-        pinprint: "300gsm 100% cotton rag, archival pigment inks",
+        pinprint: "Hahnemühle German Etching 310gsm, archival pigment inks",
         competitor: "Genuine photo paper (current CanvasDiscount product)",
         advantage: "pinprint",
       },
@@ -279,10 +279,10 @@ export const COMPETITORS: readonly Competitor[] = [
       },
       {
         id: "quality",
-        heading: "Photo paper vs. cotton rag",
+        heading: "Photo paper vs. Hahnemühle German Etching",
         body: [
           "Grafomap's current live product is described as a “deluxe print on genuine photo paper,” with the framed version adding acrylic glass and a wooden backing. We couldn't verify an archival rating, paper weight, or pigment-ink claim on the live site, so photo paper is the spec to go on.",
-          "Pinprint's loose prints are 300gsm 100% cotton rag with archival pigment inks, made to order; framed prints use 230gsm archival matte behind glass. That's a genuinely different, more premium substrate than photo paper.",
+          "Pinprint's loose prints are on Hahnemühle German Etching 310gsm with archival pigment inks, made to order. Framed prints use 300gsm 100% cotton-rag paper behind a premium natural-oak ready-to-hang frame. That's a genuinely different, more premium substrate than photo paper — for a print you hold in your hands, nothing competes with the texture of that 310gsm German Etching.",
         ],
         takeaway: "Pinprint's edge: real cotton-rag fine-art paper vs. photo paper.",
       },
@@ -327,7 +327,7 @@ export const COMPETITORS: readonly Competitor[] = [
     whoFits: {
       pinprint: [
         "You want several places on one print, measured from home",
-        "Fine-art cotton-rag paper and included digital files matter to you",
+        "Hahnemühle German Etching 310gsm fine-art paper and included digital files matter to you",
         "You want free shipping with no minimum order",
         "You're buying a keepsake gift, not just décor",
       ],
@@ -339,7 +339,7 @@ export const COMPETITORS: readonly Competitor[] = [
       ],
     },
     verdict:
-      "Grafomap is a fine budget choice if you want one city on the wall as cheaply as possible. But Pinprint is the better buy when the print is meant to mean something: it maps many places at once, each measured from home, on real 300gsm cotton-rag paper, with the digital files included and free shipping with no minimum. For a gift you want to last, Pinprint is worth the higher price.",
+      "Grafomap is a fine budget choice if you want one city on the wall as cheaply as possible. But Pinprint is the better buy when the print is meant to mean something: it maps many places at once, each measured from home, on Hahnemühle German Etching 310gsm fine-art paper, with the digital files included and free shipping with no minimum. For a gift you want to last, Pinprint is worth the higher price.",
     faq: [
       {
         q: "Can Grafomap put multiple locations on one poster?",
@@ -347,11 +347,11 @@ export const COMPETITORS: readonly Competitor[] = [
       },
       {
         q: "Is Grafomap cheaper than Pinprint?",
-        a: `Yes, at the entry level — Grafomap's current live prints start around $19 versus Pinprint's ${PP.prints[0].price}. But Grafomap has no digital download and prints on photo paper, while Pinprint includes digital files and uses 300gsm cotton rag.`,
+        a: `Yes, at the entry level — Grafomap's current live prints start around $19 versus Pinprint's ${PP.prints[0].price}. But Grafomap has no digital download and prints on photo paper, while Pinprint includes digital files and prints on Hahnemühle German Etching 310gsm.`,
       },
       {
         q: "What paper does Grafomap use?",
-        a: "Its current live product (via CanvasDiscount) is a print on genuine photo paper. Pinprint's loose prints are 300gsm 100% cotton rag with archival pigment inks.",
+        a: "Its current live product (via CanvasDiscount) is a print on genuine photo paper. Pinprint's loose prints are on Hahnemühle German Etching 310gsm with archival pigment inks.",
       },
       {
         q: "Does Grafomap offer a digital download?",
@@ -365,7 +365,7 @@ export const COMPETITORS: readonly Competitor[] = [
     meta: {
       title: "Pinprint vs Grafomap: Custom Map Print Comparison",
       description:
-        "Pinprint vs Grafomap, compared honestly: a measured multi-place map on cotton rag vs an affordable single-location poster on photo paper.",
+        "Pinprint vs Grafomap, compared honestly: a measured multi-place map on Hahnemühle German Etching 310gsm vs an affordable single-location poster on photo paper.",
     },
   },
 
@@ -386,7 +386,7 @@ export const COMPETITORS: readonly Competitor[] = [
     tldr: [
       "Both can put several places on one map, but Craft & Oak marks pins and coordinates, while Pinprint measures each place — a true compass bearing and great-circle distance from home.",
       "Both offer a digital download; Pinprint's is cheaper and included free with every print.",
-      "Craft & Oak prints on 250gsm matte archival paper; Pinprint's loose prints are heavier 300gsm 100% cotton rag.",
+      "Craft & Oak prints on 250gsm matte archival paper; Pinprint's loose prints are on Hahnemühle German Etching 310gsm, a heavier textured fine-art paper.",
       "Craft & Oak ships free worldwide; Pinprint currently ships in the US only — a real point in Craft & Oak's favor for international orders.",
     ],
     atAGlance: [
@@ -403,7 +403,7 @@ export const COMPETITORS: readonly Competitor[] = [
       },
       {
         attribute: "Paper (loose print)",
-        pinprint: "300gsm 100% cotton rag, pigment inks",
+        pinprint: "Hahnemühle German Etching 310gsm, archival pigment inks",
         competitor: "250gsm matte, acid-free/archival, HP Indigo pigment inks",
         advantage: "pinprint",
       },
@@ -448,10 +448,10 @@ export const COMPETITORS: readonly Competitor[] = [
         heading: "Paper and print quality",
         body: [
           "Craft & Oak prints on 250gsm matte, acid-free archival paper with HP Indigo pigment inks, and markets it as museum-grade. It's a legitimately good archival stock — closer to Pinprint's than most competitors here.",
-          "Pinprint's loose prints are heavier still: 300gsm 100% cotton rag with archival pigment inks, with framed prints on 230gsm archival matte. Both are archival; Pinprint's cotton rag is the more premium, heavier substrate.",
+          "Pinprint's loose prints are on Hahnemühle German Etching 310gsm — a heavily textured fine-art paper — with archival pigment inks. Framed prints use 300gsm 100% cotton-rag paper (smooth behind glass) in a premium natural-oak ready-to-hang frame. Both are archival; Pinprint's German Etching 310gsm is the heavier, more distinctly textured fine-art substrate.",
         ],
         takeaway:
-          "Pinprint's edge: 300gsm cotton rag vs. 250gsm matte (both genuinely archival).",
+          "Pinprint's edge: Hahnemühle German Etching 310gsm vs. 250gsm matte (both genuinely archival).",
       },
       {
         id: "styles",
@@ -495,7 +495,7 @@ export const COMPETITORS: readonly Competitor[] = [
     whoFits: {
       pinprint: [
         "You want the measured story — bearing and distance from home to each place",
-        "Heavier 300gsm cotton-rag paper matters to you",
+        "Hahnemühle German Etching 310gsm fine-art paper matters to you",
         "You'd like the digital files included and a simple damage-replacement policy",
         "You're ordering within the United States",
       ],
@@ -507,7 +507,7 @@ export const COMPETITORS: readonly Competitor[] = [
       ],
     },
     verdict:
-      "Craft & Oak is the closest competitor here — it shares the multi-pin map idea, offers a digital download, and ships free worldwide, which makes it a strong choice for international buyers. But if the appeal is the measured story — a true compass bearing and real distance from home to each place — Pinprint is purpose-built for exactly that, on heavier 300gsm cotton-rag paper, with the digital files included. For US buyers who want the measured map, Pinprint is the better pick.",
+      "Craft & Oak is the closest competitor here — it shares the multi-pin map idea, offers a digital download, and ships free worldwide, which makes it a strong choice for international buyers. But if the appeal is the measured story — a true compass bearing and real distance from home to each place — Pinprint is purpose-built for exactly that, on Hahnemühle German Etching 310gsm fine-art paper, with the digital files included. For US buyers who want the measured map, Pinprint is the better pick.",
     faq: [
       {
         q: "Can Craft & Oak put several places on one map?",
@@ -519,7 +519,7 @@ export const COMPETITORS: readonly Competitor[] = [
       },
       {
         q: "What paper does Craft & Oak use?",
-        a: "250gsm matte, acid-free archival paper with HP Indigo pigment inks. Pinprint's loose prints are heavier 300gsm 100% cotton rag.",
+        a: "250gsm matte, acid-free archival paper with HP Indigo pigment inks. Pinprint's loose prints are on Hahnemühle German Etching 310gsm — a heavier, heavily textured fine-art paper.",
       },
       {
         q: "Which one ships internationally?",
@@ -533,7 +533,7 @@ export const COMPETITORS: readonly Competitor[] = [
     meta: {
       title: "Pinprint vs Craft & Oak: Custom Map Print Comparison",
       description:
-        "Pinprint vs Craft & Oak, compared honestly: measured bearings and distances from home vs pinned city maps, on 300gsm cotton rag vs 250gsm matte.",
+        "Pinprint vs Craft & Oak, compared honestly: measured bearings and distances from home vs pinned city maps, on Hahnemühle German Etching 310gsm vs 250gsm matte.",
     },
   },
 
@@ -554,7 +554,7 @@ export const COMPETITORS: readonly Competitor[] = [
     tldr: [
       "Positive Prints offers a broad range of personalized art (maps, star maps, coordinates, route posters). Pinprint focuses on one thing: a multi-place map measured from home.",
       "Positive Prints' map and coordinate products are single-location; its route poster shows stats for one GPX route. Pinprint draws a true bearing and distance to many places at once.",
-      "Both offer digital downloads and print on archival-leaning matte paper. Pinprint's loose prints are the heavier 300gsm 100% cotton rag.",
+      "Both offer digital downloads and print on archival-leaning papers. Pinprint's loose prints are on Hahnemühle German Etching 310gsm — a heavier, textured fine-art paper.",
       "Positive Prints ships worldwide; Pinprint currently ships in the US only.",
     ],
     atAGlance: [
@@ -573,7 +573,7 @@ export const COMPETITORS: readonly Competitor[] = [
       },
       {
         attribute: "Paper (loose print)",
-        pinprint: "300gsm 100% cotton rag, pigment inks",
+        pinprint: "Hahnemühle German Etching 310gsm, archival pigment inks",
         competitor: "200gsm matte giclée, acid-free, “museum-quality”",
         advantage: "pinprint",
       },
@@ -617,9 +617,9 @@ export const COMPETITORS: readonly Competitor[] = [
         heading: "Paper and print quality",
         body: [
           "Positive Prints uses 200gsm matte paper, giclée-printed on acid-free stock with archival inks, which it markets as “museum-quality.” It's a respectable, well-reviewed print.",
-          "Pinprint's loose prints are 300gsm 100% cotton rag with archival pigment inks; framed prints use 230gsm archival matte. Both brands lean archival, but Pinprint's cotton rag is the heavier, more premium fine-art substrate.",
+          "Pinprint's loose prints are on Hahnemühle German Etching 310gsm — a heavily textured fine-art paper — with archival pigment inks. Framed prints use 300gsm 100% cotton-rag paper (smooth behind glass) in a premium natural-oak ready-to-hang frame. Both brands lean archival, but Pinprint's German Etching 310gsm is the heavier, more premium fine-art substrate.",
         ],
-        takeaway: "Pinprint's edge: 300gsm cotton rag vs. 200gsm matte.",
+        takeaway: "Pinprint's edge: Hahnemühle German Etching 310gsm vs. 200gsm matte.",
       },
       {
         id: "styles",
@@ -662,7 +662,7 @@ export const COMPETITORS: readonly Competitor[] = [
     whoFits: {
       pinprint: [
         "You want a measured map of many places from home, done well",
-        "Heavier cotton-rag paper and clear on-site pricing matter to you",
+        "Hahnemühle German Etching 310gsm fine-art paper and clear on-site pricing matter to you",
         "You want the digital files included with your print",
         "You're ordering within the United States",
       ],
@@ -674,7 +674,7 @@ export const COMPETITORS: readonly Competitor[] = [
       ],
     },
     verdict:
-      "If you want variety — a star map, a coordinates print, a single-route poster — Positive Prints' catalog is broad and well-reviewed. But if you specifically want a measured map of many places from home, Pinprint is the better fit: it's purpose-built for that one idea, on heavier 300gsm cotton-rag paper, with transparent pricing and the digital files included. For the measured multi-place map, choose Pinprint.",
+      "If you want variety — a star map, a coordinates print, a single-route poster — Positive Prints' catalog is broad and well-reviewed. But if you specifically want a measured map of many places from home, Pinprint is the better fit: it's purpose-built for that one idea, on Hahnemühle German Etching 310gsm fine-art paper, with transparent pricing and the digital files included. For the measured multi-place map, choose Pinprint.",
     faq: [
       {
         q: "Does Positive Prints make a multi-location distance map?",
@@ -686,7 +686,7 @@ export const COMPETITORS: readonly Competitor[] = [
       },
       {
         q: "What paper does Positive Prints use?",
-        a: "200gsm matte, giclée-printed on acid-free paper. Pinprint's loose prints are 300gsm 100% cotton rag with pigment inks.",
+        a: "200gsm matte, giclée-printed on acid-free paper. Pinprint's loose prints are on Hahnemühle German Etching 310gsm with archival pigment inks.",
       },
       {
         q: "How much does Positive Prints cost?",
@@ -721,7 +721,7 @@ export const COMPETITORS: readonly Competitor[] = [
     tldr: [
       "Posterhaste styles one location from six preset map styles (its Dual Heart shows two places side by side, but doesn't measure between them). Pinprint maps many places at once, with a true bearing and distance to each from home.",
       "Posterhaste has no digital download and no custom colors; Pinprint includes digital files and lets you re-style freely.",
-      "Posterhaste prints on 200gsm art paper; Pinprint's loose prints are 300gsm 100% cotton rag.",
+      "Posterhaste prints on 200gsm art paper; Pinprint's loose prints are on Hahnemühle German Etching 310gsm, a heavier textured fine-art paper.",
       "Posterhaste's entry print is cheap, but free shipping needs 2+ items and its returns policy is strict on personalized goods.",
     ],
     atAGlance: [
@@ -739,7 +739,7 @@ export const COMPETITORS: readonly Competitor[] = [
       },
       {
         attribute: "Paper (loose print)",
-        pinprint: "300gsm 100% cotton rag, pigment inks",
+        pinprint: "Hahnemühle German Etching 310gsm, archival pigment inks",
         competitor: "200gsm matte art paper, giclée",
         advantage: "pinprint",
       },
@@ -783,9 +783,9 @@ export const COMPETITORS: readonly Competitor[] = [
         heading: "Paper and print quality",
         body: [
           "Posterhaste prints its maps on 200gsm matte art paper (giclée), with a heavier 400gsm canvas option; framed versions add conservation-grade acid-free mounts. It markets the prints as “museum-quality.”",
-          "Pinprint's loose prints are 300gsm 100% cotton rag with archival pigment inks, and framed prints use 230gsm archival matte. Pinprint's loose stock is the heavier, genuine cotton-rag fine-art paper.",
+          "Pinprint's loose prints are on Hahnemühle German Etching 310gsm — a heavily textured fine-art paper — with archival pigment inks. Framed prints use 300gsm 100% cotton-rag paper (smooth behind glass) in a premium natural-oak ready-to-hang frame. Pinprint's loose stock is the heavier, genuinely fine-art paper on either option.",
         ],
-        takeaway: "Pinprint's edge: 300gsm cotton rag vs. 200gsm art paper.",
+        takeaway: "Pinprint's edge: Hahnemühle German Etching 310gsm vs. 200gsm art paper.",
       },
       {
         id: "styles",
@@ -841,7 +841,7 @@ export const COMPETITORS: readonly Competitor[] = [
       ],
     },
     verdict:
-      "Posterhaste is a reasonable pick for an inexpensive, single-location decorative map — particularly in the UK. But for a measured, multi-place map on genuine cotton-rag paper, with free re-styling, the digital files included, and a friendlier damage policy, Pinprint is the stronger choice. If the map is meant to tell a story, choose Pinprint.",
+      "Posterhaste is a reasonable pick for an inexpensive, single-location decorative map — particularly in the UK. But for a measured, multi-place map on Hahnemühle German Etching 310gsm fine-art paper, with free re-styling, the digital files included, and a friendlier damage policy, Pinprint is the stronger choice. If the map is meant to tell a story, choose Pinprint.",
     faq: [
       {
         q: "Can Posterhaste show the distance between places?",
@@ -857,7 +857,7 @@ export const COMPETITORS: readonly Competitor[] = [
       },
       {
         q: "What paper does Posterhaste use?",
-        a: "200gsm matte art paper (giclée), with a 400gsm canvas option. Pinprint's loose prints are 300gsm 100% cotton rag with pigment inks.",
+        a: "200gsm matte art paper (giclée), with a 400gsm canvas option. Pinprint's loose prints are on Hahnemühle German Etching 310gsm with archival pigment inks.",
       },
       {
         q: "Can I customize the colors on Posterhaste?",
@@ -867,7 +867,7 @@ export const COMPETITORS: readonly Competitor[] = [
     meta: {
       title: "Pinprint vs Posterhaste: Custom Map Print Comparison",
       description:
-        "Pinprint vs Posterhaste, compared honestly: a measured multi-place map on cotton rag vs preset single-location maps. Paper, pricing and shipping.",
+        "Pinprint vs Posterhaste: a measured multi-place map on Hahnemühle German Etching 310gsm vs preset single-location maps. Paper, pricing, shipping.",
     },
   },
 ];

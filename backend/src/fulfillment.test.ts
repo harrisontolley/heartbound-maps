@@ -56,7 +56,7 @@ describe("buildCreateOrderBody", () => {
     expect(item.unitPrice).toBe(59);
     expect(item.productInfo).toMatchObject({
       catalogProductId: "IndividualArtPrint",
-      paperType: "HotPressFineArt",
+      paperType: "GermanEtchingFineArt",
       size: "x16x24",
       orientation: "Vertical",
       includeFramingService: false,
@@ -73,7 +73,7 @@ describe("buildCreateOrderBody", () => {
           productId: "portrait-16x24",
           productLabel: "16 × 24 in print (framed)",
           quantity: 1,
-          unitPriceCents: 11400,
+          unitPriceCents: 16900,
           assetUrl: "https://blob.example/poster.png",
           posterConfig: { format: "print", addFrame: true },
         },
@@ -81,10 +81,10 @@ describe("buildCreateOrderBody", () => {
     });
     const body = buildCreateOrderBody(o, false);
     expect(body.items[0].productInfo).toMatchObject({
-      paperType: "ArchivalMatteFineArt",
+      paperType: "HotPressFineArt",
       includeFramingService: true,
-      frameStyle: "Oak",
-      frameColor: "BlackOak",
+      frameStyle: "PremiumOak",
+      frameColor: "NaturalOak",
     });
   });
 

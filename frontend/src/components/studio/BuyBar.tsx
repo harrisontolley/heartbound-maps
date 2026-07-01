@@ -56,8 +56,8 @@ export function BuyBar({
     format === "digital"
       ? "High-resolution digital download"
       : addFrame
-        ? "Framed archival fine art print · digital file included"
-        : "Cotton-rag fine art print · digital file included";
+        ? "Premium-framed cotton-rag fine art print · digital file included"
+        : "Hahnemühle German Etching 310gsm fine art print · digital file included";
 
   return (
     <div

@@ -290,11 +290,11 @@ export const copy = {
           },
           {
             q: "How is each print made?",
-            a: "Made to order with archival pigment inks on heavyweight fine-art paper that resists fading for decades. Loose prints are 300gsm 100% cotton rag; framed pieces use a smooth archival fine-art paper that looks its best behind glass. Printed the moment you order — checked by hand, never mass-produced.",
+            a: "Made to order with archival pigment inks that resist fading for decades, printed the moment you order — checked by hand, never mass-produced. Loose prints are on Hahnemühle German Etching 310gsm, a heavily textured fine-art paper chosen for the way it feels in your hands. Framed prints use 300gsm 100% cotton-rag paper — smooth and clean behind glass — with a premium natural-oak ready-to-hang frame.",
           },
           {
             q: "Can I get it framed?",
-            a: "Yes. Add a ready-to-hang frame at checkout: solid wood with a glass front, delivered already wired so it goes straight on the wall.",
+            a: "Yes. Add a premium natural-oak ready-to-hang frame at checkout: solid wood, glass front, arrives wired so it goes straight on the wall. Framed prints use 300gsm 100% cotton-rag paper — smooth and clean behind glass — no compromise on the paper.",
           },
           {
             q: "Can I just buy the digital file?",

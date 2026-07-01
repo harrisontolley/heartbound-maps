@@ -32,14 +32,14 @@ export function FrameUpsellCard() {
       <span className="flex min-w-0 flex-1 flex-col gap-0.5">
         <span className="flex items-center justify-between gap-2">
           <span className="text-sm font-medium text-ink">
-            Add a ready-to-hang frame
+            Add a premium natural-oak frame
           </span>
           <span className="shrink-0 rounded-pill bg-surface-strong px-2 py-0.5 text-xs font-semibold text-ink">
             +{formatUsd(product.frameUpchargeCents)}
           </span>
         </span>
         <span className="text-xs text-muted">
-          Solid wood, glass front — arrives wired to hang.
+          Premium solid-oak frame, glass front — arrives wired, ready to hang.
         </span>
       </span>
     </label>

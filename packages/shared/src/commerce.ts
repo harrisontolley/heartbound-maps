@@ -13,9 +13,9 @@ import type { OrderStatus } from "./orders.js";
 
 /** Print retail by product id (the surfaced 2:3 portrait ladder). */
 export const PRINT_PRICE_CENTS: Record<string, number> = {
-  "portrait-12x18": 4500, // good (lifted off the under-market $39 entry)
-  "portrait-16x24": 5900, // popular / hero
-  "portrait-24x36": 9500, // premium anchor (lifted $89→$95 to hold ~60% on cotton rag)
+  "portrait-12x18": 6100, // German Etching COGS $27.21 → ~55% margin
+  "portrait-16x24": 9100, // German Etching COGS $41.14 → ~55% margin
+  "portrait-24x36": 16500, // German Etching COGS $74.14 → ~55% margin
 };
 
 /**
@@ -28,23 +28,25 @@ export const PRINT_PRICE_CENTS: Record<string, number> = {
  * sale price (see selectionTotalCents). A list ≤ charged ⇒ no badge.
  */
 export const LIST_PRICE_CENTS: Record<string, number> = {
-  "portrait-12x18": 6000, // 25% off $45
-  "portrait-16x24": 7900, // 25% off $59 (true 25.3%, floored to 25)
-  "portrait-24x36": 12700, // 25% off $95 (true 25.2%, floored to 25)
+  "portrait-12x18": 8200, // 25% off $61 (true 25.6%, floored to 25)
+  "portrait-16x24": 12200, // 25% off $91 (true 25.4%, floored to 25)
+  "portrait-24x36": 22000, // 25% off $165 (true 25.0%, floored to 25)
 };
 
 /**
- * Ready-to-hang frame upcharge by product id (added on top of the print). Framed
- * prints are fulfilled on Archival Matte fine-art paper, not the 100% cotton rag
- * used for loose prints: behind glass the cotton-rag texture is invisible while
- * its framed COGS run much higher, so Archival Matte holds the frame tier's price
- * and margin. Live Artelo framed (Oak) landed COGS ≈ $35.91 / $46.98 / $93.46 keep
- * framed totals $95 / $119 / $195 at ~62% / 60% / 52% margin.
+ * Ready-to-hang premium frame upcharge by product id (added on top of the print).
+ * Framed prints use 300gsm 100% cotton-rag Hot Press paper (HotPressFineArt) — a
+ * different, smooth stock from the textured German Etching used for loose prints —
+ * in a premium natural-oak ready-to-hang frame (PremiumOak/NaturalOak, framing
+ * service on). Framed Artelo landed COGS (production + US shipping, verified
+ * 2026-07-01): 12×18 $49.47 / 16×24 $67.88 / 24×36 $115.98.
+ * Upcharges are set so framed totals (base + upcharge) stay at $125 / $169 / $289
+ * at ~60% margin even as the loose base price rose for German Etching.
  */
 export const FRAME_UPCHARGE_CENTS: Record<string, number> = {
-  "portrait-12x18": 5000, // framed total $95 (~62% margin)
-  "portrait-16x24": 6000, // framed total $119 (~60% margin)
-  "portrait-24x36": 10000, // framed total $195 (~52% margin, off the top-of-market ceiling)
+  "portrait-12x18": 6400, // framed total $125 (~60% margin)
+  "portrait-16x24": 7800, // framed total $169 (~60% margin)
+  "portrait-24x36": 12400, // framed total $289 (~60% margin)
 };
 
 /** Standalone digital download — also included free with any print. */
@@ -58,7 +60,7 @@ export const DEFAULT_FRAME_UPCHARGE_CENTS = 6000;
 
 /**
  * Shipping policy: free standard shipping on every order, no threshold. The
- * per-size Artelo COGS already include US shipping, so margins (~52–63%) absorb
+ * per-size Artelo COGS already include US shipping, so margins (~55–60%) absorb
  * it, and most orders are a single print (a threshold would only add friction).
  * Checkout charges $0 shipping (`shippingCents: 0`); this flag single-sources the
  * customer-facing "Free shipping" copy so the policy lives in one place.
@@ -185,12 +187,13 @@ export const OFFERED_PRODUCT_IDS = [
 // Enum strings below are confirmed against the live Artelo validator
 // (POST /catalog/get-costs and /orders/create) — see docs/integrations/artelo.md.
 //   size       : "x12x18" | "x16x24" | "x24x36" (leading-`x` WxH inches)
-//   paperType  : loose = "HotPressFineArt" (100% cotton rag); framed = "ArchivalMatteFineArt"
+//   paperType  : "GermanEtchingFineArt" for loose (Hahnemühle 310gsm, textured)
+//                "HotPressFineArt" for framed (300gsm cotton rag, smooth behind glass)
 //                (the Poster/Photo/…FineArt lines all exist — this is the single place to retune)
 //   frameStyle : "Unframed" | "Oak" | "Metal" | "PremiumOak" | "PremiumMetal"
 //   frameColor : "Unframed" | "{Natural,Black,White,Walnut}Oak" | "{White,Black,Silver,Gold}Metal" (+ Premium*)
-// Default print line: Fine Art (Hot Press cotton rag loose / Archival Matte framed);
-// default frame: black oak. Single place to retune.
+// Loose: German Etching 310gsm. Framed: cotton rag 300gsm + premium natural oak.
+// Single place to retune.
 
 export type ArteloOrientation = "Vertical" | "Horizontal";
 
@@ -202,9 +205,9 @@ export type ArteloFrameSpec = {
 export type ArteloProductSpec = {
   /** Artelo catalog product enum. */
   catalogProductId: "IndividualArtPrint";
-  /** Artelo paperType for a loose (unframed) print, e.g. "HotPressFineArt". */
+  /** Artelo paperType for a loose (unframed) print, e.g. "GermanEtchingFineArt". */
   paperType: string;
-  /** Artelo paperType for a framed print (behind glass), e.g. "ArchivalMatteFineArt". */
+  /** Artelo paperType for a framed print (behind glass), e.g. "HotPressFineArt". */
   framedPaperType: string;
   /** Artelo size enum, e.g. "x12x18" (leading-`x` WxH form). */
   size: string;
@@ -213,10 +216,10 @@ export type ArteloProductSpec = {
   frame: ArteloFrameSpec;
 };
 
-/** Frame applied to a framed order — a classic black wood frame. */
+/** Frame applied to a framed order — a premium natural-oak ready-to-hang frame. */
 const DEFAULT_FRAME: ArteloFrameSpec = {
-  frameStyle: "Oak",
-  frameColor: "BlackOak",
+  frameStyle: "PremiumOak",
+  frameColor: "NaturalOak",
 };
 
 /** Artelo requires both fields even on unframed orders. */
@@ -226,14 +229,16 @@ const UNFRAMED: ArteloFrameSpec = {
 };
 
 /**
- * Print substrates (both are genuine archival fine-art papers, pigment inks):
- *  - loose prints are the tactile hero on 300gsm 100% cotton rag;
- *  - framed prints use 230gsm Archival Matte — invisible behind glass, and its
- *    much lower framed COGS hold the frame tier's price + margin (see
- *    FRAME_UPCHARGE_CENTS).
+ * Print substrates — deliberately different for loose vs framed:
+ *  - Loose (unframed): Hahnemühle German Etching 310gsm (GermanEtchingFineArt) —
+ *    a heavily textured, tactile artist's paper; the upmarket piece you hold.
+ *  - Framed: 300gsm 100% cotton-rag Hot Press (HotPressFineArt) — a smooth fine-art
+ *    paper that looks cleaner behind glass; adds a premium natural-oak ready-to-hang
+ *    frame (DEFAULT_FRAME) and the Artelo framing service.
+ * Both use archival pigment inks. Single place to retune.
  */
-const LOOSE_PAPER_TYPE = "HotPressFineArt";
-const FRAMED_PAPER_TYPE = "ArchivalMatteFineArt";
+const LOOSE_PAPER_TYPE = "GermanEtchingFineArt";
+const FRAMED_PAPER_TYPE = "HotPressFineArt";
 
 /** productId → Artelo print spec (the offered 2:3 portrait ladder). */
 export const ARTELO_PRODUCT_BY_ID: Record<string, ArteloProductSpec> = {
@@ -281,8 +286,9 @@ export type ArteloProductInfo = {
  * Build the Artelo `productInfo` (minus the design/image) for a product id.
  * Returns null for products we don't fulfil through Artelo. When `addFrame` is
  * set, the frame attributes + framing service are included and the print runs on
- * the framed paper (Archival Matte); otherwise the frame fields are "Unframed"
- * (required by Artelo's schema) and the print runs on the loose paper (cotton rag).
+ * the framed paper (HotPressFineArt, 300gsm cotton rag — smooth behind glass);
+ * otherwise the frame fields are "Unframed" (required by Artelo's schema) and the
+ * print runs on the loose paper (GermanEtchingFineArt, Hahnemühle 310gsm, textured).
  */
 export function arteloProductInfoFor(
   productId: string,
