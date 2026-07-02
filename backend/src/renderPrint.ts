@@ -48,10 +48,24 @@ export function emulateSmallCaps(svg: string): string {
       const size = sizeMatch ? parseFloat(sizeMatch[1]) : 16;
       const small = (size * SMALLCAP_RATIO).toFixed(2);
       const cleaned = open.replace(/font-variant:\s*small-caps;?\s*/, "");
-      const body = content.replace(
-        /\p{Ll}+/gu,
-        (run) => `<tspan font-size="${small}">${run.toUpperCase()}</tspan>`,
-      );
+      // Text content is XML-escaped ("Emma & Jake" → "Emma &amp; Jake"), so the
+      // lowercase-run regex below must never reach inside an entity — wrapping
+      // "amp" out of "&amp;" in a <tspan> breaks the entity and produces invalid
+      // XML, which throws in the Resvg constructor (every ampersand-titled order
+      // on a small-caps template would otherwise silently degrade to the
+      // low-DPI client PNG fallback). Split on entities first and only touch the
+      // plain-text pieces between them.
+      const body = content
+        .split(/(&[a-zA-Z]+;|&#\d+;)/)
+        .map((piece) =>
+          /^(?:&[a-zA-Z]+;|&#\d+;)$/.test(piece)
+            ? piece
+            : piece.replace(
+                /\p{Ll}+/gu,
+                (run) => `<tspan font-size="${small}">${run.toUpperCase()}</tspan>`,
+              ),
+        )
+        .join("");
       return cleaned + body + close;
     },
   );
@@ -152,14 +166,34 @@ export function fontFiles(): string[] {
  * render at the SVG's intrinsic size with system-font fallback. Do not add option
  * keys speculatively. `fontBuffers` in particular does NOT exist in this version
  * (it's wasm/newer only); use `fontFiles` (paths) as below.
+ *
+ * CRITICAL (verified empirically): with `loadSystemFonts:false` and an empty
+ * `fontFiles`, resvg 2.6.2 does NOT throw — it renders every `<text>` as nothing
+ * and hands back a perfectly valid PNG at the requested size. If font bundling
+ * ever silently fails (e.g. a Vercel packaging regression), that would upload a
+ * textless 7200×10800 print, persist it to `render_asset_url` (poisoning the
+ * idempotent-reuse path forever), pass the DPI floor, and ship a poster with no
+ * title/labels. So: refuse outright when the resolved font list is empty, rather
+ * than trusting resvg to fail loudly. The thrown error propagates to
+ * ensurePrintAsset's catch, which falls back to the browser-rendered client PNG.
+ * `resolveFontFiles` is overridable so tests can exercise this guard without
+ * touching the real font directory.
  */
 export async function renderPrintPng(
   svg: string,
   opts: { widthPx: number; heightPx: number },
+  resolveFontFiles: () => string[] = fontFiles,
 ): Promise<Buffer> {
+  const files = resolveFontFiles();
+  if (files.length === 0) {
+    throw new Error(
+      "renderPrintPng: no vendored fonts resolved — refusing a textless server render " +
+        "(ensurePrintAsset will fall back to the client PNG)",
+    );
+  }
   const resvg = new Resvg(svg, {
     fitTo: { mode: "width", value: opts.widthPx },
-    font: { loadSystemFonts: false, fontFiles: fontFiles() },
+    font: { loadSystemFonts: false, fontFiles: files },
   });
   return resvg.render().asPng();
 }

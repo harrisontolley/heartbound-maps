@@ -73,6 +73,29 @@ describe("emulateSmallCaps — (3) small-caps → scaled uppercase tspans", () =
     expect(emulateSmallCaps(svg)).toBe(svg);
   });
 
+  it("does not corrupt an XML entity (e.g. 'Emma &amp; Jake')", () => {
+    const svg =
+      '<text font-size="20" style="font-variant: small-caps;">Emma &amp; Jake</text>';
+    const out = emulateSmallCaps(svg);
+    // The entity itself must survive untouched — this is the load-bearing
+    // assertion: matching "amp" out of "&amp;" would emit "&<tspan>AMP</tspan>;",
+    // which is invalid XML and throws in the Resvg constructor.
+    expect(out).toContain("&amp;");
+    expect(out).not.toMatch(/&<tspan/);
+    expect(out).not.toMatch(/tspan[^>]*>amp</i);
+    // The lowercase runs either side of the entity are still wrapped.
+    expect(out).toContain('<tspan font-size="15.60">MMA</tspan>');
+    expect(out).toContain('<tspan font-size="15.60">AKE</tspan>');
+  });
+
+  it("does not corrupt a numeric XML entity (e.g. '&#233;')", () => {
+    const svg = '<text font-size="20" style="font-variant: small-caps;">caf&#233;</text>';
+    const out = emulateSmallCaps(svg);
+    expect(out).toContain("&#233;");
+    expect(out).not.toMatch(/&<tspan/);
+    expect(out).toContain('<tspan font-size="15.60">CAF</tspan>');
+  });
+
   it("is applied by preprocessPosterSvg end-to-end", () => {
     const svg =
       '<svg><style>x</style><text font-family="var(--font-garamond)" font-size="31" style="font-variant: small-caps;">paris</text></svg>';
@@ -211,5 +234,46 @@ describe("renderPrintPng — real resvg smoke test", () => {
     // IHDR width at offset 16 should be exactly the requested 100px.
     expect(png.readUInt32BE(16)).toBe(100);
     expect(png.readUInt32BE(20)).toBe(150);
+  });
+});
+
+describe("renderPrintPng — zero-fonts guard (critical fix)", () => {
+  // resvg-js 2.6.2 does NOT throw when given loadSystemFonts:false and an empty
+  // fontFiles list — it silently renders every <text> as nothing and returns a
+  // valid, textless PNG. Without an explicit guard that would ship a blank
+  // 7200x10800 print and persist it as the reusable render_asset_url forever.
+  it("throws instead of silently rasterizing without fonts", async () => {
+    const svg =
+      '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 150"><text x="10" y="10">Title</text></svg>';
+    await expect(
+      renderPrintPng(svg, { widthPx: 100, heightPx: 150 }, () => []),
+    ).rejects.toThrow(/no vendored fonts resolved/);
+  });
+
+  it("propagates through ensurePrintAsset to the client-PNG fallback, persisting nothing", async () => {
+    const d: EnsurePrintAssetDeps = {
+      signUrl: vi.fn(async (u: string) => `${u}?sig`),
+      fetchSvg: vi.fn(async () => "<svg><style>x</style><text>Title</text></svg>"),
+      // Wire the real renderPrintPng through, with its font resolver forced empty —
+      // this is the actual guarded code path, not just a generic render failure.
+      render: (svg, opts) => renderPrintPng(svg, opts, () => []),
+      upload: vi.fn(async () => "https://blob/posters/print-PP-1-0.png"),
+      persist: vi.fn(async () => {}),
+    };
+    const got = await ensurePrintAsset(
+      {
+        orderItemId: "item-1",
+        orderNumber: "PP-1",
+        index: 0,
+        productId: "portrait-24x36",
+        clientAssetUrl: "https://blob/posters/client.png",
+        svgAssetUrl: "https://blob/posters/design.svg",
+        renderAssetUrl: null,
+      },
+      d,
+    );
+    expect(got).toEqual({ url: "https://blob/posters/client.png", source: "client" });
+    expect(d.upload).not.toHaveBeenCalled();
+    expect(d.persist).not.toHaveBeenCalled();
   });
 });

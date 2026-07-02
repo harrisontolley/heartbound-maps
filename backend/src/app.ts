@@ -56,8 +56,13 @@ function registerRoutes(r: Hono): Hono {
       maptiler: isMaptilerConfigured(),
       resend: isResendConfigured(),
       // Count of vendored print-render TTFs the function can actually see —
-      // verifies backend/assets/fonts survived Vercel's bundling (expect 25;
-      // 0 means print renders would fall back to unshaped text → client PNG).
+      // verifies backend/assets/fonts survived Vercel's bundling (expect 25).
+      // 0 here is serious, not cosmetic: resvg 2.6.2 does NOT throw on an empty
+      // font list — it silently renders every <text> as nothing and returns a
+      // valid-but-textless PNG. renderPrintPng() guards against that (throws
+      // instead), which ensurePrintAsset catches to fall back to the
+      // client-rendered PNG — so 0 means every print render this instance
+      // produces will use that lower-DPI fallback, not that renders are broken.
       printFonts: fontFiles().length,
     }),
   );
