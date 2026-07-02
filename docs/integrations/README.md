@@ -14,6 +14,7 @@ the exact command to verify your change.
 | **PostHog** | Analytics, replay, flags, errors | [posthog.md](./posthog.md) | optional | `frontend/src/app/providers.tsx` |
 | **Redis (Upstash)** | Distributed rate limiting, geocode cache + Nominatim gate, checkout idempotency | [redis.md](./redis.md) | `backend/src/redis.ts`, `backend/src/rateLimit.ts`, `backend/src/nominatim.ts` | `frontend/src/lib/redis.ts` (auth-proxy only) |
 | **MapTiler** | Geocoding (search + reverse), falls back to Nominatim; optional picker basemap | [maptiler.md](./maptiler.md) | `backend/src/nominatim.ts` | `NEXT_PUBLIC_MAP_STYLE_URL` (MapLibre picker) |
+| **Resend** | Transactional email (free lead-magnet poster delivery) | [resend.md](./resend.md) | `backend/src/email.ts`, `backend/src/emails/` | — |
 
 Operator tooling (refunds, cancel, retry, observability) lives in the admin dashboard —
 see [../admin.md](../admin.md). Secrets workflow for all of them: [secrets.md](./secrets.md).

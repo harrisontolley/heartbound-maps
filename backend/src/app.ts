@@ -4,6 +4,7 @@ import { geocodeReverse, geocodeSearch, isMaptilerConfigured } from "./nominatim
 import { pingDb } from "./db.js";
 import { constructWebhookEvent, isStripeConfigured } from "./stripe.js";
 import { isArteloConfigured, verifyArteloWebhookSignature } from "./artelo.js";
+import { isResendConfigured } from "./email.js";
 import { isAdminConfigured, isAuthConfigured } from "./auth.js";
 import { isRedisConfigured, pingRedis } from "./redis.js";
 import { extractArteloOrder, handleArteloPayload, handleStripeEvent } from "./webhooks.js";
@@ -50,6 +51,7 @@ function registerRoutes(r: Hono): Hono {
       redis: isRedisConfigured(),
       sentry: isSentryConfigured(),
       maptiler: isMaptilerConfigured(),
+      resend: isResendConfigured(),
     }),
   );
 
