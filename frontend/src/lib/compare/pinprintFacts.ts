@@ -30,9 +30,9 @@ export const PINPRINT_PRINTS: readonly PinprintPrintFact[] = OFFERED_PRODUCTS.ma
 
 export const PINPRINT_FACTS = {
   prints: PINPRINT_PRINTS,
-  /** e.g. "$45.00–$95.00". */
+  /** e.g. "$45.00 to $95.00". */
   priceRange: `${formatUsd(small.priceCents)} to ${formatUsd(large.priceCents)}`,
-  /** Framed range, e.g. "$95.00–$195.00". */
+  /** Framed range, e.g. "$95.00 to $195.00". */
   framedRange: `${formatUsd(
     small.priceCents + small.frameUpchargeCents,
   )} to ${formatUsd(large.priceCents + large.frameUpchargeCents)}`,
