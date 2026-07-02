@@ -66,6 +66,11 @@ export function priceCheckout(items: CheckoutItemInput[]): PricedCheckout {
     if (isPrint && it.assetUrl && !isAllowedAssetUrl(it.assetUrl)) {
       throw new CheckoutValidationError("invalid_asset_url");
     }
+    // The vector SVG travels for any format (it's the digital tier's actual
+    // asset, and a bonus for print buyers) — same host allow-list as assetUrl.
+    if (it.svgAssetUrl && !isAllowedAssetUrl(it.svgAssetUrl)) {
+      throw new CheckoutValidationError("invalid_asset_url");
+    }
     const addFrame = isPrint && it.addFrame === true;
     // Authoritative unit price — never trust a client-sent amount.
     const unitPriceCents = selectionTotalCents({ format: it.format, product, addFrame });
@@ -83,6 +88,9 @@ export function priceCheckout(items: CheckoutItemInput[]): PricedCheckout {
       // Public URL of the print-ready PNG (browser-uploaded at add-to-cart).
       // Handed to Artelo as the design source; print items only.
       assetUrl: isPrint ? it.assetUrl : undefined,
+      // Public URL of the vector SVG (browser-uploaded at add-to-cart). Carried
+      // for any format — it's what the post-payment digital-delivery email links to.
+      svgAssetUrl: it.svgAssetUrl,
     });
 
     lineItems.push({

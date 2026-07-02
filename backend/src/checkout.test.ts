@@ -121,6 +121,42 @@ describe("priceCheckout — server price authority", () => {
     ]);
     expect(orderItems[0].assetUrl).toContain("blob.vercel-storage.com");
   });
+
+  it("persists a valid svgAssetUrl onto the order item", () => {
+    const { orderItems } = priceCheckout([
+      {
+        productId: "portrait-16x24",
+        format: "digital",
+        addFrame: false,
+        quantity: 1,
+        svgAssetUrl: "https://abc123.public.blob.vercel-storage.com/posters/x.svg",
+      },
+    ]);
+    expect(orderItems[0].svgAssetUrl).toBe(
+      "https://abc123.public.blob.vercel-storage.com/posters/x.svg",
+    );
+  });
+
+  it("rejects an svgAssetUrl on a disallowed host (anti-SSRF)", () => {
+    expect(() =>
+      priceCheckout([
+        {
+          productId: "portrait-16x24",
+          format: "digital",
+          addFrame: false,
+          quantity: 1,
+          svgAssetUrl: "https://evil.example.com/x.svg",
+        },
+      ]),
+    ).toThrow(CheckoutValidationError);
+  });
+
+  it("leaves svgAssetUrl null when absent", () => {
+    const { orderItems } = priceCheckout([
+      { productId: "portrait-16x24", format: "digital", addFrame: false, quantity: 1 },
+    ]);
+    expect(orderItems[0].svgAssetUrl).toBeUndefined();
+  });
 });
 
 describe("isAllowedAssetUrl", () => {

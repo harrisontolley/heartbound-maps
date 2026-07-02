@@ -218,6 +218,8 @@ export type NewOrderItem = {
   posterConfig?: Record<string, unknown>;
   arteloSku?: string;
   assetUrl?: string;
+  /** Vector SVG asset URL — see CheckoutItemInput.svgAssetUrl. */
+  svgAssetUrl?: string;
 };
 
 export type NewOrder = {
@@ -280,10 +282,11 @@ export async function createOrder(input: NewOrder): Promise<{ id: string; orderN
     await sql`
       insert into order_items (
         order_id, product_id, product_label, quantity, unit_price_cents,
-        poster_config, artelo_sku, asset_url, created_at
+        poster_config, artelo_sku, asset_url, svg_asset_url, created_at
       ) values (
         ${id}, ${it.productId}, ${it.productLabel}, ${it.quantity}, ${it.unitPriceCents},
-        ${JSON.stringify(it.posterConfig ?? {})}::jsonb, ${it.arteloSku ?? null}, ${it.assetUrl ?? null}, ${createdAt}
+        ${JSON.stringify(it.posterConfig ?? {})}::jsonb, ${it.arteloSku ?? null}, ${it.assetUrl ?? null},
+        ${it.svgAssetUrl ?? null}, ${createdAt}
       )
     `;
   }

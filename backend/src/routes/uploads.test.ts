@@ -58,6 +58,47 @@ describe("POST /uploads/token", () => {
     expect(payload.allowedContentTypes).toEqual(["image/png"]);
   });
 
+  it("mints a token for posters/<leaf>.svg with the 10MB cap and image/svg+xml", async () => {
+    const res = await app.request("/uploads/token", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(tokenBody("posters/design.svg")),
+    });
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as { clientToken: string };
+    const payload = getPayloadFromClientToken(body.clientToken) as {
+      pathname: string;
+      maximumSizeInBytes: number;
+      allowedContentTypes: string[];
+    };
+    expect(payload.pathname).toBe("posters/design.svg");
+    expect(payload.maximumSizeInBytes).toBe(10 * 1024 * 1024);
+    expect(payload.allowedContentTypes).toEqual(["image/svg+xml"]);
+  });
+
+  it("scopes allowedContentTypes per extension so a mismatched content type is rejected at upload time", async () => {
+    const pngRes = await app.request("/uploads/token", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(tokenBody("posters/design.png")),
+    });
+    const svgRes = await app.request("/uploads/token", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(tokenBody("posters/design.svg")),
+    });
+    const pngPayload = getPayloadFromClientToken(
+      ((await pngRes.json()) as { clientToken: string }).clientToken,
+    ) as { allowedContentTypes: string[] };
+    const svgPayload = getPayloadFromClientToken(
+      ((await svgRes.json()) as { clientToken: string }).clientToken,
+    ) as { allowedContentTypes: string[] };
+    // The .png token never allows image/svg+xml (so an svg-content-type PUT
+    // against it is rejected by Blob), and vice versa.
+    expect(pngPayload.allowedContentTypes).not.toContain("image/svg+xml");
+    expect(svgPayload.allowedContentTypes).not.toContain("image/png");
+  });
+
   it("mints a token for free/<leaf>.png with the new 15MB cap", async () => {
     const res = await app.request("/uploads/token", {
       method: "POST",
