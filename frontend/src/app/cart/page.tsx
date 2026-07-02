@@ -73,7 +73,7 @@ export default function CartPage() {
     // Reuse the key while the cart is unchanged (retry of the same attempt);
     // regenerate it once the cart changes.
     const sig = items
-      .map((i) => `${i.id}:${i.quantity}:${i.assetUrl ?? ""}`)
+      .map((i) => `${i.id}:${i.quantity}:${i.assetUrl ?? ""}:${i.svgAssetUrl ?? ""}`)
       .join("|");
     const attemptKey =
       idempotency.current?.sig === sig ? idempotency.current.key : crypto.randomUUID();
@@ -87,6 +87,7 @@ export default function CartPage() {
           quantity: i.quantity,
           posterConfig: i.posterConfig,
           assetUrl: i.assetUrl,
+          svgAssetUrl: i.svgAssetUrl,
         })),
         email: email.trim() || undefined,
       };

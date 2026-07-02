@@ -19,8 +19,8 @@ import { useCartStore } from "@/lib/store/cartStore";
 import { snapshotPosterConfig } from "@/lib/commerce/posterConfig";
 import { SEED_HOME, SEED_PLACES } from "@/lib/seed";
 import type { TemplateId, VintageVariant } from "@/lib/templates/types";
-import { exportPngBlob, slugify } from "@/lib/export";
-import { uploadPosterPng } from "@/lib/upload/uploadPosterPng";
+import { exportPngBlob, rasterizePng, serializePoster, slugify } from "@/lib/export";
+import { uploadPosterPng, uploadPosterSvg } from "@/lib/upload/uploadPosterPng";
 import { STEPS, STEP_INDEX } from "@/lib/studio/steps";
 import { StudioHeader } from "@/components/studio/StudioHeader";
 import { ConfirmDialog } from "@/components/ui/Dialog";
@@ -157,26 +157,40 @@ export function PosterStudio() {
   async function addToCart(selection: StudioSelection) {
     if (addingToCart) return;
     const posterConfig = snapshotPosterConfig();
-    // For prints, rasterize the live poster to a print-ready PNG and upload it so
-    // Artelo can fetch the artwork. Best-effort: if it fails (e.g. blob storage
-    // unconfigured) we still add the item so the sale completes — fulfilment can
-    // be retried server-side. Digital downloads need no print asset.
+    // Capture both deliverables so Phase B's post-payment digital-delivery email
+    // always has a full-res PNG and the vector SVG to link to, whatever format
+    // was bought. Prints rasterize at print DPI (for Artelo); digital rasterizes
+    // at a fixed 3x (screen-res is a different, lead-magnet-only path). Both run
+    // in parallel and are each best-effort: a failed upload (e.g. blob storage
+    // unconfigured) never blocks add-to-cart — the item just lacks that URL, and
+    // fulfilment/delivery can be retried server-side.
     let assetUrl: string | undefined;
-    if (selection.format === "print") {
-      const svg = getSvg();
-      if (svg) {
-        setAddingToCart(true);
-        try {
-          const blob = await exportPngBlob(svg, { widthIn: product.widthIn });
-          assetUrl = await uploadPosterPng(blob, slugify(home?.label ?? "poster"));
-        } catch (err) {
-          console.error("[studio] print asset upload failed", err);
-        } finally {
-          setAddingToCart(false);
-        }
+    let svgAssetUrl: string | undefined;
+    const svg = getSvg();
+    if (svg) {
+      setAddingToCart(true);
+      const slug = slugify(home?.label ?? "poster");
+      const [pngResult, svgResult] = await Promise.allSettled([
+        selection.format === "print"
+          ? exportPngBlob(svg, { widthIn: product.widthIn }).then((blob) =>
+              uploadPosterPng(blob, slug),
+            )
+          : rasterizePng(svg, 3).then((blob) => uploadPosterPng(blob, slug)),
+        serializePoster(svg).then((svgText) => uploadPosterSvg(svgText, slug)),
+      ]);
+      if (pngResult.status === "fulfilled") {
+        assetUrl = pngResult.value;
+      } else {
+        console.error("[studio] poster asset upload failed", pngResult.reason);
       }
+      if (svgResult.status === "fulfilled") {
+        svgAssetUrl = svgResult.value.url;
+      } else {
+        console.error("[studio] poster svg upload failed", svgResult.reason);
+      }
+      setAddingToCart(false);
     }
-    addItem({ selection, posterConfig, assetUrl });
+    addItem({ selection, posterConfig, assetUrl, svgAssetUrl });
     posthog.capture("add_to_cart", {
       product_id: selection.productId,
       format: selection.format,

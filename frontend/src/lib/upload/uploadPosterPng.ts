@@ -29,6 +29,24 @@ export async function uploadPosterPng(blob: Blob, slug: string): Promise<string>
 }
 
 /**
+ * Upload the poster's vector SVG; returns its canonical blob URL. Throws on
+ * failure. Mirrors {@link uploadPosterPng} but for the serialized SVG string —
+ * captured alongside the PNG at add-to-cart for both print and digital
+ * formats, since it's the digital tier's actual deliverable (and a bonus for
+ * print buyers).
+ */
+export async function uploadPosterSvg(svgText: string, slug: string): Promise<{ url: string }> {
+  const pathname = `posters/${slug}-${uid()}.svg`;
+  const blob = new Blob([svgText], { type: "image/svg+xml" });
+  const result = await upload(pathname, blob, {
+    access: "private",
+    contentType: "image/svg+xml",
+    handleUploadUrl: apiUrl("/uploads/token"),
+  });
+  return { url: result.url };
+}
+
+/**
  * Upload the free, screen-res lead-magnet PNG under `free/` (see
  * backend/src/routes/leads.ts, which only accepts asset URLs under that
  * prefix). Otherwise identical to {@link uploadPosterPng}.
