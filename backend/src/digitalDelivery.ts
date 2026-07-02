@@ -58,10 +58,11 @@ export async function deliverDigitalFiles(orderId: string): Promise<DeliveryResu
 
   const hasAnyAsset = order.items.some((it) => it.assetUrl || it.svgAssetUrl);
   if (!hasAnyAsset) {
-    // Pre-B2 legacy order: sold before assets were captured at add-to-cart.
-    // Nothing to deliver — note it on the timeline so an operator can see why.
+    // Sold before assets were captured (legacy order) or the best-effort
+    // uploads at add-to-cart failed. Nothing to deliver — note it on the
+    // timeline so an operator can see why.
     await appendOrderEvent(order.id, {
-      message: "Digital delivery skipped: no assets on order (legacy order)",
+      message: "Digital delivery skipped: no digital assets on file for this order.",
       source: "system",
     }).catch(() => {});
     return { delivered: false, reason: "no_assets" };
@@ -85,6 +86,10 @@ export async function deliverDigitalFiles(orderId: string): Promise<DeliveryResu
 
     if (!sent) {
       await releaseDigitalDeliveryClaim(order.id).catch(() => {});
+      await appendOrderEvent(order.id, {
+        message: "Digital delivery failed: email send failed",
+        source: "system",
+      }).catch(() => {});
       return { delivered: false, reason: "email_send_failed" };
     }
 
@@ -95,6 +100,10 @@ export async function deliverDigitalFiles(orderId: string): Promise<DeliveryResu
     return { delivered: true };
   } catch {
     await releaseDigitalDeliveryClaim(order.id).catch(() => {});
+    await appendOrderEvent(order.id, {
+      message: "Digital delivery failed: email send failed",
+      source: "system",
+    }).catch(() => {});
     return { delivered: false, reason: "email_send_failed" };
   }
 }
