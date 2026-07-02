@@ -118,14 +118,30 @@ whether it's enabled for our account). If enabled, the wiring is small — model
 
 ## Canonical flow
 
-1. Browser rasterizes the poster to a print-ready PNG at add-to-cart and uploads it to
-   Vercel Blob (client-upload via `POST /uploads/token`); the public URL rides along to checkout.
-2. Stripe webhook (`checkout.session.completed`) marks the order `paid` and calls
-   `submitOrderToArtelo`.
-3. `POST /orders/create` with `customerAddress`, `items[].productInfo` (+ `designs[].sourceImage.url`
-   = the Blob URL), `orderId` (our order number), `createdAt`, `currency`, `total`, `isTestOrder`.
-4. Persist Artelo's returned `id` to `orders.artelo_order_id`; log the attempt + COGS to `fulfillments`.
-5. Register the `OrderStatusChange` webhook once; Artelo POSTs to `/webhooks/artelo` on status changes →
+1. Browser uploads two **private** blobs at add-to-cart (client-upload via `POST /uploads/token`):
+   the serialized vector SVG (`order_items.svg_asset_url` — the print master) and a browser-canvas
+   PNG (`order_items.asset_url` — now only the **fallback** print asset; the canvas caps at
+   7000px, so a 24×36 lands at ~194 DPI). Both URLs ride along to checkout.
+2. Stripe webhook (`checkout.session.completed`) marks the order `paid` and defers
+   `submitOrderToArtelo` past the webhook response (`waitUntil`; `backend/src/defer.ts`) —
+   the render in step 3 can take ~32 s, longer than Stripe's retry window.
+3. **Canonical: the server renders the exact-DPI print PNG from the order's SVG at fulfilment.**
+   `ensurePrintAsset` (`backend/src/renderPrint.ts`) signs + fetches the SVG, preprocesses it
+   (strip embedded fonts, resolve `var(--font-*)`, emulate small-caps), rasterizes with resvg at
+   the product's true 300-DPI size (24×36 → 7200×10800), uploads it privately as
+   `posters/print-<order>-<idx>.png`, and persists `order_items.render_asset_url` (reused on
+   retries/reprints — never re-rendered). On any failure it falls back to the browser PNG.
+4. **DPI floor guard**: before submitting, the chosen asset's pixel dimensions (read from the
+   PNG IHDR via a ranged fetch) are validated against the physical size. Effective DPI < 150
+   (Artelo's floor) fails loud — a `failed` `fulfillments` row (`dpi_below_minimum:<w>x<h>`)
+   plus an order event — and the order is **not** submitted (the admin retry lever remains).
+   Server renders always pass; this guards the client-fallback path and future size changes.
+5. `POST /orders/create` with `customerAddress`, `items[].productInfo` (+ `designs[].sourceImage.url`
+   = a **short-lived signed URL** for the chosen asset — every URL handed to Artelo is signed,
+   never a raw private blob URL), `orderId` (our order number), `createdAt`, `currency`, `total`,
+   `isTestOrder`.
+6. Persist Artelo's returned `id` to `orders.artelo_order_id`; log the attempt + COGS to `fulfillments`.
+7. Register the `OrderStatusChange` webhook once; Artelo POSTs to `/webhooks/artelo` on status changes →
    we map `InProduction/Shipped/Delivered/Canceled` to our status and record tracking.
 
 ## Observability
@@ -158,7 +174,9 @@ whether it's enabled for our account). If enabled, the wiring is small — model
 - **Test/`Ignored` orders can't be cancelled** — cancel returns `400 "You cannot cancel this order"`.
   That's expected; the admin "Cancel" still refunds via Stripe and marks the order cancelled locally.
 - **Design resolution is validated**: the source image must meet 150 DPI for the chosen size (e.g.
-  x16x24 needs ≥ 2400×3600 px) or create-order returns a DPI 400. The studio rasterizes at print size.
+  x16x24 needs ≥ 2400×3600 px) or create-order returns a DPI 400. The server render is exactly
+  300 DPI; our own pre-submit DPI floor guard (see Canonical flow) blocks anything below 150 DPI
+  before Artelo ever sees it.
 - **Artelo has no address-edit endpoint.** To change a shipping address after submission you must cancel
   + re-create (only possible pre-production). Admin "Edit address" updates our record only.
 - **No Blob store = no physical orders.** The print asset is uploaded to Vercel Blob; if
