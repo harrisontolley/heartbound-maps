@@ -16,6 +16,7 @@ import { buildDevRouter } from "./routes/dev.js";
 import { buildUploadsRouter } from "./routes/uploads.js";
 import { buildAdminRouter } from "./routes/admin.js";
 import { buildJobsRouter } from "./routes/jobs.js";
+import { buildLeadsRouter } from "./routes/leads.js";
 import { initSentry, captureError, isSentryConfigured } from "./sentry.js";
 
 // The Pinprint API. Owns the Nominatim geocoding proxy (User-Agent, rate gate,
@@ -187,6 +188,7 @@ function registerRoutes(r: Hono): Hono {
   r.route("/checkout", buildCheckoutRouter()); // Stripe Checkout (guest-friendly)
   r.route("/track", buildTrackRouter()); // public order tracking
   r.route("/uploads", buildUploadsRouter()); // print-asset blob upload tokens
+  r.route("/leads", buildLeadsRouter()); // lead-magnet: free screen-res design for an email
   r.route("/admin", buildAdminRouter()); // operator-only (requireAdmin / ADMIN_EMAILS)
   r.route("/dev", buildDevRouter()); // dev-only, DEV_SEED_TOKEN-guarded
   r.route("/jobs", buildJobsRouter()); // cron-only, CRON_SECRET-guarded (blob GC)

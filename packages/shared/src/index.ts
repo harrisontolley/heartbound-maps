@@ -36,6 +36,9 @@ export type {
   TrackResult,
 } from "./track.js";
 
+// Lead-magnet contracts (free screen-res design, gated behind an email).
+export type { CreateLeadRequest, CreateLeadResponse } from "./leads.js";
+
 // Commerce: product catalogue, pricing, and checkout contracts (values + types).
 export * from "./commerce.js";
 
