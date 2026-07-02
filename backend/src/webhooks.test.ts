@@ -233,6 +233,37 @@ describe("handleStripeEvent — paid-transition hook-in (fulfilment + digital de
     await handleStripeEvent(completedEvent());
     expect(deliverDigitalFiles).toHaveBeenCalledWith("ord-1");
   });
+
+  // The print render inside submitOrderToArtelo can take ~32 s — past Stripe's
+  // retry window — so the handler must resolve (→ webhook 200) *before* the side
+  // effects run, via the injected deferrer (waitUntil on Vercel).
+  it("resolves before deferred side effects run (webhook 200 timing)", async () => {
+    const deferred: Array<() => Promise<unknown>> = [];
+    const result = await handleStripeEvent(completedEvent(), (task) => {
+      deferred.push(task);
+    });
+    // Handler already resolved; neither side effect has been invoked yet.
+    expect(result).toEqual({ handled: true, orderId: "ord-1" });
+    expect(deferred).toHaveLength(2);
+    expect(submitOrderToArtelo).not.toHaveBeenCalled();
+    expect(deliverDigitalFiles).not.toHaveBeenCalled();
+    // The deferred tasks then actually invoke both side effects.
+    await Promise.all(deferred.map((t) => t()));
+    expect(submitOrderToArtelo).toHaveBeenCalledWith("ord-1");
+    expect(deliverDigitalFiles).toHaveBeenCalledWith("ord-1");
+  });
+
+  it("still resolves cleanly when a deferred side effect ultimately fails", async () => {
+    submitOrderToArtelo.mockRejectedValue(new Error("slow render blew up"));
+    const deferred: Array<() => Promise<unknown>> = [];
+    const result = await handleStripeEvent(completedEvent(), (task) => {
+      deferred.push(task);
+    });
+    expect(result).toEqual({ handled: true, orderId: "ord-1" });
+    // Running the failing task later never propagates back into the handler.
+    await Promise.all(deferred.map((t) => t().catch(() => {})));
+    expect(submitOrderToArtelo).toHaveBeenCalled();
+  });
 });
 
 describe("handleArteloPayload — unconfigured DB", () => {
