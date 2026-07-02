@@ -3,6 +3,7 @@ import {
   type BlobEntry,
   type LeadAssetRef,
   type OrderAssetRef,
+  orderAssetRefsFromRows,
   selectBlobsToDelete,
   selectFreeBlobsToDelete,
 } from "./blobGc.js";
@@ -79,6 +80,69 @@ describe("selectBlobsToDelete", () => {
     ];
     const out = selectBlobsToDelete(blobs, orders, NOW, OPTS);
     expect(out.map((d) => d.reason)).toEqual(["expired"]);
+  });
+
+  // Regression: the digital-delivery SVG asset (order_items.svg_asset_url) must be
+  // tracked as a live reference exactly like the PNG (asset_url), or the GC would
+  // treat every order's SVG as an orphan and reap it while the order is still live.
+  it("keeps an SVG blob referenced by a live order's svg_asset_url, however old", () => {
+    const blobs = [blob("posters/live.svg", 365 * DAY)];
+    const orders = [ref("posters/live.svg", "paid", 365 * DAY)];
+    expect(selectBlobsToDelete(blobs, orders, NOW, OPTS)).toEqual([]);
+  });
+});
+
+describe("orderAssetRefsFromRows", () => {
+  it("expands a row with both asset_url and svg_asset_url into two refs", () => {
+    const refs = orderAssetRefsFromRows([
+      {
+        asset_url: "https://x.blob.vercel-storage.com/posters/a.png",
+        svg_asset_url: "https://x.blob.vercel-storage.com/posters/a.svg",
+        status: "paid",
+        created_at: new Date(NOW - DAY).toISOString(),
+      },
+    ]);
+    expect(refs).toHaveLength(2);
+    expect(refs.map((r) => r.assetUrl)).toEqual([
+      "https://x.blob.vercel-storage.com/posters/a.png",
+      "https://x.blob.vercel-storage.com/posters/a.svg",
+    ]);
+    expect(refs[0].status).toBe("paid");
+    expect(refs[1].status).toBe("paid");
+  });
+
+  it("emits one ref for a row with only asset_url (pre-digital-delivery order)", () => {
+    const refs = orderAssetRefsFromRows([
+      {
+        asset_url: "https://x.blob.vercel-storage.com/posters/legacy.png",
+        svg_asset_url: null,
+        status: "shipped",
+        created_at: new Date(NOW).toISOString(),
+      },
+    ]);
+    expect(refs).toEqual([
+      { assetUrl: "https://x.blob.vercel-storage.com/posters/legacy.png", status: "shipped", createdAt: refs[0].createdAt },
+    ]);
+  });
+
+  it("emits one ref for a row with only svg_asset_url", () => {
+    const refs = orderAssetRefsFromRows([
+      {
+        asset_url: null,
+        svg_asset_url: "https://x.blob.vercel-storage.com/posters/only.svg",
+        status: "paid",
+        created_at: new Date(NOW).toISOString(),
+      },
+    ]);
+    expect(refs.map((r) => r.assetUrl)).toEqual(["https://x.blob.vercel-storage.com/posters/only.svg"]);
+  });
+
+  it("emits nothing for a row with neither asset column set", () => {
+    expect(
+      orderAssetRefsFromRows([
+        { asset_url: null, svg_asset_url: null, status: "paid", created_at: new Date(NOW).toISOString() },
+      ]),
+    ).toEqual([]);
   });
 });
 

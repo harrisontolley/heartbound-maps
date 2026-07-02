@@ -35,6 +35,31 @@ const DEFAULT_FREE_RETENTION_DAYS = 60;
 export type OrderAssetRef = { assetUrl: string; status: string; createdAt: Date };
 export type LeadAssetRef = { assetPathname: string; createdAt: Date };
 
+export type OrderAssetRow = {
+  asset_url: string | null;
+  svg_asset_url: string | null;
+  status: string;
+  created_at: string | Date;
+};
+
+/**
+ * Expand an `order_items` row into one `OrderAssetRef` per non-null asset
+ * column (PNG `asset_url` and/or vector `svg_asset_url`). Both must count as
+ * live references — the digital-delivery SVG is just as "referenced by this
+ * order" as the PNG is, and selectBlobsToDelete matches by pathname, so a
+ * column missing from this expansion would make that column's blobs look
+ * orphaned (or unprotected past retention) even while the order is live.
+ */
+export function orderAssetRefsFromRows(rows: OrderAssetRow[]): OrderAssetRef[] {
+  const refs: OrderAssetRef[] = [];
+  for (const r of rows) {
+    const createdAt = new Date(r.created_at);
+    if (r.asset_url) refs.push({ assetUrl: r.asset_url, status: r.status, createdAt });
+    if (r.svg_asset_url) refs.push({ assetUrl: r.svg_asset_url, status: r.status, createdAt });
+  }
+  return refs;
+}
+
 export type GcDecision = { url: string; pathname: string; reason: "orphan" | "expired" };
 
 export type GcOptions = { orphanTtlMs: number; retentionMs: number };
@@ -170,20 +195,16 @@ export async function runBlobGc(input: { dryRun?: boolean } = {}): Promise<GcRes
   try {
     const [orderRows, leadRows] = await Promise.all([
       sql`
-        select oi.asset_url, o.status::text as status, o.created_at
+        select oi.asset_url, oi.svg_asset_url, o.status::text as status, o.created_at
         from order_items oi
         join orders o on o.id = oi.order_id
-        where oi.asset_url is not null
-      ` as unknown as Promise<Array<{ asset_url: string; status: string; created_at: string | Date }>>,
+        where oi.asset_url is not null or oi.svg_asset_url is not null
+      ` as unknown as Promise<OrderAssetRow[]>,
       sql`
         select asset_pathname, created_at from leads where asset_pathname is not null
       ` as unknown as Promise<Array<{ asset_pathname: string; created_at: string | Date }>>,
     ]);
-    orders = orderRows.map((r) => ({
-      assetUrl: r.asset_url,
-      status: r.status,
-      createdAt: new Date(r.created_at),
-    }));
+    orders = orderAssetRefsFromRows(orderRows);
     leads = leadRows.map((r) => ({
       assetPathname: r.asset_pathname,
       createdAt: new Date(r.created_at),

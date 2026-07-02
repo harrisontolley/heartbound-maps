@@ -22,7 +22,7 @@ export type EmailContent = {
  * markup-safe. The plain-text version has no injection surface and is left
  * as-is.
  */
-function escapeHtml(value: string): string {
+export function escapeHtml(value: string): string {
   return value
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")

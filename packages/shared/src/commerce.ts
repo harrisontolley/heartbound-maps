@@ -423,10 +423,18 @@ export type CheckoutItemInput = {
   quantity: number;
   posterConfig?: Record<string, unknown>;
   /**
-   * Public URL of the print-ready PNG (uploaded to blob storage by the browser
-   * at add-to-cart). Handed to Artelo as the design source. Print items only.
+   * Public URL of the full-res poster PNG (uploaded to blob storage by the
+   * browser at add-to-cart), for any format. For print, this is the print-DPI
+   * export handed to Artelo as the design source; for digital, it's the fixed
+   * 3x rasterization delivered to the buyer post-payment.
    */
   assetUrl?: string;
+  /**
+   * Public URL of the vector SVG (uploaded to blob storage by the browser at
+   * add-to-cart). Delivered to the buyer post-payment alongside the full-res
+   * PNG — the digital tier's actual asset, and a bonus for print buyers.
+   */
+  svgAssetUrl?: string;
 };
 
 export type CreateCheckoutRequest = {

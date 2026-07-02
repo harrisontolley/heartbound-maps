@@ -25,22 +25,29 @@ import { enforce } from "../rateLimit.js";
 // drop a bounded PNG under one of those prefixes. Residual anonymous-abuse risk
 // is noted for follow-up (rate limit / WAF).
 //
-// Two prefixes, two caps:
-//   posters/ — the paid, full-resolution print asset (up to tens of MB).
-//   free/    — the lead-magnet's screen-res design (routes/leads.ts), capped
-//              much smaller since it's never sent to print.
+// Three prefixes/rules, three caps:
+//   posters/*.png — the paid, full-resolution print asset (up to tens of MB).
+//   posters/*.svg — the vector counterpart (Phase B digital delivery), much
+//                   smaller since it's markup/paths, not raster pixels.
+//   free/*.png    — the lead-magnet's screen-res design (routes/leads.ts),
+//                   capped much smaller since it's never sent to print.
 const POSTERS_MAX_BYTES = 60 * 1024 * 1024; // generous: a 24×36 print PNG can be tens of MB
+const POSTERS_SVG_MAX_BYTES = 10 * 1024 * 1024;
 const FREE_MAX_BYTES = 15 * 1024 * 1024;
 
 // The client-supplied pathname is bound to the minted token, so we can't rewrite
 // it — but we reject anything that isn't a single safe leaf under one of the
-// known prefixes.
-const PATHNAME_RULES: { pattern: RegExp; maxBytes: number }[] = [
-  { pattern: /^posters\/[A-Za-z0-9._-]+\.png$/, maxBytes: POSTERS_MAX_BYTES },
-  { pattern: /^free\/[A-Za-z0-9._-]+\.png$/, maxBytes: FREE_MAX_BYTES },
+// known prefixes. `contentType` scopes the signed token so Blob itself rejects
+// a mismatched upload (e.g. an svg-content-type PUT against a .png pathname).
+const PATHNAME_RULES: { pattern: RegExp; maxBytes: number; contentType: string }[] = [
+  { pattern: /^posters\/[A-Za-z0-9._-]+\.png$/, maxBytes: POSTERS_MAX_BYTES, contentType: "image/png" },
+  { pattern: /^posters\/[A-Za-z0-9._-]+\.svg$/, maxBytes: POSTERS_SVG_MAX_BYTES, contentType: "image/svg+xml" },
+  { pattern: /^free\/[A-Za-z0-9._-]+\.png$/, maxBytes: FREE_MAX_BYTES, contentType: "image/png" },
 ];
 
-function matchPathnameRule(pathname: string): { maxBytes: number } | null {
+function matchPathnameRule(
+  pathname: string,
+): { maxBytes: number; contentType: string } | null {
   return PATHNAME_RULES.find((rule) => rule.pattern.test(pathname)) ?? null;
 }
 
@@ -72,7 +79,7 @@ export function buildUploadsRouter(): Hono<{ Variables: AuthVariables }> {
           const rule = matchPathnameRule(pathname);
           if (!rule) throw new Error("invalid_pathname");
           return {
-            allowedContentTypes: ["image/png"],
+            allowedContentTypes: [rule.contentType],
             maximumSizeInBytes: rule.maxBytes,
             addRandomSuffix: true,
             // Embed the owner (or null for guests) for the audit trail.

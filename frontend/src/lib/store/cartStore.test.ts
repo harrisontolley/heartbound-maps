@@ -28,6 +28,25 @@ describe("cartStore", () => {
     expect(items[0].quantity).toBe(1);
   });
 
+  it("carries assetUrl and svgAssetUrl through onto the item", () => {
+    useCartStore.getState().addItem({
+      selection: sel(5900),
+      posterConfig: cfg,
+      assetUrl: "https://blob.example/posters/london-1.png",
+      svgAssetUrl: "https://blob.example/posters/london-1.svg",
+    });
+    const { items } = useCartStore.getState();
+    expect(items[0].assetUrl).toBe("https://blob.example/posters/london-1.png");
+    expect(items[0].svgAssetUrl).toBe("https://blob.example/posters/london-1.svg");
+  });
+
+  it("leaves assetUrl and svgAssetUrl undefined when omitted", () => {
+    useCartStore.getState().addItem({ selection: sel(5900), posterConfig: cfg });
+    const { items } = useCartStore.getState();
+    expect(items[0].assetUrl).toBeUndefined();
+    expect(items[0].svgAssetUrl).toBeUndefined();
+  });
+
   it("clamps quantity to [1, 25]", () => {
     useCartStore.getState().addItem({ selection: sel(5900), posterConfig: cfg });
     const id = useCartStore.getState().items[0].id;

@@ -16,8 +16,17 @@ export type CartItem = {
   selection: StudioSelection;
   /** Immutable design snapshot sent to checkout as poster_config. */
   posterConfig: PosterConfigSnapshot;
-  /** Public URL of the print-ready PNG (uploaded at add-to-cart; print only). */
+  /**
+   * Public URL of the full-res poster PNG (uploaded at add-to-cart) — the
+   * print-DPI export for print format, a 3x rasterization for digital.
+   */
   assetUrl?: string;
+  /**
+   * Public URL of the vector SVG (uploaded at add-to-cart), captured for both
+   * formats — the digital tier's actual deliverable, and a bonus for print
+   * buyers.
+   */
+  svgAssetUrl?: string;
   quantity: number;
   addedAt: number;
 };
@@ -28,6 +37,7 @@ type CartState = {
     selection: StudioSelection;
     posterConfig: PosterConfigSnapshot;
     assetUrl?: string;
+    svgAssetUrl?: string;
     quantity?: number;
   }) => void;
   removeItem: (id: string) => void;
@@ -50,11 +60,19 @@ export const useCartStore = create<CartState>()(
   persist(
     (set) => ({
       items: [],
-      addItem: ({ selection, posterConfig, assetUrl, quantity = 1 }) =>
+      addItem: ({ selection, posterConfig, assetUrl, svgAssetUrl, quantity = 1 }) =>
         set((s) => ({
           items: [
             ...s.items,
-            { id: uid(), selection, posterConfig, assetUrl, quantity: clampQty(quantity), addedAt: Date.now() },
+            {
+              id: uid(),
+              selection,
+              posterConfig,
+              assetUrl,
+              svgAssetUrl,
+              quantity: clampQty(quantity),
+              addedAt: Date.now(),
+            },
           ],
         })),
       removeItem: (id) => set((s) => ({ items: s.items.filter((i) => i.id !== id) })),

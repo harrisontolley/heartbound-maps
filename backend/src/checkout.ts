@@ -62,8 +62,14 @@ export function priceCheckout(items: CheckoutItemInput[]): PricedCheckout {
     }
 
     const isPrint = it.format === "print";
-    // A print's design source must be one of our own blob URLs (never arbitrary).
-    if (isPrint && it.assetUrl && !isAllowedAssetUrl(it.assetUrl)) {
+    // The design source must be one of our own blob URLs (never arbitrary).
+    // For prints, this is the print-ready PNG; for digital, it's the digital deliverable.
+    if (it.assetUrl && !isAllowedAssetUrl(it.assetUrl)) {
+      throw new CheckoutValidationError("invalid_asset_url");
+    }
+    // The vector SVG travels for any format (it's the digital tier's actual
+    // asset, and a bonus for print buyers) — same host allow-list as assetUrl.
+    if (it.svgAssetUrl && !isAllowedAssetUrl(it.svgAssetUrl)) {
       throw new CheckoutValidationError("invalid_asset_url");
     }
     const addFrame = isPrint && it.addFrame === true;
@@ -80,9 +86,13 @@ export function priceCheckout(items: CheckoutItemInput[]): PricedCheckout {
       quantity,
       unitPriceCents,
       posterConfig: it.posterConfig ?? {},
-      // Public URL of the print-ready PNG (browser-uploaded at add-to-cart).
-      // Handed to Artelo as the design source; print items only.
-      assetUrl: isPrint ? it.assetUrl : undefined,
+      // Public URL of the design source (browser-uploaded at add-to-cart).
+      // For prints: the print-ready PNG (handed to Artelo).
+      // For digital: the digital deliverable PNG.
+      assetUrl: it.assetUrl,
+      // Public URL of the vector SVG (browser-uploaded at add-to-cart). Carried
+      // for any format — it's what the post-payment digital-delivery email links to.
+      svgAssetUrl: it.svgAssetUrl,
     });
 
     lineItems.push({

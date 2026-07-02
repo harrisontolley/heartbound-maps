@@ -1,5 +1,5 @@
 import { createHmac } from "node:crypto";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type Stripe from "stripe";
 import { app } from "./app.js";
 import {
@@ -14,6 +14,33 @@ import {
 // Pure mapping helpers are unit-tested directly; the routes are tested for their
 // no-op-when-unconfigured behavior (no DATABASE_URL in the hermetic test env, so
 // order lookups return null and the handlers don't throw).
+
+// The paid-transition hook-in (submitOrderToArtelo + deliverDigitalFiles) needs a
+// "found, pending_payment" order to reach those calls at all — a real DB lookup
+// no-ops in the hermetic test env above — so it's covered separately with the
+// order lookup/advance mocked and the two fire-and-forget collaborators spied on.
+const findOrderById = vi.fn();
+const advanceOrderStatus = vi.fn();
+const applyCheckoutDetails = vi.fn();
+vi.mock("./orders.js", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("./orders.js")>();
+  return {
+    ...actual,
+    findOrderById: (...args: unknown[]) => findOrderById(...args),
+    advanceOrderStatus: (...args: unknown[]) => advanceOrderStatus(...args),
+    applyCheckoutDetails: (...args: unknown[]) => applyCheckoutDetails(...args),
+  };
+});
+
+const submitOrderToArtelo = vi.fn();
+vi.mock("./fulfillment.js", () => ({
+  submitOrderToArtelo: (...args: unknown[]) => submitOrderToArtelo(...args),
+}));
+
+const deliverDigitalFiles = vi.fn();
+vi.mock("./digitalDelivery.js", () => ({
+  deliverDigitalFiles: (...args: unknown[]) => deliverDigitalFiles(...args),
+}));
 
 describe("artelo status mapping", () => {
   it("maps known statuses", () => {
@@ -135,6 +162,76 @@ describe("handleStripeEvent — unconfigured DB", () => {
     } as unknown as Stripe.Event;
     // No DB → the order lookups return null, so nothing is handled (and no throw).
     await expect(handleStripeEvent(event)).resolves.toEqual({ handled: false });
+  });
+});
+
+describe("handleStripeEvent — paid-transition hook-in (fulfilment + digital delivery)", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    findOrderById.mockResolvedValue({ id: "ord-1", status: "pending_payment" });
+    advanceOrderStatus.mockResolvedValue(undefined);
+    applyCheckoutDetails.mockResolvedValue(undefined);
+    submitOrderToArtelo.mockResolvedValue({ submitted: true });
+    deliverDigitalFiles.mockResolvedValue({ delivered: true });
+  });
+
+  function completedEvent(overrides: Record<string, unknown> = {}): Stripe.Event {
+    return {
+      type: "checkout.session.completed",
+      data: {
+        object: {
+          id: "cs_1",
+          metadata: { orderId: "ord-1" },
+          payment_intent: "pi_1",
+          payment_status: "paid",
+          customer_details: { email: "buyer@example.com" },
+          ...overrides,
+        },
+      },
+    } as unknown as Stripe.Event;
+  }
+
+  it("fires deliverDigitalFiles alongside submitOrderToArtelo once a session settles as paid", async () => {
+    const result = await handleStripeEvent(completedEvent());
+    expect(result).toEqual({ handled: true, orderId: "ord-1" });
+    expect(advanceOrderStatus).toHaveBeenCalledWith("ord-1", "paid", expect.any(Object));
+    expect(submitOrderToArtelo).toHaveBeenCalledWith("ord-1");
+    expect(deliverDigitalFiles).toHaveBeenCalledWith("ord-1");
+  });
+
+  it("also fires on the async-payment-succeeded parity path", async () => {
+    await handleStripeEvent({
+      type: "checkout.session.async_payment_succeeded",
+      data: { object: (completedEvent().data as { object: unknown }).object },
+    } as unknown as Stripe.Event);
+    expect(deliverDigitalFiles).toHaveBeenCalledWith("ord-1");
+    expect(submitOrderToArtelo).toHaveBeenCalledWith("ord-1");
+  });
+
+  it("does not fire delivery when the session hasn't actually settled (async, still unpaid)", async () => {
+    await handleStripeEvent(completedEvent({ payment_status: "unpaid" }));
+    expect(deliverDigitalFiles).not.toHaveBeenCalled();
+    expect(submitOrderToArtelo).not.toHaveBeenCalled();
+  });
+
+  it("a rejected deliverDigitalFiles promise does not throw out of the handler (webhook isolation)", async () => {
+    deliverDigitalFiles.mockRejectedValue(new Error("resend blew up"));
+    await expect(handleStripeEvent(completedEvent())).resolves.toEqual({
+      handled: true,
+      orderId: "ord-1",
+    });
+  });
+
+  it("a rejected deliverDigitalFiles promise does not prevent the Artelo submission from firing", async () => {
+    deliverDigitalFiles.mockRejectedValue(new Error("resend blew up"));
+    await handleStripeEvent(completedEvent());
+    expect(submitOrderToArtelo).toHaveBeenCalledWith("ord-1");
+  });
+
+  it("a rejected submitOrderToArtelo promise does not prevent digital delivery from firing", async () => {
+    submitOrderToArtelo.mockRejectedValue(new Error("artelo blew up"));
+    await handleStripeEvent(completedEvent());
+    expect(deliverDigitalFiles).toHaveBeenCalledWith("ord-1");
   });
 });
 
