@@ -12,6 +12,7 @@ import {
   setRefundAmount,
 } from "./orders.js";
 import { submitOrderToArtelo } from "./fulfillment.js";
+import { deliverDigitalFiles } from "./digitalDelivery.js";
 
 // Order persistence driven by the Stripe and Artelo webhooks. The DB-touching
 // handlers no-op gracefully when DATABASE_URL is unset (the find* helpers return
@@ -164,6 +165,14 @@ export async function handleStripeEvent(event: Stripe.Event): Promise<WebhookHan
         // Stripe webhook (Stripe would retry and double-charge our handlers).
         await submitOrderToArtelo(located.id).catch((err) => {
           console.error("[webhooks/stripe] artelo submit error", err);
+        });
+        // Email the order's digital files (the $19 tier itself, or the free
+        // bonus bundled with every print). Same isolation contract as Artelo:
+        // self-guarded, idempotent (claims digital_delivered_at once), and
+        // never allowed to fail this webhook — a delivery hiccup must not make
+        // Stripe retry (and re-run) the handlers above.
+        await deliverDigitalFiles(located.id).catch((err) => {
+          console.error("[webhooks/stripe] digital delivery error", err);
         });
       }
       return { handled: true, orderId: located.id };
