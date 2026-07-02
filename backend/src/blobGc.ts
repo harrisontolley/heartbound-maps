@@ -38,17 +38,18 @@ export type LeadAssetRef = { assetPathname: string; createdAt: Date };
 export type OrderAssetRow = {
   asset_url: string | null;
   svg_asset_url: string | null;
+  render_asset_url: string | null;
   status: string;
   created_at: string | Date;
 };
 
 /**
  * Expand an `order_items` row into one `OrderAssetRef` per non-null asset
- * column (PNG `asset_url` and/or vector `svg_asset_url`). Both must count as
- * live references — the digital-delivery SVG is just as "referenced by this
- * order" as the PNG is, and selectBlobsToDelete matches by pathname, so a
- * column missing from this expansion would make that column's blobs look
- * orphaned (or unprotected past retention) even while the order is live.
+ * column (PNG `asset_url`, vector `svg_asset_url`, and the exact-DPI server
+ * `render_asset_url`). All three must count as live references — selectBlobsToDelete
+ * matches by pathname, so a column missing from this expansion would make that
+ * column's blobs look orphaned (or unprotected past retention) even while the
+ * order is live. The server render lives under posters/ like the client PNG.
  */
 export function orderAssetRefsFromRows(rows: OrderAssetRow[]): OrderAssetRef[] {
   const refs: OrderAssetRef[] = [];
@@ -56,6 +57,7 @@ export function orderAssetRefsFromRows(rows: OrderAssetRow[]): OrderAssetRef[] {
     const createdAt = new Date(r.created_at);
     if (r.asset_url) refs.push({ assetUrl: r.asset_url, status: r.status, createdAt });
     if (r.svg_asset_url) refs.push({ assetUrl: r.svg_asset_url, status: r.status, createdAt });
+    if (r.render_asset_url) refs.push({ assetUrl: r.render_asset_url, status: r.status, createdAt });
   }
   return refs;
 }
@@ -195,10 +197,12 @@ export async function runBlobGc(input: { dryRun?: boolean } = {}): Promise<GcRes
   try {
     const [orderRows, leadRows] = await Promise.all([
       sql`
-        select oi.asset_url, oi.svg_asset_url, o.status::text as status, o.created_at
+        select oi.asset_url, oi.svg_asset_url, oi.render_asset_url,
+               o.status::text as status, o.created_at
         from order_items oi
         join orders o on o.id = oi.order_id
         where oi.asset_url is not null or oi.svg_asset_url is not null
+           or oi.render_asset_url is not null
       ` as unknown as Promise<OrderAssetRow[]>,
       sql`
         select asset_pathname, created_at from leads where asset_pathname is not null

@@ -98,6 +98,7 @@ describe("orderAssetRefsFromRows", () => {
       {
         asset_url: "https://x.blob.vercel-storage.com/posters/a.png",
         svg_asset_url: "https://x.blob.vercel-storage.com/posters/a.svg",
+        render_asset_url: null,
         status: "paid",
         created_at: new Date(NOW - DAY).toISOString(),
       },
@@ -111,11 +112,28 @@ describe("orderAssetRefsFromRows", () => {
     expect(refs[1].status).toBe("paid");
   });
 
+  it("tracks render_asset_url (server print render) as a live ref alongside the others", () => {
+    const refs = orderAssetRefsFromRows([
+      {
+        asset_url: "https://x.blob.vercel-storage.com/posters/a.png",
+        svg_asset_url: "https://x.blob.vercel-storage.com/posters/a.svg",
+        render_asset_url: "https://x.blob.vercel-storage.com/posters/print-a.png",
+        status: "paid",
+        created_at: new Date(NOW).toISOString(),
+      },
+    ]);
+    expect(refs.map((r) => r.assetUrl)).toContain(
+      "https://x.blob.vercel-storage.com/posters/print-a.png",
+    );
+    expect(refs).toHaveLength(3);
+  });
+
   it("emits one ref for a row with only asset_url (pre-digital-delivery order)", () => {
     const refs = orderAssetRefsFromRows([
       {
         asset_url: "https://x.blob.vercel-storage.com/posters/legacy.png",
         svg_asset_url: null,
+        render_asset_url: null,
         status: "shipped",
         created_at: new Date(NOW).toISOString(),
       },
@@ -130,6 +148,7 @@ describe("orderAssetRefsFromRows", () => {
       {
         asset_url: null,
         svg_asset_url: "https://x.blob.vercel-storage.com/posters/only.svg",
+        render_asset_url: null,
         status: "paid",
         created_at: new Date(NOW).toISOString(),
       },
@@ -140,7 +159,7 @@ describe("orderAssetRefsFromRows", () => {
   it("emits nothing for a row with neither asset column set", () => {
     expect(
       orderAssetRefsFromRows([
-        { asset_url: null, svg_asset_url: null, status: "paid", created_at: new Date(NOW).toISOString() },
+        { asset_url: null, svg_asset_url: null, render_asset_url: null, status: "paid", created_at: new Date(NOW).toISOString() },
       ]),
     ).toEqual([]);
   });
