@@ -5,6 +5,7 @@ import {
   selectionTotalCents,
 } from "@pinprint/shared";
 import type { NewOrderItem } from "./orders.js";
+import { isAllowedAssetUrl } from "./assetUrl.js";
 
 // Server-side price authority for checkout. The client sends only what was
 // chosen (productId, format, addFrame, quantity); this module re-derives every
@@ -13,29 +14,10 @@ import type { NewOrderItem } from "./orders.js";
 
 const MAX_QUANTITY = 25;
 
-// Print assets are uploaded by the browser to Vercel Blob (see routes/uploads.ts),
-// which returns a public *.blob.vercel-storage.com URL. We hand that URL to Artelo
-// as the design source, so we must only accept URLs on that host — otherwise a
-// crafted request could make us submit an arbitrary remote image (SSRF/abuse).
-// Override the allowed host suffixes with BLOB_ALLOWED_HOSTS (comma-separated).
-function allowedAssetHosts(): string[] {
-  const raw = process.env.BLOB_ALLOWED_HOSTS;
-  if (raw) return raw.split(",").map((s) => s.trim().toLowerCase()).filter(Boolean);
-  return ["blob.vercel-storage.com"];
-}
-
-/** True when an asset URL is an https URL on an allowed blob host. */
-export function isAllowedAssetUrl(url: string): boolean {
-  let u: URL;
-  try {
-    u = new URL(url);
-  } catch {
-    return false;
-  }
-  if (u.protocol !== "https:") return false;
-  const host = u.hostname.toLowerCase();
-  return allowedAssetHosts().some((suffix) => host === suffix || host.endsWith(`.${suffix}`));
-}
+// The print-asset allow-list check (isAllowedAssetUrl) lives in ./assetUrl —
+// shared with routes/leads.ts, which needs the same host allow-list for the
+// free lead-magnet download. Re-exported here so existing imports keep working.
+export { isAllowedAssetUrl } from "./assetUrl.js";
 
 /** Thrown for any client-supplied cart that fails validation → maps to a 400. */
 export class CheckoutValidationError extends Error {

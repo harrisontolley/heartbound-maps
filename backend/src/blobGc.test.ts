@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { type BlobEntry, type OrderAssetRef, selectBlobsToDelete } from "./blobGc.js";
+import {
+  type BlobEntry,
+  type LeadAssetRef,
+  type OrderAssetRef,
+  selectBlobsToDelete,
+  selectFreeBlobsToDelete,
+} from "./blobGc.js";
 
 // The deletion decision is the risky part (deleting live artwork would break
 // fulfilment / reprints), so the pure selection is tested exhaustively without a
@@ -73,5 +79,42 @@ describe("selectBlobsToDelete", () => {
     ];
     const out = selectBlobsToDelete(blobs, orders, NOW, OPTS);
     expect(out.map((d) => d.reason)).toEqual(["expired"]);
+  });
+});
+
+// Free-lead-magnet blobs have no order/terminal-status concept — a lead is just
+// (delivered or not). So the rule is simpler than posters/: purge an orphan past
+// the (shared) orphan TTL, or purge a referenced blob once its lead is older than
+// FREE_ASSET_RETENTION_DAYS, full stop (no "still live" exception).
+const FREE_OPTS = { orphanTtlMs: 48 * HOUR, retentionMs: 60 * DAY };
+
+function leadRef(pathname: string, ageMs: number): LeadAssetRef {
+  return { assetPathname: pathname, createdAt: new Date(NOW - ageMs) };
+}
+
+describe("selectFreeBlobsToDelete", () => {
+  it("keeps a fresh orphan, deletes an old orphan", () => {
+    const blobs = [blob("free/fresh.png", 1 * HOUR), blob("free/old.png", 72 * HOUR)];
+    const out = selectFreeBlobsToDelete(blobs, [], NOW, FREE_OPTS);
+    expect(out).toEqual([{ url: blobs[1].url, pathname: "free/old.png", reason: "orphan" }]);
+  });
+
+  it("keeps a referenced blob inside the retention window", () => {
+    const blobs = [blob("free/recent.png", 10 * DAY)];
+    const leads = [leadRef("free/recent.png", 10 * DAY)];
+    expect(selectFreeBlobsToDelete(blobs, leads, NOW, FREE_OPTS)).toEqual([]);
+  });
+
+  it("expires a referenced blob once its lead is past the retention window", () => {
+    const blobs = [blob("free/done.png", 90 * DAY)];
+    const leads = [leadRef("free/done.png", 90 * DAY)];
+    const out = selectFreeBlobsToDelete(blobs, leads, NOW, FREE_OPTS);
+    expect(out).toEqual([{ url: blobs[0].url, pathname: "free/done.png", reason: "expired" }]);
+  });
+
+  it("keeps a blob if ANY referencing lead is still inside retention", () => {
+    const blobs = [blob("free/shared.png", 90 * DAY)];
+    const leads = [leadRef("free/shared.png", 90 * DAY), leadRef("free/shared.png", 5 * DAY)];
+    expect(selectFreeBlobsToDelete(blobs, leads, NOW, FREE_OPTS)).toEqual([]);
   });
 });

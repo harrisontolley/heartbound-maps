@@ -20,15 +20,29 @@ import { enforce } from "../rateLimit.js";
 // guest-friendly, mirroring /checkout. We attach the user non-blockingly to tag
 // uploads when signed in. The token minted here is tightly constrained (PNG only,
 // size-capped, random suffix) and the pathname is validated against a strict
-// allow-list (a single posters/<leaf>.png segment — no traversal, no arbitrary
-// keys/types), so an unauthenticated caller can at most drop a bounded PNG under
-// posters/. Residual anonymous-abuse risk is noted for follow-up (rate limit / WAF).
-
-const MAX_BYTES = 60 * 1024 * 1024; // generous: a 24×36 print PNG can be tens of MB
+// per-prefix allow-list (a single safe leaf under posters/ or free/ — no
+// traversal, no arbitrary keys/types), so an unauthenticated caller can at most
+// drop a bounded PNG under one of those prefixes. Residual anonymous-abuse risk
+// is noted for follow-up (rate limit / WAF).
+//
+// Two prefixes, two caps:
+//   posters/ — the paid, full-resolution print asset (up to tens of MB).
+//   free/    — the lead-magnet's screen-res design (routes/leads.ts), capped
+//              much smaller since it's never sent to print.
+const POSTERS_MAX_BYTES = 60 * 1024 * 1024; // generous: a 24×36 print PNG can be tens of MB
+const FREE_MAX_BYTES = 15 * 1024 * 1024;
 
 // The client-supplied pathname is bound to the minted token, so we can't rewrite
-// it — but we reject anything that isn't a single safe leaf under posters/.
-const ALLOWED_PATHNAME = /^posters\/[A-Za-z0-9._-]+\.png$/;
+// it — but we reject anything that isn't a single safe leaf under one of the
+// known prefixes.
+const PATHNAME_RULES: { pattern: RegExp; maxBytes: number }[] = [
+  { pattern: /^posters\/[A-Za-z0-9._-]+\.png$/, maxBytes: POSTERS_MAX_BYTES },
+  { pattern: /^free\/[A-Za-z0-9._-]+\.png$/, maxBytes: FREE_MAX_BYTES },
+];
+
+function matchPathnameRule(pathname: string): { maxBytes: number } | null {
+  return PATHNAME_RULES.find((rule) => rule.pattern.test(pathname)) ?? null;
+}
 
 export function buildUploadsRouter(): Hono<{ Variables: AuthVariables }> {
   const r = new Hono<{ Variables: AuthVariables }>();
@@ -53,12 +67,13 @@ export function buildUploadsRouter(): Hono<{ Variables: AuthVariables }> {
         request: c.req.raw,
         token,
         onBeforeGenerateToken: async (pathname) => {
-          // Never trust the client pathname — reject anything outside posters/
-          // or containing path separators / traversal.
-          if (!ALLOWED_PATHNAME.test(pathname)) throw new Error("invalid_pathname");
+          // Never trust the client pathname — reject anything outside the known
+          // prefixes or containing path separators / traversal.
+          const rule = matchPathnameRule(pathname);
+          if (!rule) throw new Error("invalid_pathname");
           return {
             allowedContentTypes: ["image/png"],
-            maximumSizeInBytes: MAX_BYTES,
+            maximumSizeInBytes: rule.maxBytes,
             addRandomSuffix: true,
             // Embed the owner (or null for guests) for the audit trail.
             tokenPayload: JSON.stringify({ userId: user?.userId ?? null }),

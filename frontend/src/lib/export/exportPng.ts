@@ -55,6 +55,30 @@ export async function exportPng(
   triggerDownload(blob, filename);
 }
 
+/** Longest edge (px) for the free, screen-res lead-magnet export. */
+export const SCREEN_LONG_EDGE_PX = 2000;
+
+/**
+ * Pure: the scale factor that lands the longest viewBox edge at `cap` px.
+ * Never returns less than 1 — a viewBox already at or past the cap is left at
+ * its native size rather than downscaled.
+ */
+export function screenScale(vbW: number, vbH: number, cap: number = SCREEN_LONG_EDGE_PX): number {
+  const longEdge = Math.max(vbW, vbH);
+  if (!(longEdge > 0)) return 1;
+  return Math.max(1, cap / longEdge);
+}
+
+/**
+ * Rasterize the poster at screen resolution for the free lead-magnet file —
+ * plenty sharp on a screen (or as a phone wallpaper), but well short of the
+ * print-ready export so it doesn't undercut the paid product.
+ */
+export async function exportScreenPngBlob(svg: SVGSVGElement): Promise<Blob> {
+  const { w: vbW, h: vbH } = viewBoxOf(svg);
+  return rasterizePng(svg, screenScale(vbW, vbH));
+}
+
 /** Target print resolution and a hard pixel cap on the longest side. */
 const PRINT_DPI = 300;
 const MAX_LONG_EDGE_PX = 7000; // ~194 DPI at 24×36 — keeps canvas memory sane

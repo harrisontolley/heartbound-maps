@@ -3,22 +3,21 @@
 import { usePosterStore } from "@/lib/store/posterStore";
 import { activeLookId, LOOKS_BY_ID } from "@/lib/looks/looks";
 import { PRODUCTS_BY_ID } from "@/lib/commerce/printProducts";
-import { Button } from "@/components/ui/Button";
+import { FreeDesignForm } from "./FreeDesignForm";
 
 /**
- * Final step — a compact summary of the build plus the SVG/PNG downloads
- * (relocated from the studio header). The running price + "Add to cart" live in
- * the BuyBar that the host renders directly below this panel.
+ * Final step — a compact summary of the build plus the email-gated free
+ * design form (which replaced the old ungated SVG/PNG downloads). The
+ * running price + "Add to cart" live in the BuyBar that the host renders
+ * directly below this panel.
  */
 export function StepReview({
-  onDownload,
-  exporting,
-  canDownload,
+  getSvg,
+  canSubmit,
 }: {
-  onDownload: (kind: "svg" | "png") => void;
-  exporting: null | "svg" | "png";
+  getSvg: () => SVGSVGElement | null;
   /** False until a home is set — mirrors the buy/export gating. */
-  canDownload: boolean;
+  canSubmit: boolean;
 }) {
   const home = usePosterStore((s) => s.home);
   const places = usePosterStore((s) => s.places);
@@ -61,34 +60,7 @@ export function StepReview({
         ))}
       </dl>
 
-      <div className="flex flex-col gap-2">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.09em] text-muted">
-          Download
-        </p>
-        <div className="flex gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => onDownload("png")}
-            disabled={exporting !== null || !canDownload}
-            title="Download a high-resolution PNG"
-          >
-            {exporting === "png" ? "Rendering…" : "PNG"}
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => onDownload("svg")}
-            disabled={exporting !== null || !canDownload}
-            title="Download a vector SVG"
-          >
-            {exporting === "svg" ? "…" : "SVG"}
-          </Button>
-        </div>
-        {!canDownload && (
-          <p className="text-xs text-muted">Add a place to enable downloads.</p>
-        )}
-      </div>
+      <FreeDesignForm getSvg={getSvg} canSubmit={canSubmit} />
     </div>
   );
 }
