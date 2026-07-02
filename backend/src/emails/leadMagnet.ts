@@ -16,6 +16,22 @@ export type EmailContent = {
 };
 
 /**
+ * Escape a value for interpolation into the HTML output only. `posterLabel`
+ * and `downloadUrl` are user/request-derived (posterLabel from the poster
+ * config, downloadUrl includes query params) — never trust them to be
+ * markup-safe. The plain-text version has no injection surface and is left
+ * as-is.
+ */
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+/**
  * The free lead-magnet delivery email: a screen-res poster design, gated
  * behind an email address, with a soft upsell to the paid fine-art print.
  * Deliberately never says "high-resolution" / "high res" — the free file is
@@ -25,6 +41,9 @@ export function leadMagnetEmail(input: LeadMagnetEmailInput): EmailContent {
   const { downloadUrl, posterLabel } = input;
 
   const subject = "Your free Pinprint design is ready";
+
+  const safePosterLabel = escapeHtml(posterLabel);
+  const safeDownloadUrl = escapeHtml(downloadUrl);
 
   const html = `<!doctype html>
 <html lang="en">
@@ -37,7 +56,7 @@ export function leadMagnetEmail(input: LeadMagnetEmailInput): EmailContent {
               <td style="padding:40px 40px 24px 40px; text-align:center; color:#1a1a1a;">
                 <h1 style="margin:0 0 16px 0; font-size:22px; font-weight:normal; color:#1a1a1a;">Your design is ready</h1>
                 <p style="margin:0 0 20px 0; font-size:16px; line-height:1.6; color:#3a3a3a;">
-                  Hi there — your custom design, <strong>${posterLabel}</strong>, is ready. Tap the
+                  Hi there — your custom design, <strong>${safePosterLabel}</strong>, is ready. Tap the
                   button below and it's yours to download.
                 </p>
               </td>
@@ -47,7 +66,7 @@ export function leadMagnetEmail(input: LeadMagnetEmailInput): EmailContent {
                 <table role="presentation" cellpadding="0" cellspacing="0">
                   <tr>
                     <td align="center" style="background-color:#1a1a1a; border-radius:4px;">
-                      <a href="${downloadUrl}" style="display:inline-block; padding:14px 32px; font-size:15px; color:#ffffff; text-decoration:none; letter-spacing:0.02em;">
+                      <a href="${safeDownloadUrl}" style="display:inline-block; padding:14px 32px; font-size:15px; color:#ffffff; text-decoration:none; letter-spacing:0.02em;">
                         Download your design
                       </a>
                     </td>
