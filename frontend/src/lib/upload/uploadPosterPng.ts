@@ -27,3 +27,21 @@ export async function uploadPosterPng(blob: Blob, slug: string): Promise<string>
   });
   return result.url;
 }
+
+/**
+ * Upload the free, screen-res lead-magnet PNG under `free/` (see
+ * backend/src/routes/leads.ts, which only accepts asset URLs under that
+ * prefix). Otherwise identical to {@link uploadPosterPng}.
+ */
+export async function uploadFreePosterPng(
+  blob: Blob,
+  slug: string,
+): Promise<{ url: string }> {
+  const pathname = `free/${slug}-${uid()}.png`;
+  const result = await upload(pathname, blob, {
+    access: "private",
+    contentType: "image/png",
+    handleUploadUrl: apiUrl("/uploads/token"),
+  });
+  return { url: result.url };
+}

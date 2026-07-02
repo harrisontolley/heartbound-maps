@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { usePostHog } from "posthog-js/react";
 import { usePosterStore } from "@/lib/store/posterStore";
 import { useFontsReady } from "@/hooks/useFontsReady";
 import { useHydrated } from "@/hooks/useHydrated";
@@ -18,7 +19,7 @@ import { useCartStore } from "@/lib/store/cartStore";
 import { snapshotPosterConfig } from "@/lib/commerce/posterConfig";
 import { SEED_HOME, SEED_PLACES } from "@/lib/seed";
 import type { TemplateId, VintageVariant } from "@/lib/templates/types";
-import { exportSvg, exportPng, exportPngBlob, slugify } from "@/lib/export";
+import { exportPngBlob, slugify } from "@/lib/export";
 import { uploadPosterPng } from "@/lib/upload/uploadPosterPng";
 import { STEPS, STEP_INDEX } from "@/lib/studio/steps";
 import { StudioHeader } from "@/components/studio/StudioHeader";
@@ -71,8 +72,8 @@ export function PosterStudio() {
   const fontsReady = useFontsReady();
   const mounted = useHydrated();
 
+  const posthog = usePostHog();
   const addItem = useCartStore((s) => s.addItem);
-  const [exporting, setExporting] = useState<null | "svg" | "png">(null);
   const [justAdded, setJustAdded] = useState(false);
   const [addingToCart, setAddingToCart] = useState(false);
   const posterRef = useRef<HTMLDivElement>(null);
@@ -153,21 +154,6 @@ export function PosterStudio() {
     return posterRef.current?.querySelector("svg") ?? null;
   }
 
-  async function handleDownload(kind: "svg" | "png") {
-    const svg = getSvg();
-    if (!svg) return;
-    const name = `pinprint-${slugify(home?.label ?? "print")}.${kind}`;
-    setExporting(kind);
-    try {
-      if (kind === "svg") await exportSvg(svg, name);
-      else await exportPng(svg, name);
-    } catch {
-      // Export rarely fails; leave the buttons re-enabled for a retry.
-    } finally {
-      setExporting(null);
-    }
-  }
-
   async function addToCart(selection: StudioSelection) {
     if (addingToCart) return;
     const posterConfig = snapshotPosterConfig();
@@ -191,6 +177,11 @@ export function PosterStudio() {
       }
     }
     addItem({ selection, posterConfig, assetUrl });
+    posthog.capture("add_to_cart", {
+      product_id: selection.productId,
+      format: selection.format,
+      framed: selection.addFrame,
+    });
     setJustAdded(true);
     window.setTimeout(() => setJustAdded(false), 2500);
   }
@@ -232,13 +223,7 @@ export function PosterStudio() {
       case "customize":
         return <StepCustomize />;
       case "review":
-        return (
-          <StepReview
-            onDownload={handleDownload}
-            exporting={exporting}
-            canDownload={!!home}
-          />
-        );
+        return <StepReview getSvg={getSvg} canSubmit={!!home} />;
     }
   }
 
