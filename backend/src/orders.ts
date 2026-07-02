@@ -634,3 +634,86 @@ export async function applyCheckoutDetails(
     where id = ${orderId}
   `;
 }
+
+// ── Digital delivery (post-payment email of PNG/SVG assets) ──────────────────
+
+/** Order shape the digital-delivery module needs to build/send the email. */
+export type DigitalDeliveryOrder = {
+  id: string;
+  orderNumber: string;
+  email: string;
+  digitalDeliveredAt: string | null;
+  items: {
+    productLabel: string;
+    posterConfig: Record<string, unknown>;
+    assetUrl: string | null;
+    svgAssetUrl: string | null;
+  }[];
+};
+
+/** Load everything needed to email an order's digital files (null when unconfigured/absent). */
+export async function getOrderForDigitalDelivery(orderId: string): Promise<DigitalDeliveryOrder | null> {
+  const sql = getSql();
+  if (!sql) return null;
+  const rows = (await sql`
+    select id, order_number, email, digital_delivered_at
+    from orders where id = ${orderId} limit 1
+  `) as unknown as {
+    id: string;
+    order_number: string;
+    email: string;
+    digital_delivered_at: string | Date | null;
+  }[];
+  const row = rows[0];
+  if (!row) return null;
+  const items = (await sql`
+    select product_label, poster_config, asset_url, svg_asset_url
+    from order_items where order_id = ${orderId} order by created_at asc
+  `) as unknown as {
+    product_label: string;
+    poster_config: Record<string, unknown>;
+    asset_url: string | null;
+    svg_asset_url: string | null;
+  }[];
+  return {
+    id: row.id,
+    orderNumber: row.order_number,
+    email: row.email,
+    digitalDeliveredAt: row.digital_delivered_at ? new Date(row.digital_delivered_at).toISOString() : null,
+    items: items.map((it) => ({
+      productLabel: it.product_label,
+      posterConfig: it.poster_config ?? {},
+      assetUrl: it.asset_url ?? null,
+      svgAssetUrl: it.svg_asset_url ?? null,
+    })),
+  };
+}
+
+/**
+ * Atomically claim the right to deliver an order's digital files: sets
+ * `digital_delivered_at` only if it's still null, in one conditional UPDATE.
+ * This is the guard against a Stripe webhook retry (or two overlapping paid-
+ * transition events) sending the email twice — only one caller's UPDATE can
+ * match the `is null` predicate, so only one caller gets `true` back. Callers
+ * that lose the claim must treat it exactly like "already delivered". Callers
+ * whose subsequent send fails should call `releaseDigitalDeliveryClaim` to
+ * unset it again so a later retry can re-claim.
+ */
+export async function claimDigitalDelivery(orderId: string): Promise<boolean> {
+  const sql = requireSql();
+  const rows = (await sql`
+    update orders set digital_delivered_at = now(), updated_at = now()
+    where id = ${orderId} and digital_delivered_at is null
+    returning id
+  `) as unknown as { id: string }[];
+  return rows.length > 0;
+}
+
+/** Undo a claim after a failed send, so the next delivery attempt can retry. */
+export async function releaseDigitalDeliveryClaim(orderId: string): Promise<void> {
+  const sql = requireSql();
+  await sql`
+    update orders set digital_delivered_at = null, updated_at = now()
+    where id = ${orderId}
+  `;
+}
