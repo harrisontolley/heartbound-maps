@@ -157,6 +157,33 @@ describe("priceCheckout — server price authority", () => {
     ]);
     expect(orderItems[0].svgAssetUrl).toBeUndefined();
   });
+
+  it("accepts a digital item with a blob.vercel-storage.com assetUrl", () => {
+    const { orderItems } = priceCheckout([
+      {
+        productId: "portrait-16x24",
+        format: "digital",
+        addFrame: false,
+        quantity: 1,
+        assetUrl: "https://abc123.public.blob.vercel-storage.com/posters/x.png",
+      },
+    ]);
+    expect(orderItems[0].assetUrl).toContain("blob.vercel-storage.com");
+  });
+
+  it("rejects a digital item whose assetUrl is not a Vercel Blob URL (anti-SSRF)", () => {
+    expect(() =>
+      priceCheckout([
+        {
+          productId: "portrait-16x24",
+          format: "digital",
+          addFrame: false,
+          quantity: 1,
+          assetUrl: "https://evil.example.com/x.png",
+        },
+      ]),
+    ).toThrow(CheckoutValidationError);
+  });
 });
 
 describe("isAllowedAssetUrl", () => {
