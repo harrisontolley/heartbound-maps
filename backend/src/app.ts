@@ -8,6 +8,8 @@ import { isResendConfigured } from "./email.js";
 import { isAdminConfigured, isAuthConfigured } from "./auth.js";
 import { isRedisConfigured, pingRedis } from "./redis.js";
 import { extractArteloOrder, handleArteloPayload, handleStripeEvent } from "./webhooks.js";
+import { deferrerFor } from "./defer.js";
+import { fontFiles } from "./renderPrint.js";
 import { finalizeWebhookEvent, recordWebhookEvent } from "./observability.js";
 import { buildAccountRouter } from "./routes/account.js";
 import { buildTrackRouter } from "./routes/track.js";
@@ -53,6 +55,10 @@ function registerRoutes(r: Hono): Hono {
       sentry: isSentryConfigured(),
       maptiler: isMaptilerConfigured(),
       resend: isResendConfigured(),
+      // Count of vendored print-render TTFs the function can actually see —
+      // verifies backend/assets/fonts survived Vercel's bundling (expect 25;
+      // 0 means print renders would fall back to unshaped text → client PNG).
+      printFonts: fontFiles().length,
     }),
   );
 
@@ -84,7 +90,10 @@ function registerRoutes(r: Hono): Hono {
     // error — Stripe retries on non-2xx, and the handlers are idempotent. With
     // DATABASE_URL unset this is a no-op (the order lookups return null).
     try {
-      const res = await handleStripeEvent(event);
+      // Defer the paid-transition side effects (Artelo submit + digital delivery)
+      // past this response via waitUntil — the print render can take ~32 s, well
+      // past Stripe's retry window. See defer.ts / webhooks.ts.
+      const res = await handleStripeEvent(event, deferrerFor(c));
       await finalizeWebhookEvent(logged.id, {
         status: res.handled ? "processed" : "ignored",
         orderId: res.orderId,

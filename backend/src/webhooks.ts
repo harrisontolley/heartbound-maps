@@ -13,6 +13,7 @@ import {
 } from "./orders.js";
 import { submitOrderToArtelo } from "./fulfillment.js";
 import { deliverDigitalFiles } from "./digitalDelivery.js";
+import { runNow, type Deferrer } from "./defer.js";
 
 // Order persistence driven by the Stripe and Artelo webhooks. The DB-touching
 // handlers no-op gracefully when DATABASE_URL is unset (the find* helpers return
@@ -118,8 +119,18 @@ export function extractCheckoutDetails(session: Stripe.Checkout.Session): {
 /** Result of handling a webhook — the resolved order id, for the inbound log. */
 export type WebhookHandled = { handled: boolean; orderId?: string | null };
 
-/** Advance an order in response to a Stripe webhook event. */
-export async function handleStripeEvent(event: Stripe.Event): Promise<WebhookHandled> {
+/**
+ * Advance an order in response to a Stripe webhook event. The two paid-transition
+ * side effects (Artelo submit + digital delivery) are handed to `defer` rather
+ * than awaited: the server-side print render can take ~32 s, which would blow
+ * Stripe's ~20 s webhook-retry window. The route injects a waitUntil-backed
+ * deferrer (see defer.ts); the default runs them fire-and-forget in-process.
+ * Both are idempotent + never-throw, so deferral doesn't change semantics.
+ */
+export async function handleStripeEvent(
+  event: Stripe.Event,
+  defer: Deferrer = runNow,
+): Promise<WebhookHandled> {
   // A well-formed Stripe event always carries data.object; a missing one is a
   // malformed/irrelevant delivery, not a transient failure — ignore it (so the
   // route 204s) rather than throwing into the 500/retry path.
@@ -159,21 +170,18 @@ export async function handleStripeEvent(event: Stripe.Event): Promise<WebhookHan
           source: "stripe",
           payload: event,
         });
-        // Hand the paid order to Artelo. Self-guarded: no-ops when Artelo is
-        // unconfigured, idempotent (skips if already submitted), skips digital-
-        // only orders, and never throws — a fulfilment hiccup must not fail the
-        // Stripe webhook (Stripe would retry and double-charge our handlers).
-        await submitOrderToArtelo(located.id).catch((err) => {
-          console.error("[webhooks/stripe] artelo submit error", err);
-        });
+        // Hand the paid order to Artelo — deferred past the response because it
+        // now renders the exact-DPI print PNG server-side first (~32 s for
+        // textured templates), which must not hold up (or time out) the webhook.
+        // Self-guarded: no-ops when Artelo is unconfigured, idempotent (skips if
+        // already submitted / reuses the render), skips digital-only orders, and
+        // never throws — a fulfilment hiccup must not fail the Stripe webhook.
+        defer(() => submitOrderToArtelo(located.id));
         // Email the order's digital files (the $19 tier itself, or the free
-        // bonus bundled with every print). Same isolation contract as Artelo:
-        // self-guarded, idempotent (claims digital_delivered_at once), and
-        // never allowed to fail this webhook — a delivery hiccup must not make
-        // Stripe retry (and re-run) the handlers above.
-        await deliverDigitalFiles(located.id).catch((err) => {
-          console.error("[webhooks/stripe] digital delivery error", err);
-        });
+        // bonus bundled with every print). Same isolation contract, also deferred:
+        // self-guarded, idempotent (claims digital_delivered_at once), and never
+        // allowed to fail this webhook.
+        defer(() => deliverDigitalFiles(located.id));
       }
       return { handled: true, orderId: located.id };
     }

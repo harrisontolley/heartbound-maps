@@ -23,11 +23,14 @@ function order(overrides: Partial<FulfillmentOrder> = {}): FulfillmentOrder {
     },
     items: [
       {
+        id: "item-1",
         productId: "portrait-16x24",
         productLabel: "16 × 24 in print",
         quantity: 1,
         unitPriceCents: 5900,
         assetUrl: "https://blob.example/poster.png",
+        svgAssetUrl: null,
+        renderAssetUrl: null,
         posterConfig: { format: "print", addFrame: false },
       },
     ],
@@ -70,11 +73,14 @@ describe("buildCreateOrderBody", () => {
     const o = order({
       items: [
         {
+          id: "item-1",
           productId: "portrait-16x24",
           productLabel: "16 × 24 in print (framed)",
           quantity: 1,
           unitPriceCents: 16900,
           assetUrl: "https://blob.example/poster.png",
+          svgAssetUrl: null,
+          renderAssetUrl: null,
           posterConfig: { format: "print", addFrame: true },
         },
       ],
@@ -99,19 +105,25 @@ describe("buildCreateOrderBody", () => {
     const o = order({
       items: [
         {
+          id: "item-1",
           productId: "portrait-16x24",
           productLabel: "Digital download",
           quantity: 1,
           unitPriceCents: 1200,
           assetUrl: null,
+          svgAssetUrl: null,
+          renderAssetUrl: null,
           posterConfig: { format: "digital" },
         },
         {
+          id: "item-2",
           productId: "portrait-12x18",
           productLabel: "12 × 18 in print",
           quantity: 1,
           unitPriceCents: 3900,
           assetUrl: null, // no print-ready asset → skipped
+          svgAssetUrl: null,
+          renderAssetUrl: null,
           posterConfig: { format: "print", addFrame: false },
         },
       ],

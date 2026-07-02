@@ -1,6 +1,8 @@
 import { arteloProductInfoFor } from "@pinprint/shared";
 import { arteloFetch, getArteloConfig } from "./artelo.js";
 import { signAssetUrl } from "./blob.js";
+import { ensurePrintAsset, physicalInches } from "./renderPrint.js";
+import { fetchPngDimensions } from "./pngMeta.js";
 import {
   appendOrderEvent,
   getOrderForFulfillment,
@@ -178,6 +180,21 @@ export async function fetchArteloCosts(input: {
 export type SubmitResult = { submitted: boolean; reason?: string };
 
 /**
+ * Artelo's minimum acceptable print resolution. A server render is always exactly
+ * 300 DPI; this floor guards the browser-PNG fallback (which caps at 7000px, so a
+ * 24×36 lands ~194 DPI — still fine) and future size changes that could push an
+ * asset below print quality. Below this we fail loud rather than ship a soft print.
+ */
+const DPI_FLOOR = 150;
+
+/** True for a line item that should be fulfilled as a physical Artelo print. */
+function isArteloPrintItem(it: FulfillmentOrder["items"][number]): boolean {
+  const config = it.posterConfig as { format?: string; addFrame?: boolean };
+  if (config.format === "digital") return false;
+  return arteloProductInfoFor(it.productId, config.addFrame === true) !== null;
+}
+
+/**
  * Submit a paid order to Artelo. Idempotent and side-effect-logged: writes a
  * `fulfillments` row on every attempt, sets artelo_order_id/status on success,
  * and appends an order-timeline event. Never throws.
@@ -195,6 +212,24 @@ export async function submitOrderToArtelo(orderId: string): Promise<SubmitResult
   if (!order) return { submitted: false, reason: "order_not_found" };
   if (order.arteloOrderId) return { submitted: false, reason: "already_submitted" };
 
+  // Render (or reuse) an exact-DPI print PNG per print line, preferring the
+  // server render over the browser-canvas PNG. ensurePrintAsset never throws and
+  // falls back to the client PNG on any failure; we point the line at whichever
+  // asset it chose so signing + the Artelo body use it.
+  for (const [index, it] of order.items.entries()) {
+    if (!isArteloPrintItem(it)) continue;
+    const chosen = await ensurePrintAsset({
+      orderItemId: it.id,
+      orderNumber: order.orderNumber,
+      index,
+      productId: it.productId,
+      clientAssetUrl: it.assetUrl,
+      svgAssetUrl: it.svgAssetUrl,
+      renderAssetUrl: it.renderAssetUrl,
+    });
+    if (chosen) it.assetUrl = chosen.url;
+  }
+
   // Posters are private blobs — mint a short-lived signed GET URL per distinct
   // asset so Artelo can fetch it (legacy public blobs pass through unchanged).
   const assetUrls = [...new Set(order.items.map((it) => it.assetUrl).filter((u): u is string => !!u))];
@@ -202,6 +237,34 @@ export async function submitOrderToArtelo(orderId: string): Promise<SubmitResult
   const body = buildCreateOrderBody(order, cfg.testOrders, (u) => signed.get(u) ?? u);
   if (body.items.length === 0) {
     return { submitted: false, reason: "no_printable_items" };
+  }
+
+  // DPI floor: verify each chosen print asset actually meets Artelo's minimum
+  // resolution for its physical size. Below the floor we fail loud (logged failed
+  // fulfilment row + timeline event) and DO NOT submit — the admin retry lever
+  // stays available. Server renders always pass; this catches the client fallback.
+  for (const it of order.items) {
+    if (!isArteloPrintItem(it) || !it.assetUrl) continue;
+    const inch = physicalInches(it.productId);
+    if (!inch) continue;
+    const dims = await fetchPngDimensions(signed.get(it.assetUrl) ?? it.assetUrl);
+    if (!dims) continue; // couldn't measure (transient) — let Artelo validate instead
+    const effectiveDpi = Math.min(dims.w / inch.widthIn, dims.h / inch.heightIn);
+    if (effectiveDpi < DPI_FLOOR) {
+      await recordFulfillmentAttempt({
+        orderId: order.id,
+        status: "failed",
+        isTest: cfg.testOrders,
+        currency: order.currency,
+        requestPayload: body,
+        error: `dpi_below_minimum:${dims.w}x${dims.h}`,
+      }).catch(() => {});
+      await appendOrderEvent(order.id, {
+        message: `Fulfilment blocked: print asset below ${DPI_FLOOR} DPI (${dims.w}×${dims.h} for ${it.productLabel})`,
+        source: "system",
+      }).catch(() => {});
+      return { submitted: false, reason: "dpi_below_minimum" };
+    }
   }
 
   try {

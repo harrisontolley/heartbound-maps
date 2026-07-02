@@ -480,11 +480,18 @@ export type FulfillmentOrder = {
   arteloOrderId: string | null;
   shipping: OrderShippingAddress;
   items: {
+    /** order_items row id — lets the renderer persist render_asset_url per line. */
+    id: string;
     productId: string;
     productLabel: string;
     quantity: number;
     unitPriceCents: number;
+    /** Browser-canvas PNG (the fallback print asset). */
     assetUrl: string | null;
+    /** Serialized vector SVG the server render rasterizes from (Phase B). */
+    svgAssetUrl: string | null;
+    /** Exact-DPI server-rendered PNG, once produced (Phase C; idempotent reuse). */
+    renderAssetUrl: string | null;
     posterConfig: Record<string, unknown>;
   }[];
 };
@@ -501,9 +508,15 @@ export async function getOrderForFulfillment(orderId: string): Promise<Fulfillme
   const row = rows[0];
   if (!row) return null;
   const items = (await sql`
-    select product_id, product_label, quantity, unit_price_cents, poster_config, asset_url
+    select id, product_id, product_label, quantity, unit_price_cents, poster_config,
+           asset_url, svg_asset_url, render_asset_url
     from order_items where order_id = ${orderId} order by created_at asc
-  `) as unknown as (ItemRow & { poster_config: Record<string, unknown> })[];
+  `) as unknown as (ItemRow & {
+    id: string;
+    poster_config: Record<string, unknown>;
+    svg_asset_url: string | null;
+    render_asset_url: string | null;
+  })[];
   return {
     id: row.id,
     orderNumber: row.order_number,
@@ -521,14 +534,29 @@ export async function getOrderForFulfillment(orderId: string): Promise<Fulfillme
       country: row.ship_country ?? undefined,
     },
     items: items.map((it) => ({
+      id: it.id,
       productId: it.product_id,
       productLabel: it.product_label,
       quantity: it.quantity,
       unitPriceCents: it.unit_price_cents,
       assetUrl: it.asset_url ?? null,
+      svgAssetUrl: it.svg_asset_url ?? null,
+      renderAssetUrl: it.render_asset_url ?? null,
       posterConfig: it.poster_config ?? {},
     })),
   };
+}
+
+/**
+ * Persist the exact-DPI server render's blob URL onto a line item so a re-run or
+ * reprint reuses it instead of re-rasterizing (idempotency). DB-guarded no-op.
+ */
+export async function setRenderAssetUrl(orderItemId: string, url: string): Promise<void> {
+  const sql = getSql();
+  if (!sql) return;
+  await sql`
+    update order_items set render_asset_url = ${url} where id = ${orderItemId}
+  `;
 }
 
 export type FulfillmentAttempt = {
