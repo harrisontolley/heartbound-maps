@@ -1,4 +1,5 @@
 import { Hono } from "hono";
+import type { Context } from "hono";
 import type { CreateLeadResponse } from "@pinprint/shared";
 import { type AuthVariables, getUser } from "../auth.js";
 import { enforce } from "../rateLimit.js";
@@ -33,12 +34,28 @@ const MAX_POSTER_CONFIG_BYTES = 32_768;
 const MAX_UTM_KEYS = 8;
 const MAX_UTM_VALUE_LENGTH = 200;
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const MAX_POSTER_LABEL_LENGTH = 100;
+const GENERIC_POSTER_LABEL = "Your Pinprint design";
 
-/** Absolute base for links that hit this backend (not the frontend). */
-function backendBaseUrl(): string {
+/**
+ * Absolute base for links that hit this backend (not the frontend). Mirrors
+ * checkout's `baseUrl()` (routes/checkout.ts): env override, else the request
+ * Origin (same-origin Vercel Services setup — see CLAUDE.md), else localhost.
+ * Without the Origin fallback, an unset PUBLIC_APP_URL in prod would silently
+ * ship a dead localhost link in the lead-magnet email.
+ */
+function backendBaseUrl(c: Context): string {
   const publicAppUrl = process.env.PUBLIC_APP_URL;
   if (publicAppUrl) return `${publicAppUrl.replace(/\/$/, "")}${BACKEND_SERVICE_PREFIX}`;
+  const origin = c.req.header("origin");
+  if (origin) return `${origin.replace(/\/$/, "")}${BACKEND_SERVICE_PREFIX}`;
   return "http://localhost:8787";
+}
+
+/** True if `s` contains a URL-ish substring or a newline — unsafe to email as visible text. */
+function looksUnsafeForEmail(s: string): boolean {
+  const lower = s.toLowerCase();
+  return lower.includes("http") || lower.includes("www.") || lower.includes("://") || /[\r\n]/.test(s);
 }
 
 function isPlainObject(v: unknown): v is Record<string, unknown> {
@@ -54,17 +71,32 @@ function humanizeTemplateId(id: string): string {
     .join(" ");
 }
 
-/** Template label + home place label (if present), else a generic fallback. */
+/**
+ * Template label + home place label (if present), else a generic fallback.
+ *
+ * `templateId` and `home.label` are attacker-controlled free text (up to the
+ * 32KB posterConfig cap) that ends up as visible text in an outbound email —
+ * a spam-relay / sender-reputation vector. So: fall back to the generic label
+ * when the derived text looks URL-ish or carries a newline, and cap length
+ * regardless.
+ */
 function derivePosterLabel(config: Record<string, unknown>): string {
   const templateId = typeof config.templateId === "string" ? config.templateId : "";
   const templateLabel = templateId ? humanizeTemplateId(templateId) : "";
   const home = config.home;
   const homeLabel =
     isPlainObject(home) && typeof home.label === "string" ? home.label : "";
-  if (templateLabel && homeLabel) return `${templateLabel} — ${homeLabel}`;
-  if (templateLabel) return templateLabel;
-  if (homeLabel) return homeLabel;
-  return "Your Pinprint design";
+
+  let label: string;
+  if (templateLabel && homeLabel) label = `${templateLabel} — ${homeLabel}`;
+  else if (templateLabel) label = templateLabel;
+  else if (homeLabel) label = homeLabel;
+  else return GENERIC_POSTER_LABEL;
+
+  if (looksUnsafeForEmail(label)) return GENERIC_POSTER_LABEL;
+  return label.length > MAX_POSTER_LABEL_LENGTH
+    ? label.slice(0, MAX_POSTER_LABEL_LENGTH)
+    : label;
 }
 
 type ValidatedLeadRequest = {
@@ -181,7 +213,7 @@ export function buildLeadsRouter(): Hono<{ Variables: AuthVariables }> {
       }
     }
 
-    const downloadUrl = `${backendBaseUrl()}/leads/download/${lead.downloadToken}`;
+    const downloadUrl = `${backendBaseUrl(c)}/leads/download/${lead.downloadToken}`;
     const posterLabel = derivePosterLabel(validated.posterConfig);
     const email = leadMagnetEmail({ downloadUrl, posterLabel });
     const result = await sendEmail({ to: validated.email, ...email });

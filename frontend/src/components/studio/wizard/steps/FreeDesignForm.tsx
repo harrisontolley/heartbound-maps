@@ -14,17 +14,31 @@ import { Button } from "@/components/ui/Button";
 // deliberately so an obviously-malformed address never round-trips.
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-type Status = "idle" | "submitting" | "sent" | "error" | "unavailable";
+type Status = "idle" | "submitting" | "sent" | "error" | "unavailable" | "invalid_email";
 
-/** `utm_*` query params on the current URL, plus the referrer when present. */
-function collectUtm(): Record<string, string> | undefined {
+// Kept one below the backend's MAX_UTM_KEYS (routes/leads.ts) to leave room for
+// `referrer`, so an ad-platform URL with many utm_* params never trips the
+// backend's >8-keys 400 and silently drops the lead.
+const MAX_UTM_KEYS = 7;
+const MAX_UTM_VALUE_LENGTH = 200;
+
+/**
+ * `utm_*` query params on the current URL, plus the referrer when present.
+ * Clamped client-side to at most `MAX_UTM_KEYS` utm_ keys (+ referrer = 8
+ * total) with each value sliced to `MAX_UTM_VALUE_LENGTH` chars, mirroring
+ * (and staying under) the backend's stricter validation so an oversized utm
+ * payload never 400s the whole lead request.
+ */
+export function collectUtm(): Record<string, string> | undefined {
   if (typeof window === "undefined") return undefined;
   const out: Record<string, string> = {};
   for (const [key, value] of new URLSearchParams(window.location.search)) {
-    if (key.startsWith("utm_")) out[key] = value;
+    if (!key.startsWith("utm_")) continue;
+    if (Object.keys(out).length >= MAX_UTM_KEYS) break;
+    out[key] = value.slice(0, MAX_UTM_VALUE_LENGTH);
   }
   if (typeof document !== "undefined" && document.referrer) {
-    out.referrer = document.referrer;
+    out.referrer = document.referrer.slice(0, MAX_UTM_VALUE_LENGTH);
   }
   return Object.keys(out).length > 0 ? out : undefined;
 }
@@ -69,7 +83,7 @@ export function FreeDesignForm({
     const trimmed = email.trim();
     if (!EMAIL_RE.test(trimmed)) {
       posthog.capture("free_design_failed", { error: "invalid_email" });
-      setStatus("error");
+      setStatus("invalid_email");
       return;
     }
 
@@ -157,6 +171,10 @@ export function FreeDesignForm({
 
       {status === "error" && (
         <p className="text-sm text-error">Something went wrong — please try again.</p>
+      )}
+
+      {status === "invalid_email" && (
+        <p className="text-sm text-error">Please enter a valid email address.</p>
       )}
 
       {!canSubmit && <p className="text-xs text-muted">Add a place to enable your free design.</p>}

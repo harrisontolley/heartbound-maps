@@ -51,7 +51,7 @@ vi.mock("posthog-js/react", () => ({
   }),
 }));
 
-import { FreeDesignForm } from "./FreeDesignForm";
+import { FreeDesignForm, collectUtm } from "./FreeDesignForm";
 import { ApiError } from "@/lib/apiClient";
 
 function fakeSvg(): SVGSVGElement {
@@ -110,12 +110,52 @@ describe("FreeDesignForm", () => {
     expect(screen.getByLabelText("Email")).toBeInTheDocument();
   });
 
-  it("client-side email validation failure captures free_design_failed event", async () => {
+  it("client-side email validation failure shows a specific invalid-email message", async () => {
     render(<FreeDesignForm getSvg={fakeSvg} canSubmit />);
 
     await fillAndSubmit("a@b");
 
-    expect(await screen.findByText("Something went wrong — please try again.")).toBeInTheDocument();
+    expect(
+      await screen.findByText("Please enter a valid email address."),
+    ).toBeInTheDocument();
     expect(mockPostHogCapture).toHaveBeenCalledWith("free_design_failed", { error: "invalid_email" });
+  });
+});
+
+describe("collectUtm", () => {
+  afterEach(() => {
+    window.history.pushState({}, "", "/");
+  });
+
+  it("keeps at most 8 keys total (7 utm_ params + referrer) when many are present", () => {
+    const params = Array.from({ length: 12 }, (_, i) => `utm_p${i}=v${i}`).join("&");
+    window.history.pushState({}, "", `/?${params}`);
+    Object.defineProperty(document, "referrer", {
+      value: "https://example.com/",
+      configurable: true,
+    });
+
+    const result = collectUtm();
+
+    expect(result).toBeDefined();
+    const keys = Object.keys(result!);
+    expect(keys.length).toBeLessThanOrEqual(8);
+    expect(keys.filter((k) => k.startsWith("utm_")).length).toBeLessThanOrEqual(7);
+    expect(result!.referrer).toBe("https://example.com/");
+  });
+
+  it("slices an oversized value (including referrer) to 200 chars", () => {
+    const longValue = "x".repeat(500);
+    window.history.pushState({}, "", `/?utm_source=${longValue}`);
+    Object.defineProperty(document, "referrer", {
+      value: "https://example.com/" + "y".repeat(500),
+      configurable: true,
+    });
+
+    const result = collectUtm();
+
+    expect(result).toBeDefined();
+    expect(result!.utm_source.length).toBe(200);
+    expect(result!.referrer.length).toBe(200);
   });
 });

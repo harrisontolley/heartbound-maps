@@ -222,6 +222,64 @@ describe("POST /leads — happy path", () => {
     expect(emailArg.html).toContain("Melbourne");
   });
 
+  it("truncates a long derived label to 100 chars in the email payload", async () => {
+    upsertLead.mockResolvedValue({ id: "lead-1", downloadToken: "tok-1", existing: false });
+    sendEmail.mockResolvedValue({ id: "email-1" });
+
+    const longLabel = "Melbourne".repeat(30); // 270 chars
+    const combined = `Vintage Cartography — ${longLabel}`;
+    const truncated = combined.slice(0, 100);
+    const res = await post(
+      "/leads",
+      leadBody({ posterConfig: { templateId: "vintage-cartography", home: { id: "h1", label: longLabel } } }),
+    );
+
+    expect(res.status).toBe(202);
+    const emailArg = sendEmail.mock.calls[0][0];
+    expect(emailArg.html).not.toContain(longLabel);
+    expect(emailArg.html).toContain(truncated);
+  });
+
+  it("falls back to the generic label when the derived text is URL-bearing", async () => {
+    upsertLead.mockResolvedValue({ id: "lead-1", downloadToken: "tok-1", existing: false });
+    sendEmail.mockResolvedValue({ id: "email-1" });
+
+    const res = await post(
+      "/leads",
+      leadBody({
+        posterConfig: {
+          templateId: "vintage-cartography",
+          home: { id: "h1", label: "Visit http://evil.example.com now" },
+        },
+      }),
+    );
+
+    expect(res.status).toBe(202);
+    const emailArg = sendEmail.mock.calls[0][0];
+    expect(emailArg.html).not.toContain("evil.example.com");
+    expect(emailArg.html).toContain("Your Pinprint design");
+  });
+
+  it("falls back to the generic label when the derived text contains a newline", async () => {
+    upsertLead.mockResolvedValue({ id: "lead-1", downloadToken: "tok-1", existing: false });
+    sendEmail.mockResolvedValue({ id: "email-1" });
+
+    const res = await post(
+      "/leads",
+      leadBody({
+        posterConfig: {
+          templateId: "vintage-cartography",
+          home: { id: "h1", label: "line one\nBcc: spam@example.com" },
+        },
+      }),
+    );
+
+    expect(res.status).toBe(202);
+    const emailArg = sendEmail.mock.calls[0][0];
+    expect(emailArg.html).not.toContain("Bcc: spam@example.com");
+    expect(emailArg.html).toContain("Your Pinprint design");
+  });
+
   it("a duplicate (same email + design) updates the existing lead and reuses its token", async () => {
     upsertLead.mockResolvedValue({ id: "lead-1", downloadToken: "tok-existing", existing: true });
     sendEmail.mockResolvedValue({ id: "email-2" });
@@ -245,6 +303,25 @@ describe("POST /leads — happy path", () => {
     expect(res.status).toBe(502);
     expect(await res.json()).toEqual({ error: "email_send_failed" });
     expect(markLeadEmail).toHaveBeenCalledWith("lead-1", { status: "failed" });
+  });
+
+  it("uses the request Origin for the download link when PUBLIC_APP_URL is unset", async () => {
+    const original = process.env.PUBLIC_APP_URL;
+    delete process.env.PUBLIC_APP_URL;
+    try {
+      upsertLead.mockResolvedValue({ id: "lead-1", downloadToken: "tok-origin", existing: false });
+      sendEmail.mockResolvedValue({ id: "email-1" });
+
+      const res = await post("/leads", leadBody(), { origin: "https://app.example.com" });
+
+      expect(res.status).toBe(202);
+      const emailArg = sendEmail.mock.calls[0][0];
+      expect(emailArg.html).toContain(
+        "https://app.example.com/_/backend/leads/download/tok-origin",
+      );
+    } finally {
+      if (original !== undefined) process.env.PUBLIC_APP_URL = original;
+    }
   });
 
   it("is mounted under the /_/backend service prefix too", async () => {

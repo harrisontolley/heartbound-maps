@@ -29,8 +29,11 @@ Both must be set for `isResendConfigured()` to return true; either missing and
 - `backend/src/app.ts` → `registerRoutes()` — the `resend` field of
   `GET /health/integrations`.
 
-A later task wires a `/leads` route that calls `sendEmail(leadMagnetEmail(...))`;
-that route and any lead-storage do not exist yet.
+`POST /leads` (`backend/src/routes/leads.ts`) stores the lead (`backend/src/
+leadStore.ts`) and sends the download email via
+`sendEmail(leadMagnetEmail(...))`. `GET /leads/download/:token` looks the
+lead up by its download token and redirects (302) to a freshly signed URL for
+the asset, valid for 1 hour.
 
 ## Sandbox / test setup
 
