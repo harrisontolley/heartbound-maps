@@ -218,13 +218,20 @@ describe("deliverDigitalFiles — no assets (pre-B2 legacy order)", () => {
 });
 
 describe("deliverDigitalFiles — send failure", () => {
-  it("does not mark delivered (releases the claim) and returns email_send_failed", async () => {
+  it("does not mark delivered (releases the claim), logs an order_event, and returns email_send_failed", async () => {
     getOrderForDigitalDelivery.mockResolvedValue(baseOrder());
     sendEmail.mockResolvedValue(null);
     const result = await deliverDigitalFiles("ord-1");
     expect(result).toEqual({ delivered: false, reason: "email_send_failed" });
     expect(claimDigitalDelivery).toHaveBeenCalledWith("ord-1");
     expect(releaseDigitalDeliveryClaim).toHaveBeenCalledWith("ord-1");
+    expect(appendOrderEvent).toHaveBeenCalledWith(
+      "ord-1",
+      expect.objectContaining({
+        message: expect.stringContaining("Digital delivery failed: email send failed"),
+        source: "system",
+      }),
+    );
   });
 });
 

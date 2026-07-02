@@ -171,6 +171,21 @@ describe("priceCheckout — server price authority", () => {
     expect(orderItems[0].assetUrl).toContain("blob.vercel-storage.com");
   });
 
+  it("persists both a valid assetUrl and svgAssetUrl onto the same order item (print + digital bundle)", () => {
+    const { orderItems } = priceCheckout([
+      {
+        productId: "portrait-16x24",
+        format: "print",
+        addFrame: false,
+        quantity: 1,
+        assetUrl: "https://abc123.public.blob.vercel-storage.com/posters/x.png",
+        svgAssetUrl: "https://abc123.public.blob.vercel-storage.com/posters/x.svg",
+      },
+    ]);
+    expect(orderItems[0].assetUrl).toBe("https://abc123.public.blob.vercel-storage.com/posters/x.png");
+    expect(orderItems[0].svgAssetUrl).toBe("https://abc123.public.blob.vercel-storage.com/posters/x.svg");
+  });
+
   it("rejects a digital item whose assetUrl is not a Vercel Blob URL (anti-SSRF)", () => {
     expect(() =>
       priceCheckout([
