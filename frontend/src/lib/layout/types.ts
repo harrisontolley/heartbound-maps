@@ -21,16 +21,12 @@ export type LaidOut = Computed & {
   dir: Vec2;
   /** Resolved arrow length in px (adjusted to avoid collisions). */
   radius: number;
-  /**
-   * Perpendicular offset (px, signed). Internal to the asymmetric fallback
-   * resolver only — the primary 2D relaxation moves `labelBox` directly and
-   * leaves this at 0. The renderer never reads it.
-   */
+  /** Legacy field, always 0 — kept so the public shape is stable. */
   perp: number;
   /** Arrowhead position. */
   tip: Vec2;
   labelBox: LabelBox;
-  /** True when the label was nudged off its spoke and needs a leader line. */
+  /** True when the label was moved off its rest position and needs a leader line. */
   needsLeader: boolean;
 };
 
@@ -50,6 +46,12 @@ export type LayoutConfig = {
   scaleByDistance: boolean;
   /** Floor arrow length for the nearest place when distance scaling is on. */
   minRadius: number;
+  /**
+   * Distance ratio (dMax/dMin) at which the full [minRadius, maxRadius] range is
+   * used. Near-equal distance sets use a proportionally narrower band anchored
+   * at maxRadius, so similar distances get similar arrow lengths.
+   */
+  ratioFull: number;
   /** Bearings within this many degrees form a "same direction" cluster. */
   clusterAngleDeg: number;
   /** Radius stagger between stacked labels in a cluster. */
@@ -75,22 +77,13 @@ export type LayoutConfig = {
    * (anchor "middle") rather than left/right anchored.
    */
   anchorDeadzone: number;
-  /** Two spokes more aligned than this (|dir·dir| ≥ collinearCos) are treated
-   * as near-collinear by the asymmetric fallback. */
-  collinearCos: number;
   /** Displacement from the rest center beyond which a leader line is drawn. */
   leaderThreshold: number;
-  /** Fraction (<1) of each box's averaged separation delta applied per iteration
-   * in the primary 2D relaxation — damps overshoot/oscillation. */
-  separationDamping: number;
   /** Clearance kept between a label box and other arrows' spokes. */
   lineClearance: number;
-  /** Convergence threshold: stop relaxing when total movement (px) drops below this. */
-  epsilon: number;
-  /** Outward push per relaxation step (asymmetric fallback only). */
-  pushStep: number;
-  /** Perpendicular nudge per relaxation step (asymmetric fallback only). */
-  perpStep: number;
+  /** Horizontal gap between a conflict group's outermost tip and its label column. */
+  colGap: number;
+  /** Cap on conflict-resolution fixpoint passes (backstop, not a tuning knob). */
   maxIters: number;
   /** Breathing room added around each label box for the overlap test. */
   boxPadding: number;
@@ -109,14 +102,13 @@ export type MeasureFn = (item: Computed) => LabelSize;
  * place; omitting it (the production path) costs nothing.
  */
 export type LayoutDiagnostics = {
-  /** Iterations the primary 2D relaxation ran before converging / hitting maxIters. */
+  /** Conflict-resolution fixpoint passes run. */
   iterations: number;
-  /** True if the primary relaxation reached `epsilon` before `maxIters`. */
+  /** True if the fixpoint reached a conflict-free layout. */
   converged: boolean;
-  /** True if the primary 2D relaxation cleared all overlaps on its own — i.e. the
-   * fallback was not needed. */
+  /** True if every label stayed at its rest position (no conflict groups). */
   primaryResolved: boolean;
-  /** True if the asymmetric fallback resolver had to run. */
+  /** True if any group needed the outward-column strategy (or the last resort). */
   fallbackUsed: boolean;
   /** Each label's rest (no-collision) center, keyed by place id. */
   restCenters: Record<string, { x: number; y: number }>;

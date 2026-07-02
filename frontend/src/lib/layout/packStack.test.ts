@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { packStackVertical } from "./computeLayout";
+import { packStackVertical } from "./packStack";
 
 /** Helper: assert centers are non-decreasing and every consecutive gap is satisfied. */
 function assertOrderedWithGaps(ys: number[], gaps: number[]) {

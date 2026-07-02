@@ -27,10 +27,9 @@ export const PARAM_SCHEMA: ParamSpec[] = [
   { key: "iconAtTip", label: "Icon at tip", group: "Spacing", kind: "toggle", hint: "Icon marks the tip just past the arrowhead." },
 
   // Solver / convergence.
-  { key: "separationDamping", label: "Separation damping", group: "Solver", kind: "slider", min: 0.1, max: 1, step: 0.05, hint: "Fraction of each push applied per pass." },
   { key: "lineClearance", label: "Line clearance", group: "Solver", kind: "slider", min: 0, max: 30, step: 1, hint: "Clearance kept between a label and other spokes." },
-  { key: "epsilon", label: "Convergence ε", group: "Solver", kind: "slider", min: 0.05, max: 5, step: 0.05, hint: "Stop when total movement drops below this." },
-  { key: "maxIters", label: "Max iterations", group: "Solver", kind: "slider", min: 100, max: 2000, step: 100 },
+  { key: "colGap", label: "Column gap", group: "Solver", kind: "slider", min: 8, max: 60, step: 2, hint: "Gap between a conflict group's outermost tip and its label column." },
+  { key: "maxIters", label: "Max passes", group: "Solver", kind: "slider", min: 4, max: 128, step: 4, hint: "Conflict fixpoint pass cap (backstop)." },
 
   // Geometry / structural.
   { key: "margin", label: "Margin", group: "Geometry", kind: "slider", min: 40, max: 140, step: 5 },
@@ -41,7 +40,7 @@ export const PARAM_SCHEMA: ParamSpec[] = [
   { key: "maxRadius", label: "Max radius", group: "Geometry", kind: "slider", min: 100, max: 500, step: 10 },
   { key: "clusterAngleDeg", label: "Cluster angle°", group: "Geometry", kind: "slider", min: 0, max: 20, step: 1 },
   { key: "radiusStep", label: "Radius step", group: "Geometry", kind: "slider", min: 20, max: 160, step: 5 },
-  { key: "collinearCos", label: "Collinear cos", group: "Geometry", kind: "slider", min: 0.8, max: 0.999, step: 0.005 },
+  { key: "ratioFull", label: "Ratio full", group: "Geometry", kind: "slider", min: 2, max: 32, step: 1, hint: "Distance ratio (far/near) that spreads arrows across the full radius range." },
   { key: "scaleByDistance", label: "Scale by distance", group: "Geometry", kind: "toggle" },
 ];
 

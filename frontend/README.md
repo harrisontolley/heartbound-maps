@@ -27,10 +27,21 @@ pnpm dev          # http://localhost:3000  (opens pre-populated with a showcase)
   (`atan2`), bearing→screen-vector projection (North = up), 16-point compass,
   distance formatting. Pure, fully unit-tested.
 - **Layout engine** (`src/lib/layout`) — the differentiator. Arrow *angle* is
-  sacred (always the true bearing); to avoid label collisions it only adjusts
-  arrow *length* and, as a last resort, applies a perpendicular nudge + leader
-  line. Same-direction places stack along one spoke. Unit-tested for
-  bearing-preservation and overlap resolution.
+  sacred (always the true bearing); only arrow *length* and the label box move.
+  The engine is constructive and deterministic (no force relaxation): arrows
+  seed at a distance-proportional length capped so the rest-position label
+  (icon at the tip, text flowing outward) always fits the page; conflicts form
+  connected groups that are resolved by a shaft-aware vertical pack (labels
+  stay at their tips and split the difference — isotonic regression, so two
+  clashing neighbours each move a little instead of one moving a lot) or, for
+  dense same-direction fans, an ordered outward column with short non-crossing
+  leaders; a fixpoint loop merges any new conflicts until the poster is clean.
+  Hard invariants (zero label/label and label/arrow overlap, everything inside
+  the content-safe rect, leader fans never cross) live in `layout/verify.ts`,
+  shared by the engine, the unit tests (incl. a 600-seed multi-size stress
+  sweep), and the visual harness (`scripts/render-layout-cases.tsx`, `pnpm
+  render:layout` — renders the reported regression cases + stress seeds to
+  PNGs with a debug overlay).
 - **Templates** (`src/lib/templates`) — four style specs (vintage-cartography
   hero with three sub-styles, minimal-compass, bold-modern, night-sky). Geometry
   is shared; only style tokens differ.

@@ -22,36 +22,35 @@ export function defaultLayoutConfig(
     homeRadius: 46,
     baseRadius: Math.min(260, maxRadius),
     maxRadius,
-    // Distance scaling: nearest place lands on `minRadius`, farthest on
-    // `maxRadius`. The floor clears the home marker / rose (`homeRadius` 46) and
-    // sits well below `baseRadius` so near vs far reads clearly.
+    // Distance scaling: the farthest place lands on `maxRadius`; how far DOWN
+    // the range the nearest place goes is proportional to the set's distance
+    // ratio (see magnitude.ts), so near-equal distances get near-equal arrows.
     scaleByDistance: true,
     minRadius: Math.min(150, maxRadius),
+    // dMax/dMin at which the full radius range is used.
+    ratioFull: 8,
     clusterAngleDeg: 7,
     // Must exceed a label's height (+padding) so a vertical signpost stack
-    // separates by radius alone, without needing the relaxation fallback.
+    // separates by radius alone where the caps allow it.
     radiusStep: 70,
     labelGap: 16,
     // Labels stay above the reserved bottom band (title / coords / legend / footer).
     safeBottom: contentSafeRect(width, height, POSTER_MARGIN).maxY,
     // Rest state: the affiliation icon marks the tip just past the arrowhead.
     iconAtTip: true,
-    tipIconGap: 18,
+    tipIconGap: 26,
     anchorDeadzone: 0.15,
-    collinearCos: 0.96,
-    leaderThreshold: 14,
-    // Primary 2D relaxation tuning. Damping < 1 + per-constraint averaging keep
-    // the symmetric separation from overshooting.
-    separationDamping: 0.6,
+    // Small drifts keep the icon readably "at" its tip without leader-line noise;
+    // only real displacement earns a leader.
+    leaderThreshold: 24,
     lineClearance: 6,
-    epsilon: 0.5,
-    pushStep: 10,
-    perpStep: 12,
-    // Generous cap: the primary relaxation and the asymmetric fallback each
-    // resolve monotonically, so this is a convergence backstop, not a tuning knob.
-    maxIters: 800,
+    // Gap between a conflict group's outermost arrow tip and its label column.
+    colGap: 24,
+    // Fixpoint pass cap — each pass merges at least two conflict groups, so
+    // n places can never need more than n passes. Backstop, not a tuning knob.
+    maxIters: 64,
     boxPadding: 6,
-    // Vertical gap between same-direction labels stacked in an ordered cluster.
+    // Vertical breathing room between labels stacked by the pack resolvers.
     clusterStackPad: 6,
     ...overrides,
   };

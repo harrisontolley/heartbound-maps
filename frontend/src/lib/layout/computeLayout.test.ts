@@ -1,10 +1,11 @@
 import { describe, it, expect } from "vitest";
 import { computeLayout, computeLayoutWithDiagnostics } from "./computeLayout";
 import { defaultLayoutConfig } from "./config";
-import { rectsOverlap, segIntersectsRect } from "./aabb";
+import { clustersByBearing, minVisibleRadius } from "./radii";
 import { bearingToVec } from "../geo/projection";
 import type { Computed } from "../types";
-import type { LayoutConfig, MeasureFn } from "./types";
+import type { LaidOut, LayoutConfig, MeasureFn } from "./types";
+import { leaderCrossings, verifyLayout } from "./verify";
 
 // Deterministic stub measurer: fixed two-line label box. (Real measurement uses
 // canvas in the browser; the engine is decoupled from it via this MeasureFn.)
@@ -22,50 +23,61 @@ function comp(over: Partial<Computed> & { id: string; bearingDeg: number }): Com
   };
 }
 
-function assertNoOverlaps(out: ReturnType<typeof computeLayout>, pad: number) {
-  for (let i = 0; i < out.length; i++) {
-    for (let j = i + 1; j < out.length; j++) {
-      expect(
-        rectsOverlap(out[i].labelBox, out[j].labelBox, pad),
-        `labels ${out[i].id} and ${out[j].id} overlap`,
-      ).toBe(false);
-    }
-  }
+/** Per-id label sizes (mirrors what the canvas measurer produces in prod). */
+function sized(sizes: Record<string, { w: number; h: number }>, fallback = { w: 180, h: 64 }): MeasureFn {
+  return (it) => sizes[it.id] ?? fallback;
 }
 
-/** No label box may sit on another arrow's line (center → that arrow's tip). The own
- * line is special under icon-at-tip: the arrow is *meant* to reach its own label (the
- * icon marks the tip), so a tip-straddling box is fine — it's only a defect when the
- * box is dragged inward past its tip so the shaft crosses the outer text (tip outward
- * of the box center along the arrow). */
-function assertNoSegmentOverlaps(
-  out: ReturnType<typeof computeLayout>,
-  cfg: LayoutConfig,
-  pad: number,
-) {
-  const c = { x: cfg.cx, y: cfg.cy };
-  for (let i = 0; i < out.length; i++) {
-    for (let j = 0; j < out.length; j++) {
-      if (i === j) {
-        const b = out[i].labelBox;
-        const bc = { x: b.x + b.w / 2, y: b.y + b.h / 2 };
-        const tipOutward =
-          (out[i].tip.x - bc.x) * out[i].dir.x + (out[i].tip.y - bc.y) * out[i].dir.y > 0;
+/** Every hard invariant must hold: no box overlaps, no label on any arrow
+ * (own or others'), in-page, off the home disc. */
+function assertClean(out: LaidOut[], cfg: LayoutConfig) {
+  const problems = verifyLayout(out, cfg);
+  expect(problems, JSON.stringify(problems)).toEqual([]);
+}
+
+/** Same-direction clusters: a label may sit above a sibling's only when its
+ * arrow's tip is higher OR its bearing is more northerly (angular order) —
+ * same-bearing stacks must strictly follow tip order. */
+function assertClusterOrder(out: LaidOut[], cfg: LayoutConfig) {
+  for (const cluster of clustersByBearing(out, cfg.clusterAngleDeg)) {
+    for (const a of cluster) {
+      for (const b of cluster) {
+        if (a === b) continue;
+        const ay = a.labelBox.y + a.labelBox.h / 2;
+        const by = b.labelBox.y + b.labelBox.h / 2;
+        if (ay >= by - 1e-6) continue; // only judge "a above b" pairs
+        const tipOk = a.tip.y <= b.tip.y + 1e-6;
+        const angleOk = a.dir.y < b.dir.y - 1e-9;
         expect(
-          segIntersectsRect(c, out[i].tip, b, 0) && tipOutward,
-          `arrow ${out[i].id} crosses its own outer text`,
-        ).toBe(false);
-      } else {
-        expect(
-          segIntersectsRect(c, out[j].tip, out[i].labelBox, pad),
-          `label ${out[i].id} sits on arrow ${out[j].id}'s line`,
-        ).toBe(false);
+          tipOk || angleOk,
+          `cluster order: ${a.id} sits above ${b.id} but has neither the higher tip nor the more northerly bearing`,
+        ).toBe(true);
       }
     }
   }
 }
 
+const cyOf = (out: LaidOut[], id: string) => {
+  const o = out.find((x) => x.id === id)!;
+  return o.labelBox.y + o.labelBox.h / 2;
+};
+
+/** Distance from a label's own tip to the nearest point of its box. */
+function tipClearance(o: LaidOut): number {
+  const b = o.labelBox;
+  const qx = Math.min(Math.max(o.tip.x, b.x), b.x + b.w);
+  const qy = Math.min(Math.max(o.tip.y, b.y), b.y + b.h);
+  return Math.hypot(qx - o.tip.x, qy - o.tip.y);
+}
+
 describe("computeLayout", () => {
+  it("returns [] for no places and one placement per input", () => {
+    const cfg = defaultLayoutConfig(1000, 1500);
+    expect(computeLayout([], cfg, measure)).toEqual([]);
+    const items = [comp({ id: "a", bearingDeg: 30 }), comp({ id: "b", bearingDeg: 210 })];
+    expect(computeLayout(items, cfg, measure)).toHaveLength(2);
+  });
+
   it("never changes an arrow's bearing — angle is sacred", () => {
     const cfg = defaultLayoutConfig(1000, 1500);
     const items = [
@@ -84,119 +96,217 @@ describe("computeLayout", () => {
     }
   });
 
-  it("stacks near-identical bearings along the spoke, closest place shortest", () => {
-    // Use a (near-)vertical cluster: radius-stacking is only physically possible
-    // when the spoke is vertical (a horizontal stack would run off the canvas and
-    // is instead resolved by perpendicular separation — see the stress test).
+  it("rests an uncrowded label at its tip with no leader (icon-at-tip)", () => {
     const cfg = defaultLayoutConfig(1000, 1500);
-    const items = [
-      comp({ id: "near", bearingDeg: 180, distanceKm: 500 }),
-      comp({ id: "far", bearingDeg: 183, distanceKm: 2000 }),
-    ];
-    const out = computeLayout(items, cfg, measure);
-    const near = out.find((o) => o.id === "near")!;
-    const far = out.find((o) => o.id === "far")!;
-    expect(near.radius).toBeLessThan(far.radius);
+    const small: MeasureFn = () => ({ w: 140, h: 60 });
+    const out = computeLayout([comp({ id: "a", bearingDeg: 45, distanceKm: 3000 })], cfg, small);
+    const o = out[0];
+    expect(o.needsLeader).toBe(false);
+    expect(o.labelBox.anchor).toBe("start");
+    expect(o.labelBox.x).toBeCloseTo(o.tip.x + o.dir.x * cfg.tipIconGap, 6);
+    expect(o.labelBox.y + o.labelBox.h / 2).toBeCloseTo(o.tip.y + o.dir.y * cfg.tipIconGap, 6);
   });
 
-  it("resolves a trio sharing an identical bearing without overlap", () => {
-    const cfg = defaultLayoutConfig(1000, 1500);
-    const items = [
-      comp({ id: "a", bearingDeg: 90, distanceKm: 300 }),
-      comp({ id: "b", bearingDeg: 90, distanceKm: 600 }),
-      comp({ id: "c", bearingDeg: 90, distanceKm: 900 }),
-    ];
-    const out = computeLayout(items, cfg, measure);
-    assertNoOverlaps(out, cfg.boxPadding);
+  // ---------------------------------------------------------------- T1 -----
+  describe("T1: Berlin → Jerusalem + Shanghai", () => {
+    it("keeps Shanghai's label off its own arrow", () => {
+      // Reported bug: Shanghai seeds long, its wide label overflowed the right
+      // margin, and the old inward clamp dragged it back onto the shaft.
+      const cfg = defaultLayoutConfig(1000, 1500);
+      const m = sized({ shanghai: { w: 210, h: 64 }, jerusalem: { w: 180, h: 64 } });
+      const items = [
+        comp({ id: "shanghai", bearingDeg: 57.1, distanceKm: 8397 }),
+        comp({ id: "jerusalem", bearingDeg: 134.1, distanceKm: 2901 }),
+      ];
+      const out = computeLayout(items, cfg, m);
+      assertClean(out, cfg);
+    });
   });
 
-  it("resolves a dense same-direction cluster (stress) without overlap", () => {
-    const cfg = defaultLayoutConfig(1000, 1500);
-    const items = Array.from({ length: 6 }, (_, i) =>
-      comp({ id: String(i), bearingDeg: 90 + i * 2, distanceKm: 500 + i * 120 }),
-    );
-    const out = computeLayout(items, cfg, measure);
-    assertNoOverlaps(out, cfg.boxPadding);
-  });
-
-  it("resolves a well-spread set of 8 without overlap", () => {
-    const cfg = defaultLayoutConfig(1000, 1500);
-    const items = Array.from({ length: 8 }, (_, i) =>
-      comp({ id: String(i), bearingDeg: i * 45 + 5, distanceKm: 1000 }),
-    );
-    const out = computeLayout(items, cfg, measure);
-    assertNoOverlaps(out, cfg.boxPadding);
-  });
-
-  it("keeps every label box inside the poster margins (no off-page text)", () => {
-    const cfg = defaultLayoutConfig(1000, 1500);
-    // A very wide label (e.g. "Los Angeles") pointing due west would, without
-    // clamping, overhang the left edge because maxRadius only bounds the tip.
-    const wide: MeasureFn = () => ({ w: 340, h: 60 });
-    const items = Array.from({ length: 8 }, (_, i) =>
-      comp({ id: String(i), bearingDeg: i * 45, distanceKm: 1000 }),
-    );
-    const out = computeLayout(items, cfg, wide);
-    for (const o of out) {
-      const b = o.labelBox;
-      expect(b.x, `${o.id} left edge`).toBeGreaterThanOrEqual(cfg.margin - 1e-6);
-      expect(b.x + b.w, `${o.id} right edge`).toBeLessThanOrEqual(
-        cfg.width - cfg.margin + 1e-6,
-      );
-      expect(b.y, `${o.id} top edge`).toBeGreaterThanOrEqual(cfg.margin - 1e-6);
-      expect(b.y + b.h, `${o.id} bottom edge`).toBeLessThanOrEqual(
-        cfg.height - cfg.margin + 1e-6,
-      );
-    }
-  });
-
-  it("returns one placement per input", () => {
-    const cfg = defaultLayoutConfig(1000, 1500);
-    const items = [comp({ id: "a", bearingDeg: 30 }), comp({ id: "b", bearingDeg: 210 })];
-    expect(computeLayout(items, cfg, measure)).toHaveLength(2);
-  });
-
-  // Bearings + distances below are the real great-circle values from Brisbane
-  // (home) — the reported failing case. SF and NY are only ~5° apart, so NY's
-  // long arrow line ran straight through SF's label before segment avoidance.
-  describe("keeps labels off other arrows' lines", () => {
-    it("separates the reported Brisbane → SF + NY near-collinear pair", () => {
+  // ---------------------------------------------------------------- T2 -----
+  describe("T2: Brisbane → San Francisco + New York (near-collinear NE)", () => {
+    const SIZES = {
+      sf: { w: 150, h: 64 },
+      ny: { w: 212, h: 64 },
+      london: { w: 170, h: 64 },
+    };
+    it("separates the pair with nothing on any arrow", () => {
       const cfg = defaultLayoutConfig(1000, 1500);
       const items = [
         comp({ id: "sf", bearingDeg: 53.7, distanceKm: 11395 }),
-        comp({ id: "ny", bearingDeg: 58.5, distanceKm: 15501 }),
+        comp({ id: "ny", bearingDeg: 58.46, distanceKm: 15501 }),
       ];
-      const out = computeLayout(items, cfg, measure);
-      assertNoOverlaps(out, cfg.boxPadding);
-      assertNoSegmentOverlaps(out, cfg, cfg.boxPadding);
+      const out = computeLayout(items, cfg, sized(SIZES));
+      assertClean(out, cfg);
+      assertClusterOrder(out, cfg);
+      expect(leaderCrossings(out, { x: cfg.cx, y: cfg.cy })).toBe(0);
     });
 
-    it("separates a near-collinear NE fan of five", () => {
+    it("stays clean when London joins", () => {
       const cfg = defaultLayoutConfig(1000, 1500);
       const items = [
         comp({ id: "sf", bearingDeg: 53.7, distanceKm: 11395 }),
-        comp({ id: "la", bearingDeg: 58.6, distanceKm: 11565 }),
-        comp({ id: "ny", bearingDeg: 58.5, distanceKm: 15501 }),
-        comp({ id: "sea", bearingDeg: 44.4, distanceKm: 11848 }),
-        comp({ id: "van", bearingDeg: 42.6, distanceKm: 11866 }),
+        comp({ id: "ny", bearingDeg: 58.46, distanceKm: 15501 }),
+        comp({ id: "london", bearingDeg: 327.33, distanceKm: 16526 }),
+      ];
+      const out = computeLayout(items, cfg, sized(SIZES));
+      assertClean(out, cfg);
+      assertClusterOrder(out, cfg);
+      expect(leaderCrossings(out, { x: cfg.cx, y: cfg.cy })).toBe(0);
+    });
+  });
+
+  // ---------------------------------------------------------------- T3 -----
+  describe("T3: Brisbane → Bangkok + Chiang Mai (+ Shanghai + London)", () => {
+    const SIZES = {
+      bangkok: { w: 168, h: 64 },
+      chiangmai: { w: 230, h: 64 }, // "Chiang Mai" is long — the reported cutoff
+      shanghai: { w: 190, h: 64 },
+      london: { w: 160, h: 64 },
+    };
+
+    it("keeps both NW labels near their tips, split evenly", () => {
+      const cfg = defaultLayoutConfig(1000, 1500);
+      const items = [
+        comp({ id: "bangkok", bearingDeg: 302.1, distanceKm: 7283 }),
+        comp({ id: "chiangmai", bearingDeg: 305.28, distanceKm: 7766 }),
+      ];
+      const out = computeLayout(items, cfg, sized(SIZES));
+      assertClean(out, cfg);
+      assertClusterOrder(out, cfg);
+      // Both labels stay close to their arrows — no page-crossing leader.
+      for (const o of out) {
+        expect(tipClearance(o), `${o.id} drifted too far from its tip`).toBeLessThan(120);
+      }
+    });
+
+    it("keeps tip order with Shanghai + London added (Shanghai topmost)", () => {
+      const cfg = defaultLayoutConfig(1000, 1500);
+      const items = [
+        comp({ id: "bangkok", bearingDeg: 302.1, distanceKm: 7283 }),
+        comp({ id: "chiangmai", bearingDeg: 305.28, distanceKm: 7766 }),
+        comp({ id: "shanghai", bearingDeg: 330.66, distanceKm: 7335 }),
+        comp({ id: "london", bearingDeg: 327.33, distanceKm: 16526 }),
+      ];
+      const out = computeLayout(items, cfg, sized(SIZES));
+      assertClean(out, cfg);
+      assertClusterOrder(out, cfg);
+      expect(leaderCrossings(out, { x: cfg.cx, y: cfg.cy })).toBe(0);
+      // Shanghai's arrow is the most northerly of the western fan; its label
+      // must not end up at the bottom of the stack (the reported defect).
+      const west = ["bangkok", "chiangmai", "shanghai", "london"];
+      const lowest = west.reduce((a, b) => (cyOf(out, a) > cyOf(out, b) ? a : b));
+      expect(lowest).not.toBe("shanghai");
+    });
+  });
+
+  // ---------------------------------------------------------------- T4 -----
+  describe("T4: New York → Tokyo, Seattle, London, Bangkok, Miami", () => {
+    const SIZES = {
+      tokyo: { w: 160, h: 64 },
+      seattle: { w: 180, h: 64 },
+      london: { w: 170, h: 64 },
+      bangkok: { w: 186, h: 64 },
+      miami: { w: 150, h: 64 },
+    };
+    it("keeps every label off every arrow with breathing room at the tips", () => {
+      const cfg = defaultLayoutConfig(1000, 1500);
+      const items = [
+        comp({ id: "tokyo", bearingDeg: 332.99, distanceKm: 10852 }),
+        comp({ id: "seattle", bearingDeg: 297.97, distanceKm: 3866 }),
+        comp({ id: "london", bearingDeg: 51.21, distanceKm: 5570 }),
+        comp({ id: "bangkok", bearingDeg: 6.54, distanceKm: 13932 }),
+        comp({ id: "miami", bearingDeg: 200.87, distanceKm: 1758 }),
+      ];
+      const out = computeLayout(items, cfg, sized(SIZES));
+      assertClean(out, cfg);
+      assertClusterOrder(out, cfg);
+      expect(leaderCrossings(out, { x: cfg.cx, y: cfg.cy })).toBe(0);
+      // Icons must not crowd the arrowheads (the reported Tokyo defect).
+      for (const o of out) {
+        expect(tipClearance(o), `${o.id} icon crowds its arrowhead`).toBeGreaterThanOrEqual(6);
+      }
+    });
+  });
+
+  // ---------------------------------------------------------------- T5 -----
+  describe("T5: Jakarta → Brisbane, Melbourne, Sydney (near-equal distances)", () => {
+    const SIZES = {
+      brisbane: { w: 190, h: 64 },
+      melbourne: { w: 210, h: 64 },
+      sydney: { w: 160, h: 64 },
+    };
+    const items = [
+      comp({ id: "brisbane", bearingDeg: 121.49, distanceKm: 5410 }),
+      comp({ id: "melbourne", bearingDeg: 138.04, distanceKm: 5207 }),
+      comp({ id: "sydney", bearingDeg: 130.15, distanceKm: 5496 }),
+    ];
+
+    it("gives near-equal distances near-equal arrow lengths", () => {
+      const cfg = defaultLayoutConfig(1000, 1500);
+      const out = computeLayout(items, cfg, sized(SIZES));
+      const radii = out.map((o) => o.radius);
+      const rMax = Math.max(...radii);
+      const rMin = Math.min(...radii);
+      // Distances differ by ~5.5% — arrows must not differ wildly (the old map
+      // stretched them across the full range, making Melbourne look tiny).
+      expect(rMax / rMin).toBeLessThan(1.35);
+    });
+
+    it("keeps Melbourne's label with Melbourne's arrow (order matches tips)", () => {
+      const cfg = defaultLayoutConfig(1000, 1500);
+      const out = computeLayout(items, cfg, sized(SIZES));
+      assertClean(out, cfg);
+      assertClusterOrder(out, cfg);
+      expect(leaderCrossings(out, { x: cfg.cx, y: cfg.cy })).toBe(0);
+      // Melbourne's arrow points the most southerly of the fan — its label must
+      // not be the northmost (the reported defect).
+      const ids = ["brisbane", "melbourne", "sydney"];
+      const topmost = ids.reduce((a, b) => (cyOf(out, a) < cyOf(out, b) ? a : b));
+      expect(topmost).not.toBe("melbourne");
+    });
+  });
+
+  // ---------------------------------------------------- behavior suites -----
+  describe("split the difference", () => {
+    it("moves BOTH overlapping labels, not just one", () => {
+      const cfg = defaultLayoutConfig(1000, 1500);
+      const wide: MeasureFn = () => ({ w: 240, h: 80 });
+      const a = comp({ id: "a", bearingDeg: 0, distanceKm: 3000 });
+      const b = comp({ id: "b", bearingDeg: 22, distanceKm: 3000 });
+      const seedCenter = (item: Computed) => {
+        const o = computeLayout([item], cfg, wide)[0];
+        return { x: o.labelBox.x + o.labelBox.w / 2, y: o.labelBox.y + o.labelBox.h / 2 };
+      };
+      const sa = seedCenter(a);
+      const sb = seedCenter(b);
+      const out = computeLayout([a, b], cfg, wide);
+      const fa = out.find((o) => o.id === "a")!;
+      const fb = out.find((o) => o.id === "b")!;
+      const da = Math.hypot(fa.labelBox.x + fa.labelBox.w / 2 - sa.x, fa.labelBox.y + fa.labelBox.h / 2 - sa.y);
+      const db = Math.hypot(fb.labelBox.x + fb.labelBox.w / 2 - sb.x, fb.labelBox.y + fb.labelBox.h / 2 - sb.y);
+      expect(da).toBeGreaterThan(5);
+      expect(db).toBeGreaterThan(5);
+      expect(Math.max(da, db) / Math.min(da, db)).toBeLessThan(5);
+      assertClean(out, cfg);
+    });
+  });
+
+  describe("same-direction stacks", () => {
+    it("stacks near-identical bearings along the spoke, closest place shortest", () => {
+      const cfg = defaultLayoutConfig(1000, 1500);
+      const items = [
+        comp({ id: "near", bearingDeg: 180, distanceKm: 500 }),
+        comp({ id: "far", bearingDeg: 183, distanceKm: 2000 }),
       ];
       const out = computeLayout(items, cfg, measure);
-      assertNoOverlaps(out, cfg.boxPadding);
-      assertNoSegmentOverlaps(out, cfg, cfg.boxPadding);
+      const near = out.find((o) => o.id === "near")!;
+      const far = out.find((o) => o.id === "far")!;
+      expect(near.radius).toBeLessThan(far.radius);
+      assertClean(out, cfg);
     });
 
-    it("keeps a wide-label spread off every spoke", () => {
-      const cfg = defaultLayoutConfig(1000, 1500);
-      const wide: MeasureFn = () => ({ w: 300, h: 60 });
-      const items = Array.from({ length: 8 }, (_, i) =>
-        comp({ id: String(i), bearingDeg: i * 45 + 5, distanceKm: 400 + i * 1800 }),
-      );
-      const out = computeLayout(items, cfg, wide);
-      assertNoOverlaps(out, cfg.boxPadding);
-      assertNoSegmentOverlaps(out, cfg, cfg.boxPadding);
-    });
-
-    it("still keeps a same-bearing trio clear of the shared spoke", () => {
+    it("resolves a trio sharing an identical bearing", () => {
       const cfg = defaultLayoutConfig(1000, 1500);
       const items = [
         comp({ id: "a", bearingDeg: 70, distanceKm: 300 }),
@@ -204,328 +314,45 @@ describe("computeLayout", () => {
         comp({ id: "c", bearingDeg: 70, distanceKm: 900 }),
       ];
       const out = computeLayout(items, cfg, measure);
-      assertNoOverlaps(out, cfg.boxPadding);
-      assertNoSegmentOverlaps(out, cfg, cfg.boxPadding);
-    });
-  });
-
-  // Realistic canvas-measured "City / 12,345 km" two-line labels + the real
-  // labelGap (16 + round(arrowheadSize*1.5) ≈ 57 for the bold template). The
-  // 160×60 stub above does NOT reproduce production renders: real labels are
-  // wider/asymmetric and the bigger gap drives them to the poster margins, where
-  // the old resolver's perpendicular nudge stalled against the margin clamp and
-  // left a residual overlap. These cases failed before the split/penetration
-  // rewrite and must stay green.
-  const REAL_SIZES: Record<string, { w: number; h: number }> = {
-    sf: { w: 150, h: 64 },
-    ny: { w: 212, h: 64 },
-    la: { w: 158, h: 64 },
-    sea: { w: 180, h: 64 },
-    van: { w: 206, h: 64 },
-  };
-  const realMeasure: MeasureFn = (it) => REAL_SIZES[it.id] ?? { w: 190, h: 64 };
-
-  describe("real-world renders (realistic label sizes + gap)", () => {
-    it("separates Brisbane → SF + NY with production label sizes", () => {
-      const cfg = defaultLayoutConfig(1000, 1500, { labelGap: 57 });
-      const items = [
-        comp({ id: "sf", bearingDeg: 53.7, distanceKm: 11395 }),
-        comp({ id: "ny", bearingDeg: 58.5, distanceKm: 15501 }),
-      ];
-      const out = computeLayout(items, cfg, realMeasure);
-      assertNoOverlaps(out, cfg.boxPadding);
-      assertNoSegmentOverlaps(out, cfg, cfg.boxPadding);
+      assertClean(out, cfg);
+      assertClusterOrder(out, cfg);
     });
 
-    it("keeps a lone far NE city's wide label off its OWN arrow line", () => {
-      // NY alone: farthest → arrow seeds to baseRadius and its tip lands near the
-      // top-right corner. A wide label can't fit beyond the tip on-page, so the margin
-      // clamp drags the box back over the tip — the arrow ends under its own title.
-      const cfg = defaultLayoutConfig(1000, 1500, { labelGap: 57 });
-      const wideStub: MeasureFn = () => ({ w: 260, h: 64 });
-      const items = [comp({ id: "ny", bearingDeg: 58.5, distanceKm: 15501 })];
-      const out = computeLayout(items, cfg, wideStub);
-      assertNoOverlaps(out, cfg.boxPadding);
-      assertNoSegmentOverlaps(out, cfg, cfg.boxPadding); // now also checks the own line
-    });
-
-    it("separates a realistic near-collinear NE fan of five", () => {
-      const cfg = defaultLayoutConfig(1000, 1500, { labelGap: 57 });
-      const items = [
-        comp({ id: "sf", bearingDeg: 53.7, distanceKm: 11395 }),
-        comp({ id: "la", bearingDeg: 58.6, distanceKm: 11565 }),
-        comp({ id: "ny", bearingDeg: 58.5, distanceKm: 15501 }),
-        comp({ id: "sea", bearingDeg: 44.4, distanceKm: 11848 }),
-        comp({ id: "van", bearingDeg: 42.6, distanceKm: 11866 }),
-      ];
-      const out = computeLayout(items, cfg, realMeasure);
-      assertNoOverlaps(out, cfg.boxPadding);
-      assertNoSegmentOverlaps(out, cfg, cfg.boxPadding);
-    });
-  });
-
-  describe("split the difference", () => {
-    it("moves BOTH overlapping labels, not just one", () => {
+    it("resolves a dense same-direction fan of 6", () => {
       const cfg = defaultLayoutConfig(1000, 1500);
-      const wide: MeasureFn = () => ({ w: 240, h: 80 });
-      // Diverging bearings (22° apart, not a same-direction stack) whose wide seed
-      // boxes overlap, away from any margin.
-      const a = comp({ id: "a", bearingDeg: 0, distanceKm: 3000 });
-      const b = comp({ id: "b", bearingDeg: 22, distanceKm: 3000 });
-      const seedCenter = (item: Computed) => {
-        const o = computeLayout([item], cfg, wide)[0];
-        return {
-          x: o.labelBox.x + o.labelBox.w / 2,
-          y: o.labelBox.y + o.labelBox.h / 2,
-        };
-      };
-      const sa = seedCenter(a);
-      const sb = seedCenter(b);
-      const out = computeLayout([a, b], cfg, wide);
-      const fa = out.find((o) => o.id === "a")!;
-      const fb = out.find((o) => o.id === "b")!;
-      const dist = (p: { x: number; y: number }, q: { x: number; y: number }) =>
-        Math.hypot(p.x - q.x, p.y - q.y);
-      const ca = { x: fa.labelBox.x + fa.labelBox.w / 2, y: fa.labelBox.y + fa.labelBox.h / 2 };
-      const cb = { x: fb.labelBox.x + fb.labelBox.w / 2, y: fb.labelBox.y + fb.labelBox.h / 2 };
-      const da = dist(ca, sa);
-      const db = dist(cb, sb);
-      // The old resolver moved only the shorter-radius label and pinned the other;
-      // the new one shares the work, so BOTH end up displaced from their seed...
-      expect(da).toBeGreaterThan(5);
-      expect(db).toBeGreaterThan(5);
-      // ...by roughly comparable amounts (neither is pinned). They're not perfectly
-      // even here because one label also straddles the other's spoke — an immovable
-      // line, so that label alone yields to clear it — but both still move materially.
-      expect(Math.max(da, db) / Math.min(da, db)).toBeLessThan(5);
-      assertNoOverlaps(out, cfg.boxPadding);
-    });
-  });
-
-  describe("margin clamp does not stall resolution", () => {
-    it("resolves two wide labels driven against the same edge", () => {
-      const cfg = defaultLayoutConfig(1000, 1500, { labelGap: 57 });
-      const veryWide: MeasureFn = () => ({ w: 360, h: 70 });
-      // Both near-east: their boxes are clamped to the right margin (same x), so the
-      // overlap can only be cleared by the perpendicular (vertical) fallback — the
-      // exact case the fixed-step nudge stalled on against the clamp.
-      const items = [
-        comp({ id: "a", bearingDeg: 88, distanceKm: 4000 }),
-        comp({ id: "b", bearingDeg: 96, distanceKm: 4000 }),
-      ];
-      const out = computeLayout(items, cfg, veryWide);
-      assertNoOverlaps(out, cfg.boxPadding);
-      assertNoSegmentOverlaps(out, cfg, cfg.boxPadding);
-    });
-  });
-
-  describe("distance magnitude", () => {
-    it("makes a farther place's arrow longer even on a different bearing", () => {
-      // Distinct bearings (no same-direction cluster) — with scaling on, length is
-      // driven purely by distance, so the farther place must have the longer arrow.
-      const cfg = defaultLayoutConfig(1000, 1500);
-      const items = [
-        comp({ id: "near", bearingDeg: 0, distanceKm: 500 }),
-        comp({ id: "far", bearingDeg: 90, distanceKm: 5000 }),
-      ];
-      const out = computeLayout(items, cfg, measure);
-      const near = out.find((o) => o.id === "near")!;
-      const far = out.find((o) => o.id === "far")!;
-      expect(near.radius).toBeLessThan(far.radius);
-    });
-
-    it("orders arrow length by distance across a spread set", () => {
-      const cfg = defaultLayoutConfig(1000, 1500);
-      const items = [
-        comp({ id: "a", bearingDeg: 0, distanceKm: 200 }),
-        comp({ id: "b", bearingDeg: 90, distanceKm: 1000 }),
-        comp({ id: "c", bearingDeg: 180, distanceKm: 5000 }),
-        comp({ id: "d", bearingDeg: 270, distanceKm: 15000 }),
-      ];
-      const out = computeLayout(items, cfg, measure);
-      const r = (id: string) => out.find((o) => o.id === id)!.radius;
-      expect(r("a")).toBeLessThan(r("b"));
-      expect(r("b")).toBeLessThan(r("c"));
-      expect(r("c")).toBeLessThan(r("d"));
-    });
-
-    it("keeps every arrow length within [minRadius, maxRadius]", () => {
-      const cfg = defaultLayoutConfig(1000, 1500);
-      const items = [
-        comp({ id: "a", bearingDeg: 0, distanceKm: 80 }),
-        comp({ id: "b", bearingDeg: 90, distanceKm: 1200 }),
-        comp({ id: "c", bearingDeg: 180, distanceKm: 9000 }),
-        comp({ id: "d", bearingDeg: 270, distanceKm: 17000 }),
-      ];
-      const out = computeLayout(items, cfg, measure);
-      for (const o of out) {
-        expect(o.radius).toBeGreaterThanOrEqual(cfg.minRadius);
-        expect(o.radius).toBeLessThanOrEqual(cfg.maxRadius);
-      }
-    });
-
-    it("keeps uniform arrow length when scaling is disabled", () => {
-      // The same distinct-bearing, different-distance pair as above, but with the
-      // toggle off, must fall back to identical (baseRadius) lengths.
-      const cfg = defaultLayoutConfig(1000, 1500, { scaleByDistance: false });
-      const items = [
-        comp({ id: "near", bearingDeg: 0, distanceKm: 500 }),
-        comp({ id: "far", bearingDeg: 90, distanceKm: 5000 }),
-      ];
-      const out = computeLayout(items, cfg, measure);
-      const near = out.find((o) => o.id === "near")!;
-      const far = out.find((o) => o.id === "far")!;
-      expect(near.radius).toBe(cfg.baseRadius);
-      expect(far.radius).toBe(cfg.baseRadius);
-    });
-  });
-
-  // Convergence sweep. The own-line nudge is additive — it could in principle shove a
-  // label into a fresh label-label / other-line overlap. On a *solvable* poster the
-  // engine must drive ALL obstacle classes (incl. own line) to zero, so a residual
-  // here would expose exactly that regression. Seeded + moderate-density so every
-  // config is physically solvable and the assertion of strict zero is reliable.
-  describe("stress: solvable posters always reach zero overlap (incl. own line)", () => {
-    // Deterministic PRNG (Math.random is unavailable / non-reproducible here).
-    const mulberry32 = (seed: number) => {
-      let a = seed >>> 0;
-      return () => {
-        a = (a + 0x6d2b79f5) | 0;
-        let t = Math.imul(a ^ (a >>> 15), 1 | a);
-        t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-        return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-      };
-    };
-
-    it("holds across 300 seeded configs with bearings + lengths intact", () => {
-      const cfg = defaultLayoutConfig(1000, 1500, { labelGap: 57 });
-      for (let seed = 0; seed < 300; seed++) {
-        const rng = mulberry32(seed + 1);
-        const n = 3 + Math.floor(rng() * 6); // 3..8 cities (solvable density)
-        const items = Array.from({ length: n }, (_, k) => {
-          // Mix spread bearings with jittered same-direction clusters (stresses the
-          // stagger + collinear paths), and a wide distance range (far corner cities).
-          const cluster = Math.floor(rng() * 4) * 90;
-          const bearingDeg = (cluster + (rng() - 0.5) * 40 + 360) % 360;
-          return comp({ id: String(k), bearingDeg, distanceKm: 50 + Math.floor(rng() * 17950) });
-        });
-        const widths = new Map(items.map((it) => [it.id, 140 + Math.floor(rng() * 110)]));
-        const measure: MeasureFn = (it) => ({ w: widths.get(it.id)!, h: 64 });
-        const out = computeLayout(items, cfg, measure);
-
-        assertNoOverlaps(out, cfg.boxPadding); // (iii) label vs label
-        assertNoSegmentOverlaps(out, cfg, cfg.boxPadding); // (i) own line (pad 0) + (ii) others
-        for (const o of out) {
-          const v = bearingToVec(o.bearingDeg); // (iv) angle is sacred
-          expect(o.dir.x, `seed ${seed}: ${o.id} bearing drift`).toBeCloseTo(v.x, 9);
-          expect(o.dir.y, `seed ${seed}: ${o.id} bearing drift`).toBeCloseTo(v.y, 9);
-          expect(o.radius).toBeGreaterThanOrEqual(cfg.minRadius - 1e-6);
-          expect(o.radius).toBeLessThanOrEqual(cfg.maxRadius + 1e-6);
-        }
-      }
-    });
-  });
-
-  describe("icon-at-tip rest state", () => {
-    it("rests an uncrowded label at its tip with no leader", () => {
-      const cfg = defaultLayoutConfig(1000, 1500);
-      const small: MeasureFn = () => ({ w: 140, h: 60 });
-      // A lone NE city, well inside the margins → no collisions, so the box sits at
-      // its rest position: the icon (box inner edge) `tipIconGap` past the tip.
-      const out = computeLayout([comp({ id: "a", bearingDeg: 45, distanceKm: 3000 })], cfg, small);
-      const o = out[0];
-      expect(o.needsLeader).toBe(false);
-      expect(o.labelBox.anchor).toBe("start");
-      // start anchor → the box's left edge + vertical center sit at tip + dir·tipIconGap.
-      expect(o.labelBox.x).toBeCloseTo(o.tip.x + o.dir.x * cfg.tipIconGap, 6);
-      expect(o.labelBox.y + o.labelBox.h / 2).toBeCloseTo(o.tip.y + o.dir.y * cfg.tipIconGap, 6);
-    });
-  });
-
-  describe("content-safe containment", () => {
-    it("keeps south-pointing labels above the reserved bottom band", () => {
-      const cfg = defaultLayoutConfig(1000, 1500);
-      const wide: MeasureFn = () => ({ w: 220, h: 64 });
-      // A south fan whose labels sit below their tips: every box must stay above the
-      // title/legend/footer band (`safeBottom`), not just inside `height - margin`.
-      const items = Array.from({ length: 5 }, (_, i) =>
-        comp({ id: String(i), bearingDeg: 160 + i * 10, distanceKm: 2000 + i * 3000 }),
+      const items = Array.from({ length: 6 }, (_, i) =>
+        comp({ id: String(i), bearingDeg: 90 + i * 2, distanceKm: 500 + i * 120 }),
       );
-      const out = computeLayout(items, cfg, wide);
-      for (const o of out) {
-        expect(o.labelBox.y + o.labelBox.h, `${o.id} bottom edge`).toBeLessThanOrEqual(
-          cfg.safeBottom + 1e-6,
-        );
-      }
+      const out = computeLayout(items, cfg, measure);
+      assertClean(out, cfg);
     });
-  });
 
-  describe("the symmetric primary resolves feasible posters (no fallback)", () => {
-    it("resolves a well-spread set of 8 without the asymmetric fallback", () => {
+    it("resolves an 8-arrow fan packed into 20 degrees", () => {
       const cfg = defaultLayoutConfig(1000, 1500);
       const items = Array.from({ length: 8 }, (_, i) =>
-        comp({ id: String(i), bearingDeg: i * 45 + 5, distanceKm: 1000 }),
+        comp({ id: String(i), bearingDeg: 40 + i * (20 / 7), distanceKm: 800 + i * 900 }),
       );
-      const { diagnostics } = computeLayoutWithDiagnostics(items, cfg, measure);
-      expect(diagnostics.fallbackUsed).toBe(false);
-      expect(diagnostics.primaryResolved).toBe(true);
+      const out = computeLayout(items, cfg, measure);
+      assertClean(out, cfg);
+      assertClusterOrder(out, cfg);
     });
   });
 
-  // Same-direction clusters stack in the order of their arrow tips, and labels are
-  // free to sit ABOVE their arrows (not forced below). Center-y helper:
-  const cyOf = (out: ReturnType<typeof computeLayout>, id: string) => {
-    const o = out.find((x) => x.id === id)!;
-    return o.labelBox.y + o.labelBox.h / 2;
-  };
-
-  describe("height ordering + labels above arrows", () => {
-    it("places New York (farther) above San Francisco, and above its own arrow", () => {
-      // The reported Brisbane case: NY & SF are a near-collinear NE cluster; NY is
-      // farther (higher tip) and must end up above SF — not beneath it. Bangkok (NW)
-      // is a separate cluster. Real-ish label widths.
+  describe("height ordering follows the arrows", () => {
+    it("places New York (farther, NE) with SF cleanly — order matches tips", () => {
       const cfg = defaultLayoutConfig(1000, 1500);
-      const sizes: Record<string, { w: number; h: number }> = {
-        ny: { w: 212, h: 64 },
-        sf: { w: 150, h: 64 },
-        bkk: { w: 168, h: 64 },
-      };
-      const wide: MeasureFn = (it) => sizes[it.id] ?? { w: 180, h: 64 };
+      const m = sized({ ny: { w: 212, h: 64 }, sf: { w: 150, h: 64 }, bkk: { w: 168, h: 64 } });
       const items = [
         comp({ id: "ny", bearingDeg: 58.46, distanceKm: 15501 }),
         comp({ id: "sf", bearingDeg: 53.7, distanceKm: 11395 }),
         comp({ id: "bkk", bearingDeg: 302.1, distanceKm: 7283 }),
       ];
-      const out = computeLayout(items, cfg, wide);
-      const ny = out.find((o) => o.id === "ny")!;
-      expect(cyOf(out, "ny")).toBeLessThan(cyOf(out, "sf")); // NY above SF
-      expect(cyOf(out, "ny")).toBeLessThan(ny.tip.y); // NY above its own arrow
-      assertNoOverlaps(out, cfg.boxPadding);
-      assertNoSegmentOverlaps(out, cfg, cfg.boxPadding);
-    });
-
-    it("preserves seed-tip order across a 3-city same-direction (N) cluster", () => {
-      // North-ish fan, increasing distance → farther city has the higher tip → its
-      // label must be higher. Wide boxes force a real stack.
-      const cfg = defaultLayoutConfig(1000, 1500);
-      const wide: MeasureFn = () => ({ w: 240, h: 64 });
-      const items = [
-        comp({ id: "near", bearingDeg: 2, distanceKm: 1000 }),
-        comp({ id: "mid", bearingDeg: 4, distanceKm: 4000 }),
-        comp({ id: "far", bearingDeg: 6, distanceKm: 12000 }),
-      ];
-      const out = computeLayout(items, cfg, wide);
-      expect(cyOf(out, "far")).toBeLessThan(cyOf(out, "mid"));
-      expect(cyOf(out, "mid")).toBeLessThan(cyOf(out, "near"));
-      // At least one label is lifted above its own arrow (downward bias is gone).
-      const lifted = out.some((o) => o.labelBox.y + o.labelBox.h / 2 < o.tip.y);
-      expect(lifted).toBe(true);
-      assertNoOverlaps(out, cfg.boxPadding);
+      const out = computeLayout(items, cfg, m);
+      assertClean(out, cfg);
+      assertClusterOrder(out, cfg);
     });
 
     it("a south-pointing fan puts the farther city's label lower", () => {
-      // South fan, increasing distance → farther city has the LOWER tip → its label
-      // must be lower. Tight bearings + close distances force a stack near the band.
       const cfg = defaultLayoutConfig(1000, 1500);
       const wide: MeasureFn = () => ({ w: 220, h: 64 });
       const items = [
@@ -534,25 +361,172 @@ describe("computeLayout", () => {
         comp({ id: "far", bearingDeg: 180, distanceKm: 12000 }),
       ];
       const out = computeLayout(items, cfg, wide);
-      expect(cyOf(out, "near")).toBeLessThan(cyOf(out, "mid"));
-      expect(cyOf(out, "mid")).toBeLessThan(cyOf(out, "far"));
+      assertClean(out, cfg);
+      assertClusterOrder(out, cfg);
+    });
+  });
+
+  describe("distance magnitude", () => {
+    it("orders arrow length by distance (bearings with room)", () => {
+      const cfg = defaultLayoutConfig(1000, 1500);
+      const small: MeasureFn = () => ({ w: 120, h: 60 });
+      const items = [
+        comp({ id: "a", bearingDeg: 20, distanceKm: 500 }),
+        comp({ id: "b", bearingDeg: 70, distanceKm: 1000 }),
+        comp({ id: "c", bearingDeg: 200, distanceKm: 2000 }),
+        comp({ id: "d", bearingDeg: 250, distanceKm: 4000 }),
+      ];
+      const out = computeLayout(items, cfg, small);
+      const r = (id: string) => out.find((o) => o.id === id)!.radius;
+      expect(r("a")).toBeLessThan(r("b"));
+      expect(r("b")).toBeLessThan(r("c"));
+      expect(r("c")).toBeLessThan(r("d"));
+    });
+
+    it("keeps uniform arrow length when scaling is disabled", () => {
+      const cfg = defaultLayoutConfig(1000, 1500, { scaleByDistance: false });
+      const items = [
+        comp({ id: "near", bearingDeg: 30, distanceKm: 500 }),
+        comp({ id: "far", bearingDeg: 210, distanceKm: 5000 }),
+      ];
+      const out = computeLayout(items, cfg, measure);
+      expect(out.find((o) => o.id === "near")!.radius).toBe(cfg.baseRadius);
+      expect(out.find((o) => o.id === "far")!.radius).toBe(cfg.baseRadius);
+    });
+  });
+
+  describe("page containment", () => {
+    it("keeps very wide labels fully on-page in every direction", () => {
+      const cfg = defaultLayoutConfig(1000, 1500);
+      const wide: MeasureFn = () => ({ w: 300, h: 64 });
+      const items = Array.from({ length: 8 }, (_, i) =>
+        comp({ id: String(i), bearingDeg: i * 45, distanceKm: 1000 + i * 500 }),
+      );
+      const out = computeLayout(items, cfg, wide);
+      assertClean(out, cfg);
+    });
+
+    it("keeps a south fan above the reserved bottom band", () => {
+      const cfg = defaultLayoutConfig(1000, 1500);
+      const wide: MeasureFn = () => ({ w: 220, h: 64 });
+      const items = Array.from({ length: 5 }, (_, i) =>
+        comp({ id: String(i), bearingDeg: 160 + i * 10, distanceKm: 2000 + i * 3000 }),
+      );
+      const out = computeLayout(items, cfg, wide);
+      assertClean(out, cfg);
       for (const o of out) {
         expect(o.labelBox.y + o.labelBox.h).toBeLessThanOrEqual(cfg.safeBottom + 1e-6);
       }
-      assertNoOverlaps(out, cfg.boxPadding);
+    });
+  });
+
+  describe("edge cases", () => {
+    const cfg = defaultLayoutConfig(1000, 1500);
+
+    it("n=2 antipodal", () => {
+      const out = computeLayout(
+        [comp({ id: "a", bearingDeg: 10, distanceKm: 8000 }), comp({ id: "b", bearingDeg: 190, distanceKm: 9000 })],
+        cfg,
+        measure,
+      );
+      assertClean(out, cfg);
+      // Uncrowded → both at rest, no leaders.
+      expect(out.every((o) => !o.needsLeader)).toBe(true);
     });
 
-    it("is deterministic for the Brisbane case", () => {
-      const cfg = defaultLayoutConfig(1000, 1500);
-      const wide: MeasureFn = () => ({ w: 200, h: 64 });
+    it("four places on the identical bearing", () => {
+      const items = Array.from({ length: 4 }, (_, i) =>
+        comp({ id: String(i), bearingDeg: 135, distanceKm: 1000 + i * 800 }),
+      );
+      const out = computeLayout(items, cfg, measure);
+      assertClean(out, cfg);
+      assertClusterOrder(out, cfg);
+    });
+
+    it("12 labels stays clean (last-resort territory)", () => {
+      const items = Array.from({ length: 12 }, (_, i) =>
+        comp({ id: String(i).padStart(2, "0"), bearingDeg: (i * 30 + 10) % 360, distanceKm: 500 + i * 1200 }),
+      );
+      const out = computeLayout(items, cfg, measure);
+      assertClean(out, cfg);
+    });
+
+    it("is deterministic (identical runs, identical output)", () => {
       const items = [
-        comp({ id: "ny", bearingDeg: 58.46, distanceKm: 15501 }),
-        comp({ id: "sf", bearingDeg: 53.7, distanceKm: 11395 }),
-        comp({ id: "bkk", bearingDeg: 302.1, distanceKm: 7283 }),
+        comp({ id: "bangkok", bearingDeg: 302.1, distanceKm: 7283 }),
+        comp({ id: "chiangmai", bearingDeg: 305.28, distanceKm: 7766 }),
+        comp({ id: "shanghai", bearingDeg: 330.66, distanceKm: 7335 }),
+        comp({ id: "london", bearingDeg: 327.33, distanceKm: 16526 }),
       ];
-      const a = computeLayout(items, cfg, wide).map((o) => o.labelBox);
-      const b = computeLayout(items, cfg, wide).map((o) => o.labelBox);
+      const a = computeLayout(items, cfg, measure).map((o) => ({ r: o.radius, b: o.labelBox }));
+      const b = computeLayout(items, cfg, measure).map((o) => ({ r: o.radius, b: o.labelBox }));
       expect(a).toEqual(b);
     });
+  });
+
+  describe("diagnostics", () => {
+    it("reports a well-spread set as primary-resolved with no fallback", () => {
+      const cfg = defaultLayoutConfig(1000, 1500);
+      const items = Array.from({ length: 8 }, (_, i) =>
+        comp({ id: String(i), bearingDeg: i * 45 + 5, distanceKm: 1000 }),
+      );
+      const { items: out, diagnostics } = computeLayoutWithDiagnostics(items, cfg, measure);
+      assertClean(out, cfg);
+      expect(diagnostics.primaryResolved).toBe(true);
+      expect(diagnostics.fallbackUsed).toBe(false);
+      expect(diagnostics.converged).toBe(true);
+    });
+  });
+
+  // Deterministic PRNG (Math.random is unavailable / non-reproducible here).
+  const mulberry32 = (seed: number) => {
+    let a = seed >>> 0;
+    return () => {
+      a = (a + 0x6d2b79f5) | 0;
+      let t = Math.imul(a ^ (a >>> 15), 1 | a);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  };
+
+  describe("stress: every seeded poster satisfies every hard invariant", () => {
+    const SIZES: [number, number, number][] = [
+      // [width, height, seeds]
+      [1000, 1500, 300],
+      [1200, 1200, 100],
+      [1500, 1000, 100],
+      [1080, 1920, 100],
+    ];
+
+    for (const [W, H, SEEDS] of SIZES) {
+      it(`holds across ${SEEDS} seeded configs at ${W}x${H}`, () => {
+        const cfg = defaultLayoutConfig(W, H);
+        const floor = minVisibleRadius(cfg);
+        for (let seed = 0; seed < SEEDS; seed++) {
+          const rng = mulberry32(seed + 1);
+          const n = 3 + Math.floor(rng() * 6); // 3..8 cities
+          const items = Array.from({ length: n }, (_, k) => {
+            // Mix spread bearings with jittered same-direction clusters and a
+            // wide distance range (far corner cities).
+            const cluster = Math.floor(rng() * 4) * 90;
+            const bearingDeg = (cluster + (rng() - 0.5) * 40 + 360) % 360;
+            return comp({ id: String(k), bearingDeg, distanceKm: 50 + Math.floor(rng() * 17950) });
+          });
+          const widths = new Map(items.map((it) => [it.id, 140 + Math.floor(rng() * 110)]));
+          const m: MeasureFn = (it) => ({ w: widths.get(it.id)!, h: 64 });
+          const out = computeLayout(items, cfg, m);
+
+          const problems = verifyLayout(out, cfg);
+          expect(problems, `seed ${seed} @ ${W}x${H}: ${JSON.stringify(problems)}`).toEqual([]);
+          for (const o of out) {
+            const v = bearingToVec(o.bearingDeg);
+            expect(o.dir.x, `seed ${seed}: ${o.id} bearing drift`).toBeCloseTo(v.x, 9);
+            expect(o.dir.y, `seed ${seed}: ${o.id} bearing drift`).toBeCloseTo(v.y, 9);
+            expect(o.radius).toBeGreaterThanOrEqual(floor - 1e-6);
+            expect(o.radius).toBeLessThanOrEqual(cfg.maxRadius + 1e-6);
+          }
+        }
+      });
+    }
   });
 });
