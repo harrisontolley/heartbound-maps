@@ -1,9 +1,15 @@
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { cleanup, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 
 // This config doesn't enable Vitest globals, so RTL's auto-cleanup isn't registered;
 // unmount between tests so renders don't accumulate in the shared jsdom document.
+const mockPostHogCapture = vi.fn();
+
+beforeEach(() => {
+  mockPostHogCapture.mockReset();
+});
+
 afterEach(() => {
   cleanup();
   mockApiSend.mockReset();
@@ -38,6 +44,12 @@ vi.mock("@/lib/apiClient", () => {
     ApiError,
   };
 });
+
+vi.mock("posthog-js/react", () => ({
+  usePostHog: () => ({
+    capture: mockPostHogCapture,
+  }),
+}));
 
 import { FreeDesignForm } from "./FreeDesignForm";
 import { ApiError } from "@/lib/apiClient";
@@ -96,5 +108,14 @@ describe("FreeDesignForm", () => {
     ).toBeInTheDocument();
     // The form stays so the buyer can retry.
     expect(screen.getByLabelText("Email")).toBeInTheDocument();
+  });
+
+  it("client-side email validation failure captures free_design_failed event", async () => {
+    render(<FreeDesignForm getSvg={fakeSvg} canSubmit />);
+
+    await fillAndSubmit("a@b");
+
+    expect(await screen.findByText("Something went wrong — please try again.")).toBeInTheDocument();
+    expect(mockPostHogCapture).toHaveBeenCalledWith("free_design_failed", { error: "invalid_email" });
   });
 });

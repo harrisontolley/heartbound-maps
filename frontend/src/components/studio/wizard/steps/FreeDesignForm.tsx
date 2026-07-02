@@ -68,6 +68,7 @@ export function FreeDesignForm({
 
     const trimmed = email.trim();
     if (!EMAIL_RE.test(trimmed)) {
+      posthog.capture("free_design_failed", { error: "invalid_email" });
       setStatus("error");
       return;
     }
