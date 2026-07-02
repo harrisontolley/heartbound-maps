@@ -22,7 +22,7 @@ const POLL_MS = 1800;
 
 function paidCopy(status: OrderStatus | null): string {
   if (status === "pending_payment" || status === null) {
-    return "We're confirming your payment — you'll get an email receipt shortly.";
+    return "We're confirming your payment. You'll get an email receipt shortly.";
   }
   return "Payment confirmed. We've emailed your receipt and we'll keep you posted as your order is made and shipped.";
 }

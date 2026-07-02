@@ -31,11 +31,11 @@ export const PINPRINT_PRINTS: readonly PinprintPrintFact[] = OFFERED_PRODUCTS.ma
 export const PINPRINT_FACTS = {
   prints: PINPRINT_PRINTS,
   /** e.g. "$45.00–$95.00". */
-  priceRange: `${formatUsd(small.priceCents)}–${formatUsd(large.priceCents)}`,
+  priceRange: `${formatUsd(small.priceCents)} to ${formatUsd(large.priceCents)}`,
   /** Framed range, e.g. "$95.00–$195.00". */
   framedRange: `${formatUsd(
     small.priceCents + small.frameUpchargeCents,
-  )}–${formatUsd(large.priceCents + large.frameUpchargeCents)}`,
+  )} to ${formatUsd(large.priceCents + large.frameUpchargeCents)}`,
   /** Standalone digital download, e.g. "$19.00" (also free with any print). */
   digitalPrice: formatUsd(DIGITAL_PRICE_CENTS),
   /** e.g. "12 × 18 in to 24 × 36 in". */

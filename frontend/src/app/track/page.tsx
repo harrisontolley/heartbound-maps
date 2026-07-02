@@ -93,7 +93,7 @@ export default function TrackPage() {
           </p>
         ) : null}
         {status === "limited" ? (
-          <p className="mt-4 text-sm text-muted">Too many attempts — please wait a moment and try again.</p>
+          <p className="mt-4 text-sm text-muted">Too many attempts. Please wait a moment and try again.</p>
         ) : null}
         {status === "error" ? (
           <p className="mt-4 text-sm text-error">Something went wrong. Please try again.</p>

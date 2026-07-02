@@ -104,7 +104,7 @@ describe("FreeDesignForm", () => {
     await fillAndSubmit("buyer@example.com");
 
     expect(
-      await screen.findByText("Something went wrong — please try again."),
+      await screen.findByText("Something went wrong. Please try again."),
     ).toBeInTheDocument();
     // The form stays so the buyer can retry.
     expect(screen.getByLabelText("Email")).toBeInTheDocument();

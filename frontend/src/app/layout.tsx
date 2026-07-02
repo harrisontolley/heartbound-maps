@@ -5,9 +5,9 @@ import { SITE_URL, OG_IMAGE } from "@/lib/seo/site";
 import { Providers } from "./providers";
 import "./globals.css";
 
-const TITLE = "Pinprint — fine art maps of the places that matter";
+const TITLE = "Pinprint | Fine art maps of the places that matter";
 const DESCRIPTION =
-  "Turn the places you're tied to into a custom fine art print — an arrow to each one in its true compass direction from home, with the real distance beside it. Designed by you, made to order.";
+  "Turn the places that made you into a custom fine art print. An arrow points to each one in its true compass direction from home, with the real distance beside it. Designed by you, made to order.";
 
 // metadataBase lets every page use relative canonical/OG URLs that resolve to
 // absolute against the site origin. `title` is a plain string (no template) so

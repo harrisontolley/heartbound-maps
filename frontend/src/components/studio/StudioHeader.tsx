@@ -71,7 +71,7 @@ export function StudioHeader({ className = "" }: { className?: string }) {
       <ConfirmDialog
         open={confirming}
         title="Leave the studio?"
-        body="Your design is saved as a draft — you can pick up right where you left off."
+        body="Your design is saved as a draft, so you can pick up right where you left off."
         confirmLabel="Leave"
         cancelLabel="Stay"
         emphasis="cancel"

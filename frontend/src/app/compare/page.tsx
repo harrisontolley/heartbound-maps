@@ -8,9 +8,9 @@ import { SectionLabel } from "@/components/landing/SectionLabel";
 import { COMPETITORS } from "@/lib/compare/competitors";
 import { OG_IMAGE } from "@/lib/seo/site";
 
-const TITLE = "Pinprint vs the alternatives — custom map print comparisons";
+const TITLE = "Pinprint vs the alternatives: custom map print comparisons";
 const DESCRIPTION =
-  "See how Pinprint's measured, multi-place fine-art maps stack up against Mapiful, Grafomap, Craft & Oak, Positive Prints and Posterhaste — concept, materials, pricing and shipping, side by side.";
+  "See how Pinprint's measured, multi-place fine art maps stack up against Mapiful, Grafomap, Craft & Oak, Positive Prints and Posterhaste: concept, materials, pricing and shipping, side by side.";
 
 export const metadata: Metadata = {
   title: TITLE,

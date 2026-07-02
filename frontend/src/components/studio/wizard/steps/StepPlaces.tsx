@@ -46,7 +46,7 @@ export function StepPlaces() {
   if (!home) {
     return (
       <div className="rounded-xl border border-hairline bg-surface-card p-4 text-sm text-muted">
-        Set your home first — tap{" "}
+        Set your home first: tap{" "}
         <span className="font-medium text-ink">Home</span> in the steps above.
       </div>
     );
@@ -59,7 +59,7 @@ export function StepPlaces() {
         <PlaceSearch onSelect={handleSelect} />
         <p className="text-xs text-muted">
           {notice ??
-            "Add the places you have ties to — born, lived, visited, family."}
+            "Add the places you have ties to: born, lived, visited, family."}
         </p>
       </section>
 

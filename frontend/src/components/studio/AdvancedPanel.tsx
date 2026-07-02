@@ -180,7 +180,7 @@ function FontTile({
     <button
       type="button"
       aria-pressed={selected}
-      aria-label={`${name} type — ${hint}`}
+      aria-label={`${name} type: ${hint}`}
       onClick={onClick}
       className={`${TILE_RING} ${tileTone(selected)}`}
     >
@@ -480,7 +480,7 @@ export function AdvancedPanel() {
                 size="sm"
                 active={bearingMode === "rhumb"}
                 onClick={() => setBearingMode("rhumb")}
-                title="Rhumb line: constant-heading bearing & distance — matches a flat map"
+                title="Rhumb line: constant-heading bearing and distance, matching a flat map"
               >
                 Map
               </PillButton>

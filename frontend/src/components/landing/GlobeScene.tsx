@@ -70,9 +70,9 @@ function buildCallout(p: GlobePoint): HTMLElement {
   chip.style.gap = "1px";
   chip.style.padding = "5px 9px";
   chip.style.borderRadius = "10px";
-  chip.style.border = "1px solid #e7e5e4";
-  chip.style.background = "rgba(255,255,255,0.92)";
-  chip.style.boxShadow = "0 4px 14px rgba(12,10,9,0.16)";
+  chip.style.border = "1px solid #e9e2d4"; // --color-hairline
+  chip.style.background = "rgba(255,254,251,0.94)"; // --color-surface-card
+  chip.style.boxShadow = "0 4px 14px rgba(31,27,22,0.16)";
   chip.style.fontFamily = "var(--font-inter), system-ui, sans-serif";
   chip.style.whiteSpace = "nowrap";
 
@@ -81,13 +81,13 @@ function buildCallout(p: GlobePoint): HTMLElement {
   name.style.fontSize = "12px";
   name.style.fontWeight = "600";
   name.style.lineHeight = "1.2";
-  name.style.color = "#0c0a09"; // --color-ink
+  name.style.color = "#1f1b16"; // --color-ink
   chip.appendChild(name);
 
   const sub = document.createElement("div");
   sub.style.fontSize = "11px";
   sub.style.lineHeight = "1.2";
-  sub.style.color = "#777169"; // --color-muted
+  sub.style.color = "#857c6f"; // --color-muted
   if (
     !p.isHome &&
     p.bearingDeg != null &&
@@ -207,7 +207,11 @@ export default function GlobeScene({
       atmosphereColor="#a9cdec"
       atmosphereAltitude={0.2}
       onGlobeReady={() => {
-        if (mountedRef.current) setReady(true);
+        // react-globe fires this synchronously during the commit in some cases;
+        // defer a tick so React never sees a set-state-before-mount.
+        queueMicrotask(() => {
+          if (mountedRef.current) setReady(true);
+        });
       }}
       // Country outlines.
       polygonsData={countries}

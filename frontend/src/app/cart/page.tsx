@@ -276,7 +276,7 @@ export default function CartPage() {
                 Secure payment by Stripe. Address collected at checkout.
               </p>
               <SignedIn>
-                <p className="sr-only">Signed in — your account email will be used.</p>
+                <p className="sr-only">Signed in. Your account email will be used.</p>
               </SignedIn>
             </Card>
           </div>

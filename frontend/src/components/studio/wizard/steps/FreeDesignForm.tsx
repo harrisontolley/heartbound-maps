@@ -170,7 +170,7 @@ export function FreeDesignForm({
       </p>
 
       {status === "error" && (
-        <p className="text-sm text-error">Something went wrong — please try again.</p>
+        <p className="text-sm text-error">Something went wrong. Please try again.</p>
       )}
 
       {status === "invalid_email" && (

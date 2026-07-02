@@ -14,24 +14,25 @@ import type { Place } from "@/lib/types";
 // measure, so labels never settle against the swap fallback.
 const FONT_PROBES = ['700 40px "Archivo"', '800 40px "Archivo"'];
 
-// The room mockup (a framed print leaning in a styled living room) and its
-// dimensions. The live poster is perspective-warped onto the frame's print area.
-const ROOM_SRC = "/showcase/poster_on_wall.png";
-const ROOM_W = 1376;
-const ROOM_H = 768;
+// The room mockup (an oak frame above a study desk, shot straight-on) and its
+// dimensions. The live poster is mapped onto the frame's print area. Generated
+// with the frame interior solid black (scripts/scenes/PROMPTS.md); the quad
+// below is the measured bounding box of that black area.
+const ROOM_SRC = "/showcase/room-study.png";
+const ROOM_W = 1312;
+const ROOM_H = 816;
 
 /**
- * Corners of the print area inside the frame, as fractions of the room image, in
- * [TL, TR, BR, BL] order. Calibrated from poster_on_wall.png: the visible print sits
- * inside the white mat, so the live poster covers the baked-in artwork while the
- * photo's mat + wooden frame stay intact. Keystoned (the framed print leans against
- * the wall), which is exactly what the homography reproduces.
+ * Corners of the print area inside the frame, as fractions of the room image,
+ * in [TL, TR, BR, BL] order. The frame is photographed straight-on, so the
+ * quad is axis-aligned (measured by scripts/compose-scenes.ts' black-rect
+ * detection against scene-room-raw.png).
  */
 const PRINT_QUAD: Quad = [
-  [0.398, 0.165], // top-left
-  [0.62, 0.144], // top-right
-  [0.61, 0.865], // bottom-right
-  [0.39, 0.84], // bottom-left
+  [0.3986, 0.1789], // top-left
+  [0.6014, 0.1789], // top-right
+  [0.6014, 0.6458], // bottom-right
+  [0.3986, 0.6458], // bottom-left
 ];
 
 /**
@@ -99,7 +100,7 @@ export function LandingPoster({
     >
       <Image
         src={ROOM_SRC}
-        alt="A framed Pinprint piece on the wall of a styled living room"
+        alt="A framed Pinprint piece hanging above a study desk with a brass lamp"
         width={ROOM_W}
         height={ROOM_H}
         className="absolute inset-0 h-full w-full object-cover"
@@ -136,23 +137,22 @@ export function LandingPoster({
             title={home.label}
           />
 
-          {/* 1 · Warm printed-paper tone + vignette (darkest toward bottom-left, as
-              measured), keeping the upper-right brightest where the window light falls. */}
+          {/* 1 · Warm printed-paper tone + gentle vignette so the live SVG takes
+              on the room's warm afternoon light instead of reading screen-white. */}
           <div
             className="absolute inset-0 mix-blend-multiply"
             style={{
               backgroundImage:
-                "radial-gradient(125% 120% at 72% 32%, rgba(255,255,255,0) 52%, rgba(116,104,86,0.34) 100%), linear-gradient(#e9e2d5, #e9e2d5)",
+                "radial-gradient(120% 115% at 40% 35%, rgba(255,255,255,0) 55%, rgba(116,104,86,0.22) 100%), linear-gradient(#f1ead9, #f1ead9)",
             }}
           />
 
-          {/* 2 · Soft diagonal glass glare — the window reflection sweeping the
-              upper-right. Screen lifts the streak back toward white over the warm tone. */}
+          {/* 2 · Faint glass sheen from the window at frame-left. */}
           <div
             className="absolute inset-0 mix-blend-screen"
             style={{
               backgroundImage:
-                "linear-gradient(116deg, rgba(255,255,255,0) 30%, rgba(255,255,255,0.16) 42%, rgba(255,255,255,0.5) 49%, rgba(255,255,255,0.14) 57%, rgba(255,255,255,0) 70%)",
+                "linear-gradient(105deg, rgba(255,255,255,0.22) 0%, rgba(255,255,255,0.05) 22%, rgba(255,255,255,0) 45%)",
             }}
           />
         </div>

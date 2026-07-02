@@ -33,6 +33,21 @@ Generated with `google/gemini-3-pro-image-preview` via OpenRouter
 > shallow depth of field, photorealistic product photography, calm and
 > luxurious, landscape 3:2.
 
+## scene-room-raw.png (published as-is at /showcase/room-study.png)
+
+Used by `LandingPoster.tsx` as the live-mockup room: the LIVE poster SVG is
+CSS-mapped onto the frame's black area at runtime, so this scene is published
+uncomposited. The measured black-rect fractions live in `PRINT_QUAD` there.
+
+> Interior photograph of a calm home study corner in warm afternoon light. A
+> single picture frame hangs on a warm ivory plaster wall above a light oak
+> desk with a closed notebook, a small brass lamp and a ceramic cup. The frame
+> is thin natural oak, portrait orientation, 2:3 aspect ratio, photographed
+> perfectly straight-on with no perspective distortion, frame edges perfectly
+> vertical and horizontal, and the area inside the frame is solid pure black
+> with no mat. Warm cream and oak palette, soft shadows, photorealistic,
+> landscape 16:10 composition with the frame centered.
+
 ## scene-gift-raw.png
 
 > Interior photograph of a gift moment: a framed picture leaning against a

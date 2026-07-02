@@ -11,7 +11,7 @@ export function StepStyle() {
   return (
     <div className="flex flex-col gap-4">
       <p className="text-sm text-body">
-        Choose a look to start. The preview shows a few sample places — you’ll add
+        Choose a look to start. The preview shows a few sample places. You’ll add
         your own in the next step.
       </p>
       <LookGrid />
