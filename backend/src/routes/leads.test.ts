@@ -120,6 +120,25 @@ describe("POST /leads — env guards", () => {
     expect(await res.json()).toEqual({ error: "leads_unconfigured" });
     expect(upsertLead).not.toHaveBeenCalled();
   });
+
+  it("503s on Vercel with no PUBLIC_APP_URL, before touching the DB or sending email", async () => {
+    const originalPublicAppUrl = process.env.PUBLIC_APP_URL;
+    const originalVercel = process.env.VERCEL;
+    delete process.env.PUBLIC_APP_URL;
+    process.env.VERCEL = "1";
+    try {
+      configureIntegrations();
+      const res = await post("/leads", leadBody());
+      expect(res.status).toBe(503);
+      expect(await res.json()).toEqual({ error: "leads_unconfigured" });
+      expect(upsertLead).not.toHaveBeenCalled();
+      expect(sendEmail).not.toHaveBeenCalled();
+    } finally {
+      if (originalPublicAppUrl !== undefined) process.env.PUBLIC_APP_URL = originalPublicAppUrl;
+      if (originalVercel !== undefined) process.env.VERCEL = originalVercel;
+      else delete process.env.VERCEL;
+    }
+  });
 });
 
 describe("POST /leads — validation", () => {
@@ -305,22 +324,24 @@ describe("POST /leads — happy path", () => {
     expect(markLeadEmail).toHaveBeenCalledWith("lead-1", { status: "failed" });
   });
 
-  it("uses the request Origin for the download link when PUBLIC_APP_URL is unset", async () => {
-    const original = process.env.PUBLIC_APP_URL;
+  it("never derives the emailed link base from a spoofed Origin header — falls back to localhost, not the attacker's domain", async () => {
+    const originalPublicAppUrl = process.env.PUBLIC_APP_URL;
+    const originalVercel = process.env.VERCEL;
     delete process.env.PUBLIC_APP_URL;
+    delete process.env.VERCEL;
     try {
       upsertLead.mockResolvedValue({ id: "lead-1", downloadToken: "tok-origin", existing: false });
       sendEmail.mockResolvedValue({ id: "email-1" });
 
-      const res = await post("/leads", leadBody(), { origin: "https://app.example.com" });
+      const res = await post("/leads", leadBody(), { origin: "https://evil.example" });
 
       expect(res.status).toBe(202);
       const emailArg = sendEmail.mock.calls[0][0];
-      expect(emailArg.html).toContain(
-        "https://app.example.com/_/backend/leads/download/tok-origin",
-      );
+      expect(emailArg.html).not.toContain("evil.example");
+      expect(emailArg.html).toContain("http://localhost:8787/leads/download/tok-origin");
     } finally {
-      if (original !== undefined) process.env.PUBLIC_APP_URL = original;
+      if (originalPublicAppUrl !== undefined) process.env.PUBLIC_APP_URL = originalPublicAppUrl;
+      if (originalVercel !== undefined) process.env.VERCEL = originalVercel;
     }
   });
 

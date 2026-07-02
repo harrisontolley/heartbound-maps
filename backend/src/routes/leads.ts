@@ -1,5 +1,4 @@
 import { Hono } from "hono";
-import type { Context } from "hono";
 import type { CreateLeadResponse } from "@pinprint/shared";
 import { type AuthVariables, getUser } from "../auth.js";
 import { enforce } from "../rateLimit.js";
@@ -38,17 +37,27 @@ const MAX_POSTER_LABEL_LENGTH = 100;
 const GENERIC_POSTER_LABEL = "Your Pinprint design";
 
 /**
- * Absolute base for links that hit this backend (not the frontend). Mirrors
- * checkout's `baseUrl()` (routes/checkout.ts): env override, else the request
- * Origin (same-origin Vercel Services setup — see CLAUDE.md), else localhost.
- * Without the Origin fallback, an unset PUBLIC_APP_URL in prod would silently
- * ship a dead localhost link in the lead-magnet email.
+ * Absolute base for links that hit this backend (not the frontend).
+ *
+ * Deliberately does NOT fall back to the request's `Origin` header the way
+ * checkout's `baseUrl()` (routes/checkout.ts) does: checkout's fallback URL is
+ * only ever handed back to the same requester (Stripe redirects the browser
+ * that started the checkout), so a spoofed Origin just redirects the attacker
+ * to their own domain. This URL, by contrast, is emailed to a *third party*
+ * (the lead's address) — a spoofed Origin here lets an attacker POST directly
+ * (curl, no CORS involved) with `Origin: https://evil.example` and get a
+ * legitimate Pinprint email whose download link points at their own domain
+ * (phishing / token theft). Origin is attacker-controlled on non-browser
+ * requests, so it must never seed a link that leaves the requester's hands.
+ *
+ * Returns null when unconfigured in a real deployment (Vercel) — callers must
+ * treat that as "leads feature unconfigured" (503) rather than ship a dead or
+ * unsafe link.
  */
-function backendBaseUrl(c: Context): string {
+function backendBaseUrl(): string | null {
   const publicAppUrl = process.env.PUBLIC_APP_URL;
   if (publicAppUrl) return `${publicAppUrl.replace(/\/$/, "")}${BACKEND_SERVICE_PREFIX}`;
-  const origin = c.req.header("origin");
-  if (origin) return `${origin.replace(/\/$/, "")}${BACKEND_SERVICE_PREFIX}`;
+  if (process.env.VERCEL) return null;
   return "http://localhost:8787";
 }
 
@@ -176,7 +185,8 @@ export function buildLeadsRouter(): Hono<{ Variables: AuthVariables }> {
     if (await enforce(c, "leads", { max: 10, windowMs: 60_000 })) {
       return c.json({ error: "rate_limited" }, 429);
     }
-    if (!getSql() || !isResendConfigured()) {
+    const base = backendBaseUrl();
+    if (!getSql() || !isResendConfigured() || base === null) {
       return c.json({ error: "leads_unconfigured" }, 503);
     }
 
@@ -213,7 +223,7 @@ export function buildLeadsRouter(): Hono<{ Variables: AuthVariables }> {
       }
     }
 
-    const downloadUrl = `${backendBaseUrl(c)}/leads/download/${lead.downloadToken}`;
+    const downloadUrl = `${base}/leads/download/${lead.downloadToken}`;
     const posterLabel = derivePosterLabel(validated.posterConfig);
     const email = leadMagnetEmail({ downloadUrl, posterLabel });
     const result = await sendEmail({ to: validated.email, ...email });
