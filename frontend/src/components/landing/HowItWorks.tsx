@@ -12,7 +12,7 @@ export function HowItWorks() {
     <Section id="how-it-works" tone="soft">
       <div className="flex flex-col items-start gap-4">
         <SectionLabel>{howItWorks.eyebrow}</SectionLabel>
-        <h2 className="font-display text-[clamp(1.75rem,4vw,36px)] font-normal leading-[1.15] tracking-[-0.01em] text-ink">
+        <h2 className="font-display text-heading font-normal text-ink">
           {howItWorks.headline}
         </h2>
       </div>
@@ -32,9 +32,7 @@ export function HowItWorks() {
             <h3 className="text-[20px] font-medium leading-[1.35] text-ink">
               {step.title}
             </h3>
-            <p className="max-w-[44ch] text-[16px] leading-[1.55] tracking-[0.16px] text-body">
-              {step.body}
-            </p>
+            <p className="max-w-[44ch] text-copy text-body">{step.body}</p>
           </li>
         ))}
       </ol>

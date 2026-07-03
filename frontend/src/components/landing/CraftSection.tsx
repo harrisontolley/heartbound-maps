@@ -21,14 +21,11 @@ export function CraftSection() {
       <div className="grid items-center gap-12 md:grid-cols-2 md:gap-16">
         <div className="flex flex-col items-start gap-4">
           <SectionLabel>{craft.eyebrow}</SectionLabel>
-          <h2 className="max-w-[22ch] font-display text-[clamp(1.75rem,4vw,36px)] font-normal leading-[1.15] tracking-[-0.01em] text-ink">
+          <h2 className="max-w-[22ch] font-display text-heading font-normal text-ink">
             {craft.headline}
           </h2>
           {craft.body.map((para, i) => (
-            <p
-              key={i}
-              className="max-w-[56ch] text-[16px] leading-[1.55] tracking-[0.16px] text-body"
-            >
+            <p key={i} className="max-w-[56ch] text-copy text-body">
               {para}
             </p>
           ))}
@@ -38,12 +35,13 @@ export function CraftSection() {
               <div key={row.label} className="flex flex-col gap-1.5">
                 <div className="flex items-baseline justify-between gap-4">
                   <dt className="text-[13px] leading-snug text-body">{row.label}</dt>
-                  <dd
-                    className={`shrink-0 text-[12px] font-semibold uppercase tracking-[0.96px] tabular-nums ${
-                      "accent" in row && row.accent ? "text-accent-deep" : "text-muted"
-                    }`}
-                  >
-                    {row.gsm}gsm
+                  <dd className="shrink-0">
+                    <SectionLabel
+                      tone={"accent" in row && row.accent ? "accent" : "muted"}
+                      className="tabular-nums"
+                    >
+                      {row.gsm}gsm
+                    </SectionLabel>
                   </dd>
                 </div>
                 <div

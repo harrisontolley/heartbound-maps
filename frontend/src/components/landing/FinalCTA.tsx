@@ -11,12 +11,10 @@ export function FinalCTA() {
   return (
     <Section tone="soft">
       <div className="mx-auto flex max-w-[44ch] flex-col items-center gap-6 text-center">
-        <h2 className="font-display text-[clamp(1.75rem,4.5vw,44px)] font-normal leading-[1.1] tracking-[-0.01em] text-ink">
+        <h2 className="font-display text-title font-normal text-ink">
           {finalCta.headline}
         </h2>
-        <p className="text-[16px] leading-[1.55] tracking-[0.16px] text-body">
-          {finalCta.subhead}
-        </p>
+        <p className="text-copy text-body">{finalCta.subhead}</p>
         <LinkButton href={STUDIO_HREF} variant="primary" size="md">
           {finalCta.cta}
         </LinkButton>

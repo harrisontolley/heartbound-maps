@@ -2,8 +2,8 @@ import type { ReactNode } from "react";
 
 /**
  * Band wrapper enforcing the editorial rhythm from DESIGN.md: 96px vertical
- * padding, 1200px max content width, consistent gutters. Optionally alternates
- * to the soft canvas tone.
+ * padding on desktop (64px on mobile for denser scroll), 1200px max content
+ * width, consistent gutters. Optionally alternates to the soft canvas tone.
  */
 
 type Props = {
@@ -25,17 +25,11 @@ export function Section({
   return (
     <section
       id={id}
-      className={`relative overflow-hidden py-24 md:py-[96px] ${
+      className={`relative overflow-hidden py-16 md:py-24 ${
         tone === "soft" ? "bg-canvas-soft" : "bg-canvas"
       } ${className}`}
     >
-      <div
-        className={
-          bleed
-            ? "relative"
-            : "relative mx-auto w-full max-w-[1200px] px-6"
-        }
-      >
+      <div className={bleed ? "relative" : "container-page relative"}>
         {children}
       </div>
     </section>

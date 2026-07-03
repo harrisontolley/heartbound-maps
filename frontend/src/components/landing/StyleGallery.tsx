@@ -16,12 +16,10 @@ export function StyleGallery() {
     <Section id="styles">
       <div className="flex flex-col items-start gap-4">
         <SectionLabel>{styles.eyebrow}</SectionLabel>
-        <h2 className="max-w-[22ch] font-display text-[clamp(1.75rem,4vw,36px)] font-normal leading-[1.15] tracking-[-0.01em] text-ink">
+        <h2 className="max-w-[22ch] font-display text-heading font-normal text-ink">
           {styles.headline}
         </h2>
-        <p className="max-w-[52ch] text-[16px] leading-[1.55] tracking-[0.16px] text-body">
-          {styles.body}
-        </p>
+        <p className="max-w-[52ch] text-copy text-body">{styles.body}</p>
       </div>
 
       <div className="mt-12 grid grid-cols-2 gap-x-6 gap-y-10 md:grid-cols-3 lg:grid-cols-5">

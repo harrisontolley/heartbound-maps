@@ -120,7 +120,7 @@ export function PlaceSearch({
           id={listId}
           ref={listRef}
           role="listbox"
-          className="absolute z-30 mt-2 max-h-72 w-full overflow-auto rounded-xl border border-hairline bg-surface-card shadow-[0_8px_24px_rgba(0,0,0,0.08)]"
+          className="absolute z-30 mt-2 max-h-72 w-full overflow-auto rounded-xl border border-hairline bg-surface-card shadow-card"
         >
           {status === "loading" && (
             <div className="px-3.5 py-2.5 text-sm text-muted">Searching…</div>

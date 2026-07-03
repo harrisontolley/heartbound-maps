@@ -29,26 +29,20 @@ export function GiftSection() {
 
         <div className="flex flex-col items-start gap-4">
           <SectionLabel>{gift.eyebrow}</SectionLabel>
-          <h2 className="font-display text-[clamp(1.75rem,4vw,36px)] font-normal leading-[1.15] tracking-[-0.01em] text-ink">
+          <h2 className="font-display text-heading font-normal text-ink">
             {gift.headline}
           </h2>
           {gift.body.map((para, i) => (
-            <p
-              key={i}
-              className="max-w-[52ch] text-[16px] leading-[1.55] tracking-[0.16px] text-body"
-            >
+            <p key={i} className="max-w-[52ch] text-copy text-body">
               {para}
             </p>
           ))}
 
           <ul className="mt-2 flex flex-wrap gap-x-6 gap-y-2">
             {gift.occasions.map((o) => (
-              <li
-                key={o}
-                className="flex items-center gap-2 text-[12px] font-semibold uppercase tracking-[0.96px] text-muted"
-              >
+              <li key={o} className="flex items-center gap-2">
                 <span aria-hidden className="h-1 w-1 rounded-full bg-accent" />
-                {o}
+                <SectionLabel>{o}</SectionLabel>
               </li>
             ))}
           </ul>

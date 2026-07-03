@@ -1,3 +1,4 @@
+import { SectionLabel } from "@/components/landing/SectionLabel";
 import { OFFERED_PRODUCTS } from "@/lib/commerce/printProducts";
 import {
   DIGITAL_PRICE_CENTS,
@@ -34,9 +35,9 @@ export function PricingLadder() {
           >
             Prints
           </h2>
-          <span className="hidden text-[12px] font-semibold uppercase tracking-[0.96px] text-muted sm:block">
+          <SectionLabel className="hidden sm:block">
             Hahnemühle German Etching · 310gsm · giclée
-          </span>
+          </SectionLabel>
         </div>
 
         <ul className="flex flex-col">
@@ -52,10 +53,13 @@ export function PricingLadder() {
                     {p.label}
                   </span>
                   {p.popular && (
-                    <span className="flex items-center gap-1.5 text-[12px] font-semibold uppercase tracking-[0.96px] text-accent-deep">
+                    <SectionLabel
+                      tone="accent"
+                      className="flex items-center gap-1.5"
+                    >
                       <span aria-hidden className="h-1 w-1 rounded-full bg-accent" />
                       Popular
-                    </span>
+                    </SectionLabel>
                   )}
                 </div>
                 <div className="flex items-baseline gap-2.5">
@@ -117,12 +121,9 @@ export function PricingLadder() {
           "Made to order, checked by hand",
           "Damaged prints replaced free",
         ].map((item) => (
-          <li
-            key={item}
-            className="flex items-center gap-2 text-[12px] font-semibold uppercase tracking-[0.96px] text-muted"
-          >
+          <li key={item} className="flex items-center gap-2">
             <span aria-hidden className="h-1 w-1 rounded-full bg-accent" />
-            {item}
+            <SectionLabel>{item}</SectionLabel>
           </li>
         ))}
       </ul>

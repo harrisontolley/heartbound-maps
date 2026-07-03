@@ -24,7 +24,7 @@ export default function PrivacyPage() {
         <article className="mx-auto flex max-w-[68ch] flex-col gap-8">
           <header className="flex flex-col gap-4">
             <SectionLabel>Legal</SectionLabel>
-            <h1 className="font-display text-[clamp(2rem,5vw,44px)] font-normal leading-[1.1] text-ink">
+            <h1 className="font-display text-title font-normal text-ink">
               Privacy policy
             </h1>
             <p className="text-[15px] text-muted">Last updated July 2026.</p>

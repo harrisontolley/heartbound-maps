@@ -1,7 +1,7 @@
-import Link from "next/link";
 import { Section } from "./Section";
 import { SectionLabel } from "./SectionLabel";
 import { FaqAccordion } from "./FaqAccordion";
+import { TextLink } from "@/components/ui/TextLink";
 import { copy, type FaqGroup } from "./copy";
 
 /**
@@ -20,19 +20,14 @@ export function FAQ() {
       <div className="grid gap-10 md:grid-cols-[0.8fr_1.2fr] md:gap-16">
         <div className="flex flex-col gap-4">
           <SectionLabel>{faq.eyebrow}</SectionLabel>
-          <h2 className="font-display text-[clamp(1.75rem,4vw,36px)] font-normal leading-[1.17] tracking-[-0.36px] text-ink">
+          <h2 className="font-display text-heading font-normal text-ink">
             {faq.headline}
           </h2>
         </div>
 
         <div className="flex flex-col gap-6">
           <FaqAccordion items={featured} />
-          <Link
-            href={faq.seeAll.href}
-            className="text-[16px] font-medium text-ink underline-offset-4 hover:underline"
-          >
-            {faq.seeAll.label} &rarr;
-          </Link>
+          <TextLink href={faq.seeAll.href}>{faq.seeAll.label} &rarr;</TextLink>
         </div>
       </div>
     </Section>

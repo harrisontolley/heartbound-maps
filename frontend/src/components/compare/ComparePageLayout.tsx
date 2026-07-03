@@ -5,6 +5,7 @@ import { FinalCTA } from "@/components/landing/FinalCTA";
 import { Section } from "@/components/landing/Section";
 import { SectionLabel } from "@/components/landing/SectionLabel";
 import { LinkButton } from "@/components/landing/LinkButton";
+import { TextLink } from "@/components/ui/TextLink";
 import { FaqAccordion } from "@/components/landing/FaqAccordion";
 import { STUDIO_HREF, PRIMARY_CTA } from "@/components/landing/copy";
 import { COMPETITORS } from "@/lib/compare/competitors";
@@ -16,8 +17,7 @@ import { JsonLd } from "./JsonLd";
 const CARD =
   "flex flex-col gap-3 rounded-xl border border-hairline bg-surface-card p-6";
 
-const H2 =
-  "font-display text-[clamp(1.6rem,3.6vw,32px)] font-normal leading-[1.18] tracking-[-0.32px] text-ink";
+const H2 = "font-display text-heading-sm font-normal text-ink";
 
 /** Format an ISO date (YYYY-MM-DD) as "June 30, 2026", deterministically (UTC). */
 function formatReviewed(iso: string): string {
@@ -51,7 +51,10 @@ export function ComparePageLayout({ competitor: c }: { competitor: Competitor })
             aria-label="Breadcrumb"
             className="text-[13px] tracking-[0.04px] text-muted"
           >
-            <Link href="/compare" className="transition-colors hover:text-ink">
+            <Link
+              href="/compare"
+              className="transition-colors hover:text-ink pointer-coarse:-my-2.5 pointer-coarse:py-2.5"
+            >
               Compare
             </Link>
             <span aria-hidden className="px-2">
@@ -62,12 +65,10 @@ export function ComparePageLayout({ competitor: c }: { competitor: Competitor })
 
           <div className="flex max-w-[760px] flex-col gap-5">
             <SectionLabel>Comparison</SectionLabel>
-            <h1 className="font-display text-[clamp(2rem,5vw,44px)] font-normal leading-[1.13] tracking-[-0.44px] text-ink">
+            <h1 className="font-display text-title font-normal text-ink">
               {c.hero.h1}
             </h1>
-            <p className="text-[18px] leading-[1.5] tracking-[0.16px] text-body">
-              {c.hero.subhead}
-            </p>
+            <p className="text-copy text-body">{c.hero.subhead}</p>
           </div>
 
           <div className="flex flex-wrap items-center gap-3">
@@ -88,10 +89,7 @@ export function ComparePageLayout({ competitor: c }: { competitor: Competitor })
           <h2 className={H2}>Pinprint vs {c.name}, in brief</h2>
           <ul className="flex flex-col gap-3">
             {c.tldr.map((point) => (
-              <li
-                key={point}
-                className="flex gap-3 text-[17px] leading-[1.5] tracking-[0.16px] text-body"
-              >
+              <li key={point} className="flex gap-3 text-copy text-body">
                 <span aria-hidden className="mt-[2px] text-ink">
                   —
                 </span>
@@ -116,7 +114,7 @@ export function ComparePageLayout({ competitor: c }: { competitor: Competitor })
               href={c.homepage}
               target="_blank"
               rel="nofollow noopener noreferrer"
-              className="underline transition-colors hover:text-ink"
+              className="underline transition-colors hover:text-ink pointer-coarse:-my-2.5 pointer-coarse:py-2.5"
             >
               their website
             </a>
@@ -138,10 +136,7 @@ export function ComparePageLayout({ competitor: c }: { competitor: Competitor })
               <h2 className={H2}>{section.heading}</h2>
               <div className="flex flex-col gap-4">
                 {section.body.map((para) => (
-                  <p
-                    key={para}
-                    className="max-w-[60ch] text-[17px] leading-[1.55] tracking-[0.16px] text-body"
-                  >
+                  <p key={para} className="max-w-[60ch] text-copy text-body">
                     {para}
                   </p>
                 ))}
@@ -209,9 +204,7 @@ export function ComparePageLayout({ competitor: c }: { competitor: Competitor })
         <div className="flex max-w-[760px] flex-col gap-6">
           <SectionLabel>The verdict</SectionLabel>
           <h2 className={H2}>Our recommendation</h2>
-          <p className="text-[18px] leading-[1.55] tracking-[0.16px] text-body">
-            {c.verdict}
-          </p>
+          <p className="text-copy text-body">{c.verdict}</p>
           <div>
             <LinkButton href={STUDIO_HREF} variant="primary" size="md">
               {PRIMARY_CTA}
@@ -238,19 +231,16 @@ export function ComparePageLayout({ competitor: c }: { competitor: Competitor })
             <h2 className="font-display text-[22px] font-normal tracking-[-0.22px] text-ink">
               More comparisons
             </h2>
-            <Link
-              href="/compare"
-              className="text-[15px] text-body underline transition-colors hover:text-ink"
-            >
+            <TextLink href="/compare" tone="body" className="underline">
               See all
-            </Link>
+            </TextLink>
           </div>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {siblings.map((other) => (
               <Link
                 key={other.slug}
                 href={`/compare/${other.slug}`}
-                className="rounded-xl border border-hairline bg-surface-card p-5 transition-shadow hover:shadow-[0_4px_16px_rgba(0,0,0,0.04)]"
+                className="rounded-xl border border-hairline bg-surface-card p-5 transition-shadow hover:shadow-card"
               >
                 <span className="text-[16px] font-medium text-ink">
                   Pinprint vs {other.name}

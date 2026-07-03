@@ -2,9 +2,9 @@
 
 import { useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
-import Link from "next/link";
 import { Section } from "./Section";
 import { SectionLabel } from "./SectionLabel";
+import { TextLink } from "@/components/ui/TextLink";
 import { LandingPoster } from "./LandingPoster";
 import { PlaceSearch } from "@/components/controls/PlaceSearch";
 import { copy, STUDIO_HREF } from "./copy";
@@ -99,14 +99,11 @@ export function GlobeDemo() {
       {/* Intro + the live "try it from your home" search. */}
       <div className="flex max-w-2xl flex-col items-start gap-4">
         <SectionLabel>{accuracy.eyebrow}</SectionLabel>
-        <h2 className="font-display text-[clamp(1.75rem,4vw,36px)] font-normal leading-[1.15] tracking-[-0.01em] text-ink">
+        <h2 className="font-display text-heading font-normal text-ink">
           {accuracy.headline}
         </h2>
         {accuracy.body.map((para, i) => (
-          <p
-            key={i}
-            className="text-[16px] leading-[1.55] tracking-[0.16px] text-body"
-          >
+          <p key={i} className="text-copy text-body">
             {para}
           </p>
         ))}
@@ -114,8 +111,8 @@ export function GlobeDemo() {
         <dl className="mt-2 flex flex-col gap-3">
           {accuracy.annotations.map((a) => (
             <div key={a.term} className="flex items-baseline gap-3">
-              <dt className="min-w-[5.5rem] shrink-0 text-[12px] font-semibold uppercase tracking-[0.08em] text-accent-deep">
-                {a.term}
+              <dt className="min-w-[5.5rem] shrink-0">
+                <SectionLabel tone="accent">{a.term}</SectionLabel>
               </dt>
               <dd className="text-[15px] leading-[1.47] text-body">{a.def}</dd>
             </div>
@@ -143,7 +140,7 @@ export function GlobeDemo() {
                 <button
                   type="button"
                   onClick={() => setHome(GLOBE_DEMO_HOME)}
-                  className="underline underline-offset-2 transition-colors hover:text-body"
+                  className="underline underline-offset-2 transition-colors hover:text-body pointer-coarse:-my-2.5 pointer-coarse:py-2.5"
                 >
                   reset
                 </button>
@@ -179,16 +176,13 @@ export function GlobeDemo() {
         </div>
 
         <div className="mx-auto flex w-full max-w-[520px] flex-col items-center gap-3">
-          <p className="self-start text-[13px] font-medium uppercase tracking-[0.08em] text-muted">
+          <SectionLabel className="self-start">
             {accuracy.posterLabel}
-          </p>
+          </SectionLabel>
           <LandingPoster home={home} places={GLOBE_DEMO_PLACES} />
-          <Link
-            href={STUDIO_HREF}
-            className="text-[14px] font-medium text-ink underline underline-offset-4 transition-colors hover:text-body"
-          >
+          <TextLink href={STUDIO_HREF} size="sm">
             {accuracy.posterCta} →
-          </Link>
+          </TextLink>
         </div>
       </div>
     </Section>

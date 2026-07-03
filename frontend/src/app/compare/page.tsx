@@ -41,10 +41,10 @@ export default function CompareHubPage() {
         <div className="flex flex-col gap-12">
           <header className="flex max-w-[680px] flex-col gap-4">
             <SectionLabel>Compare</SectionLabel>
-            <h1 className="font-display text-[clamp(2rem,5vw,44px)] font-normal leading-[1.13] tracking-[-0.44px] text-ink">
+            <h1 className="font-display text-title font-normal text-ink">
               How Pinprint compares
             </h1>
-            <p className="text-[17px] leading-[1.5] tracking-[0.16px] text-body">
+            <p className="text-copy text-body">
               Most custom-map shops print one place — a single city or street. Pinprint
               maps all the places that matter at once, each drawn in its true compass
               direction from home with the real distance beside it. Here&rsquo;s how it
@@ -57,7 +57,7 @@ export default function CompareHubPage() {
               <li key={c.slug}>
                 <Link
                   href={`/compare/${c.slug}`}
-                  className="flex h-full flex-col gap-2 rounded-xl border border-hairline bg-surface-card p-6 transition-shadow hover:shadow-[0_4px_16px_rgba(0,0,0,0.04)]"
+                  className="flex h-full flex-col gap-2 rounded-xl border border-hairline bg-surface-card p-6 transition-shadow hover:shadow-card"
                 >
                   <span className="font-display text-[20px] font-normal tracking-[-0.2px] text-ink">
                     Pinprint vs {c.name}

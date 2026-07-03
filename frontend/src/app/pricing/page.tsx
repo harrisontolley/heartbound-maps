@@ -42,10 +42,10 @@ export default function PricingPage() {
         <div className="flex flex-col gap-12 md:gap-16">
           <header className="flex max-w-[640px] flex-col items-start gap-4">
             <SectionLabel>Pricing</SectionLabel>
-            <h1 className="font-display text-[clamp(2rem,5vw,44px)] font-normal leading-[1.1] tracking-[-0.01em] text-ink">
+            <h1 className="font-display text-title font-normal text-ink">
               Priced like the object it is.
             </h1>
-            <p className="text-[17px] leading-[1.55] tracking-[0.16px] text-body">
+            <p className="text-copy text-body">
               The same artwork at every size, on the same paper. Designing is
               free. You choose a size and whether it arrives framed.
             </p>

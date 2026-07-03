@@ -29,12 +29,10 @@ export default function FaqPage() {
         <div className="flex flex-col gap-12 md:gap-16">
           <header className="flex max-w-[640px] flex-col gap-4">
             <SectionLabel>{page.eyebrow}</SectionLabel>
-            <h1 className="font-display text-[clamp(2rem,5vw,44px)] font-normal leading-[1.13] tracking-[-0.44px] text-ink">
+            <h1 className="font-display text-title font-normal text-ink">
               {page.headline}
             </h1>
-            <p className="text-[17px] leading-[1.5] tracking-[0.16px] text-body">
-              {page.intro}
-            </p>
+            <p className="text-copy text-body">{page.intro}</p>
           </header>
 
           <div className="flex flex-col gap-12 md:gap-16">

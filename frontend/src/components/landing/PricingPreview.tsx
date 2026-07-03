@@ -1,6 +1,6 @@
-import Link from "next/link";
 import { Section } from "./Section";
 import { SectionLabel } from "./SectionLabel";
+import { TextLink } from "@/components/ui/TextLink";
 import { copy } from "./copy";
 import { OFFERED_PRODUCTS } from "@/lib/commerce/printProducts";
 import { formatUsd } from "@/lib/commerce/price";
@@ -21,18 +21,15 @@ export function PricingPreview() {
       <div className="grid gap-10 md:grid-cols-[0.9fr_1.1fr] md:gap-16">
         <div className="flex flex-col items-start gap-4">
           <SectionLabel>{pricingPreview.eyebrow}</SectionLabel>
-          <h2 className="max-w-[20ch] font-display text-[clamp(1.75rem,4vw,36px)] font-normal leading-[1.15] tracking-[-0.01em] text-ink">
+          <h2 className="max-w-[20ch] font-display text-heading font-normal text-ink">
             {pricingPreview.headline}
           </h2>
-          <p className="max-w-[48ch] text-[16px] leading-[1.55] tracking-[0.16px] text-body">
+          <p className="max-w-[48ch] text-copy text-body">
             {pricingPreview.body}
           </p>
-          <Link
-            href={pricingPreview.link.href}
-            className="text-[16px] font-medium text-ink underline-offset-4 hover:underline"
-          >
+          <TextLink href={pricingPreview.link.href}>
             {pricingPreview.link.label} &rarr;
-          </Link>
+          </TextLink>
         </div>
 
         <ul className="flex flex-col self-center border-t border-hairline">
@@ -43,11 +40,7 @@ export function PricingPreview() {
             >
               <span className="flex items-baseline gap-3">
                 <span className="font-display text-[24px] text-ink">{p.label}</span>
-                {p.popular && (
-                  <span className="text-[12px] font-semibold uppercase tracking-[0.96px] text-accent-deep">
-                    Popular
-                  </span>
-                )}
+                {p.popular && <SectionLabel tone="accent">Popular</SectionLabel>}
               </span>
               <span className="text-[16px] tabular-nums text-body-strong">
                 {usd(p.priceCents)}

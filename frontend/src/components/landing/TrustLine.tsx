@@ -1,3 +1,4 @@
+import { SectionLabel } from "./SectionLabel";
 import { copy } from "./copy";
 
 /**
@@ -8,14 +9,11 @@ import { copy } from "./copy";
 export function TrustLine() {
   return (
     <div className="border-y border-hairline bg-canvas-soft">
-      <ul className="mx-auto flex w-full max-w-[1200px] flex-wrap items-center justify-center gap-x-8 gap-y-2 px-6 py-5">
+      <ul className="container-page flex flex-wrap items-center justify-center gap-x-8 gap-y-2 py-5">
         {copy.trustLine.items.map((item) => (
-          <li
-            key={item}
-            className="flex items-center gap-2 text-[12px] font-semibold uppercase tracking-[0.96px] text-muted"
-          >
+          <li key={item} className="flex items-center gap-2">
             <span aria-hidden className="h-1 w-1 rounded-full bg-accent" />
-            {item}
+            <SectionLabel>{item}</SectionLabel>
           </li>
         ))}
       </ul>

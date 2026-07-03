@@ -15,15 +15,17 @@ type Tone = "ink" | "body";
 type Size = "sm" | "md";
 
 const BASE =
-  "relative inline-flex items-center gap-1 font-medium transition-colors underline-offset-4 pointer-coarse:py-2.5 pointer-coarse:-my-2.5";
+  "relative inline-flex items-center gap-1 transition-colors underline-offset-4 pointer-coarse:py-2.5 pointer-coarse:-my-2.5";
 
 const SIZES: Record<Size, string> = {
   sm: "text-[14px]",
   md: "text-[15px]",
 };
 
+// `ink` carries medium weight; `body` stays weight-neutral so quiet contexts
+// (footer columns) keep regular weight and nav can add font-medium itself.
 const TONES: Record<Tone, string> = {
-  ink: "text-ink hover:underline",
+  ink: "font-medium text-ink hover:underline",
   body: "text-body hover:text-ink",
 };
 

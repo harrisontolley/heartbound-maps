@@ -80,7 +80,7 @@ export function MobileNav() {
           />
           <div
             id={panelId}
-            className="absolute right-0 top-[calc(100%+0.5rem)] z-50 w-56 overflow-hidden rounded-2xl border border-hairline bg-canvas shadow-[0_12px_32px_rgba(0,0,0,0.12)]"
+            className="absolute right-0 top-[calc(100%+0.5rem)] z-50 w-56 overflow-hidden rounded-2xl border border-hairline bg-canvas shadow-menu"
           >
             <nav className="flex flex-col py-1">
               {copy.nav.links.map((link) => (

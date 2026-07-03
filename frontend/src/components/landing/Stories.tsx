@@ -13,7 +13,7 @@ export function Stories() {
     <Section id="stories" tone="soft">
       <div className="flex flex-col items-start gap-4">
         <SectionLabel>{stories.eyebrow}</SectionLabel>
-        <h2 className="font-display text-[clamp(1.75rem,4vw,36px)] font-normal leading-[1.15] tracking-[-0.01em] text-ink">
+        <h2 className="font-display text-heading font-normal text-ink">
           {stories.headline}
         </h2>
       </div>

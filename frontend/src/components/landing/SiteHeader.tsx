@@ -3,6 +3,7 @@ import { LinkButton } from "./LinkButton";
 import { MobileNav } from "./MobileNav";
 import { AccountNav } from "@/components/account/AccountNav";
 import { CartNav } from "@/components/cart/CartNav";
+import { TextLink } from "@/components/ui/TextLink";
 import { copy, STUDIO_HREF } from "./copy";
 
 /**
@@ -13,7 +14,7 @@ import { copy, STUDIO_HREF } from "./copy";
 export function SiteHeader() {
   return (
     <header className="sticky top-0 z-50 border-b border-hairline bg-canvas/85 backdrop-blur">
-      <div className="mx-auto flex h-16 w-full max-w-[1200px] items-center justify-between px-6">
+      <div className="container-page flex h-16 items-center justify-between">
         <Link
           href="/"
           className="shrink-0 font-display text-2xl font-normal tracking-[-0.32px] text-ink"
@@ -23,13 +24,14 @@ export function SiteHeader() {
 
         <nav className="hidden items-center gap-8 md:flex">
           {copy.nav.links.map((link) => (
-            <a
+            <TextLink
               key={link.href}
               href={link.href}
-              className="text-[15px] font-medium text-body transition-colors hover:text-ink"
+              tone="body"
+              className="font-medium"
             >
               {link.label}
-            </a>
+            </TextLink>
           ))}
         </nav>
 
