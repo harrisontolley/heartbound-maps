@@ -500,7 +500,7 @@ export function AdvancedPanel() {
 
           {templateId === "vintage-cartography" && (
             <section className="flex flex-col gap-2">
-              <Heading>Heirloom variant</Heading>
+              <Heading>Vintage variant</Heading>
               <div className="flex flex-wrap items-center gap-1.5">
                 {VINTAGE_VARIANT_ORDER.map((v) => (
                   <PillButton

@@ -14,7 +14,7 @@ export function DisclosureSection({
   children,
 }: {
   title: string;
-  /** Small muted status shown at the right of the summary (e.g. "Heirloom"). */
+  /** Small muted status shown at the right of the summary (e.g. "Advanced"). */
   accessory?: ReactNode;
   defaultOpen?: boolean;
   /** Extra classes on the root <details> (e.g. flex order for mobile). */

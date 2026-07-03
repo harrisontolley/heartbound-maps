@@ -82,7 +82,7 @@ export const copy = {
     steps: [
       {
         title: "Pick a preset, set your home",
-        body: "Start from one of ten designer presets and search for the place you call home. Every arrow and every distance is measured from here. Free to design, no account needed.",
+        body: "Start from one of nine designer presets and search for the place you call home. Every arrow and every distance is measured from here. Free to design, no account needed.",
       },
       {
         title: "Add the places that matter",
@@ -135,7 +135,7 @@ export const copy = {
   styles: {
     eyebrow: "Start from a preset",
     headline: "Pick a preset. Make it yours.",
-    body: "Ten designer looks, ready to go. Pick one, drop in your places, then change anything you like: colors, labels, pins, sizes. Your places and every bearing stay exactly where they are. Most people go from blank page to finished design in about five minutes.",
+    body: "Nine designer looks, ready to go. Pick one, drop in your places, then change anything you like: colors, labels, pins, sizes. Your places and every bearing stay exactly where they are. Most people go from blank page to finished design in about five minutes.",
     // The look cards themselves come straight from src/lib/looks/looks.ts so
     // the gallery can never drift from what the studio actually ships.
     startHere: "Start here",
@@ -149,7 +149,7 @@ export const copy = {
         title: "Where it started",
         caption: "Born in Memphis, met in Chicago, still measuring everything from Kansas City.",
         src: "/showcase/story-where-it-started.png",
-        alt: "Heirloom-style Pinprint centered on Kansas City",
+        alt: "Mid-Century-style Pinprint centered on Kansas City",
       },
       {
         title: "The honeymoon",
@@ -243,7 +243,11 @@ export const copy = {
           },
           {
             q: "Can I change the design after I've added places?",
-            a: "Yes. Switch between all ten looks at any time. Your home and places stay exactly where they are.",
+            a: "Yes. Switch between all nine looks at any time. Your home and places stay exactly where they are.",
+          },
+          {
+            q: "Can I see exactly what I'll get before I pay?",
+            a: "Yes. The studio preview is rendered by the same engine that prints your piece, so what you see is exactly what arrives, down to the arrow and the label. Nothing changes at checkout.",
           },
         ],
       },
@@ -252,12 +256,12 @@ export const copy = {
         items: [
           {
             q: "What sizes can I order?",
-            a: "Three portrait sizes: 12 by 18, 16 by 24, and 24 by 36 inches. The artwork is drawn as vector graphics and rendered for print at 300 DPI, so every size prints sharp.",
+            a: "Three portrait sizes: 12 by 18, 16 by 24, and 24 by 36 inches. The artwork is vector, not a flat image, so it's rendered fresh for your order at 300 DPI, the same resolution standard used for gallery and museum prints, and every hairline and label stays sharp at any size.",
             featured: true,
           },
           {
             q: "How is each print made?",
-            a: "Made to order the moment you buy, with archival pigment inks that resist fading for decades, and checked by hand before it ships. Loose prints are on Hahnemühle German Etching, a heavily textured 310gsm fine art paper. Framed prints use smooth 300gsm cotton rag, which sits cleanly behind glass.",
+            a: "Made to order the moment you buy: archival pigment inks rated to hold their color for decades, on Hahnemühle German Etching, a heavily textured 310gsm fine art paper, not poster-shop stock. Every piece is checked by hand before it ships.",
           },
           {
             q: "Can I get it framed?",
@@ -265,7 +269,7 @@ export const copy = {
           },
           {
             q: "Can I just buy the digital file?",
-            a: "Yes. The digital download is a print-ready PNG plus a scalable SVG you can print yourself at any size. Every printed order includes the digital files too.",
+            a: "Yes, for $19. It includes a print-ready PNG at full 300 DPI resolution plus a scalable SVG you can print yourself, at any size, from any print shop. Every physical print order includes both digital files too, at no extra cost.",
           },
           {
             q: "We don't have your size, material, or map style?",
@@ -278,13 +282,17 @@ export const copy = {
         title: "Shipping & delivery",
         items: [
           {
-            q: "When will my print arrive?",
-            a: "Most orders arrive within 5 to 10 business days. Your print is made and shipped within 2 to 3 business days, and you'll get a tracking link by email the moment it's on its way.",
+            q: "How much does shipping cost?",
+            a: "Nothing. Every order ships free across the United States, no minimum order and no surprise fee at checkout. The price you see when you check out is the price you pay.",
             featured: true,
           },
           {
-            q: "Where do you ship, and how much does it cost?",
-            a: "We currently ship anywhere in the United States, and shipping is free. The price you see is the price you pay, with nothing added at checkout.",
+            q: "When will my print arrive?",
+            a: "Your print is made and shipped within 2 to 3 business days, and arrives within 5 to 10 business days total. You'll get a tracking link by email the moment it's on its way.",
+          },
+          {
+            q: "Do you ship outside the United States?",
+            a: "Not yet. For now we ship to addresses within the United States only. We're working on more countries.",
           },
         ],
       },
@@ -293,16 +301,16 @@ export const copy = {
         items: [
           {
             q: "What if my print arrives damaged or there's a fault?",
-            a: "We'll make it right. If your print arrives damaged, or there's a fault, email us a quick photo and we'll send a free replacement or refund you. No need to post the original back.",
+            a: "We'll always make it right. If your print arrives damaged, or there's a fault, send us a quick photo and we'll ship a free replacement or refund you in full. No need to return the original.",
             featured: true,
           },
           {
             q: "Can I return it if I change my mind?",
-            a: "Because every piece is made to order from your own design, we can't take change-of-mind returns. Preview your print as much as you like before you buy, and if anything is wrong with what arrives, we'll always sort it out.",
+            a: "Because every piece is made to order from your own design, we can't accept change-of-mind returns once it's gone into production. Preview your design as many times as you like before you buy, and if anything about the piece itself is wrong when it arrives, we'll always make it right.",
           },
           {
             q: "Can I change my order or shipping address after I've paid?",
-            a: "Write to us as soon as you can. We can update or cancel an order while it's still in the queue, but once it's gone into production it's locked in and on its way.",
+            a: "Write to us as soon as you can. We can update or cancel an order while it's still queued for production, but once it's being printed it's locked in and on its way.",
           },
         ],
       },
@@ -316,7 +324,11 @@ export const copy = {
           },
           {
             q: "Is my location data private?",
-            a: "Your places are only ever used to render your artwork. We don't sell them or share them with anyone.",
+            a: "Your home and places are only ever used to render your own artwork. We never sell them, share them with third parties, or use them for anything else.",
+          },
+          {
+            q: "Is checkout secure?",
+            a: "Yes. Checkout is handled by Stripe, the same payment processor used by major retailers worldwide. We never see or store your card details.",
           },
         ],
       },
