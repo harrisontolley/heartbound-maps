@@ -4,6 +4,7 @@ import {
   DIGITAL_PRICE_CENTS,
   DIGITAL_LIST_PRICE_CENTS,
   OPENING_LAUNCH_SALE_LABEL,
+  discountPercent,
 } from "@/lib/commerce/pricing";
 import { formatUsd } from "@/lib/commerce/price";
 
@@ -21,6 +22,17 @@ function Anchor({ listCents, priceCents }: { listCents: number; priceCents: numb
   if (listCents <= priceCents) return null;
   return (
     <s className="text-[13px] tabular-nums text-muted-soft">{usd(listCents)}</s>
+  );
+}
+
+/** Quiet launch-sale saving, floored so it never overstates (commerce.ts). */
+function Saving({ listCents, priceCents }: { listCents: number; priceCents: number }) {
+  const pct = discountPercent(listCents, priceCents);
+  if (pct <= 0) return null;
+  return (
+    <span className="text-[12px] font-semibold tabular-nums text-accent-deep">
+      Save {pct}%
+    </span>
   );
 }
 
@@ -74,6 +86,7 @@ export function PricingLadder() {
                     {usd(p.priceCents)}
                   </span>
                   <span className="text-[14px] text-muted">print</span>
+                  <Saving listCents={p.listPriceCents} priceCents={p.priceCents} />
                 </div>
                 <div className="flex items-baseline gap-2.5">
                   <Anchor
@@ -84,6 +97,10 @@ export function PricingLadder() {
                     {usd(framed)}
                   </span>
                   <span className="text-[14px] text-muted">framed in oak</span>
+                  <Saving
+                    listCents={p.listPriceCents + p.frameUpchargeCents}
+                    priceCents={framed}
+                  />
                 </div>
               </li>
             );

@@ -14,4 +14,5 @@ export {
   DIGITAL_LIST_PRICE_CENTS,
   DEFAULT_FRAME_UPCHARGE_CENTS,
   FREE_SHIPPING,
+  discountPercent,
 } from "@pinprint/shared";
