@@ -3,6 +3,7 @@ import { OFFERED_PRODUCTS } from "@/lib/commerce/printProducts";
 import {
   DIGITAL_PRICE_CENTS,
   DIGITAL_LIST_PRICE_CENTS,
+  OPENING_LAUNCH_SALE_LABEL,
 } from "@/lib/commerce/pricing";
 import { formatUsd } from "@/lib/commerce/price";
 
@@ -12,7 +13,7 @@ import { formatUsd } from "@/lib/commerce/price";
  * pricing model's honest-floored framing) but typographically whisper.
  */
 
-/** Whole-dollar display ("$91", not "$91.00"); falls back for odd cents. */
+/** Whole-dollar display ("$90", not "$90.00"); falls back for odd cents. */
 const usd = (cents: number) =>
   cents % 100 === 0 ? `$${cents / 100}` : formatUsd(cents);
 
@@ -35,9 +36,14 @@ export function PricingLadder() {
           >
             Prints
           </h2>
-          <SectionLabel className="hidden sm:block">
-            Hahnemühle German Etching · 310gsm · giclée
-          </SectionLabel>
+          <div className="flex items-baseline gap-4">
+            <SectionLabel tone="accent">
+              {OPENING_LAUNCH_SALE_LABEL}
+            </SectionLabel>
+            <SectionLabel className="hidden sm:block">
+              Hahnemühle German Etching · 310gsm · giclée
+            </SectionLabel>
+          </div>
         </div>
 
         <ul className="flex flex-col">
@@ -63,13 +69,17 @@ export function PricingLadder() {
                   )}
                 </div>
                 <div className="flex items-baseline gap-2.5">
+                  <Anchor listCents={p.listPriceCents} priceCents={p.priceCents} />
                   <span className="text-[18px] font-medium tabular-nums text-ink">
                     {usd(p.priceCents)}
                   </span>
-                  <Anchor listCents={p.listPriceCents} priceCents={p.priceCents} />
                   <span className="text-[14px] text-muted">print</span>
                 </div>
                 <div className="flex items-baseline gap-2.5">
+                  <Anchor
+                    listCents={p.listPriceCents + p.frameUpchargeCents}
+                    priceCents={framed}
+                  />
                   <span className="text-[18px] font-medium tabular-nums text-ink">
                     {usd(framed)}
                   </span>

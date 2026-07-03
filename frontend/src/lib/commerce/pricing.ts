@@ -3,6 +3,9 @@
 // module stays as a thin re-export to keep existing frontend import paths stable.
 // Edit the prices in packages/shared/src/commerce.ts.
 
+/** Customer-facing label for the temporary introductory pricing campaign. */
+export const OPENING_LAUNCH_SALE_LABEL = "Opening launch sale";
+
 export {
   PRINT_PRICE_CENTS,
   LIST_PRICE_CENTS,

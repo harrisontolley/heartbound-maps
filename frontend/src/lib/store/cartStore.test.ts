@@ -1,7 +1,12 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import type { StudioSelection } from "@/lib/commerce/price";
 import type { PosterConfigSnapshot } from "@/lib/commerce/posterConfig";
-import { cartCount, cartSubtotalCents, useCartStore } from "./cartStore";
+import {
+  cartCount,
+  cartSubtotalCents,
+  repriceCartItems,
+  useCartStore,
+} from "./cartStore";
 
 function sel(totalCents: number, productId = "portrait-16x24"): StudioSelection {
   return {
@@ -72,5 +77,26 @@ describe("cartStore", () => {
     const { items } = useCartStore.getState();
     expect(cartCount(items)).toBe(3);
     expect(cartSubtotalCents(items)).toBe(5900 * 2 + 3900);
+  });
+
+  it("refreshes persisted price snapshots from the current catalogue", () => {
+    useCartStore.getState().addItem({ selection: sel(9100), posterConfig: cfg });
+    const repriced = repriceCartItems(useCartStore.getState().items);
+
+    expect(repriced[0].selection.totalCents).toBe(9000);
+    expect(repriced[0].selection.lineItems[0]).toMatchObject({
+      cents: 9000,
+      listCents: 12200,
+    });
+  });
+
+  it("leaves legacy items with unknown product ids untouched", () => {
+    useCartStore.getState().addItem({
+      selection: sel(4900, "retired-product"),
+      posterConfig: cfg,
+    });
+    const [original] = useCartStore.getState().items;
+
+    expect(repriceCartItems([original])[0]).toBe(original);
   });
 });

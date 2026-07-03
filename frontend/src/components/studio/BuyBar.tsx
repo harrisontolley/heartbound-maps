@@ -11,7 +11,10 @@ import {
   type StudioSelection,
 } from "@/lib/commerce/price";
 import type { PrintProduct } from "@/lib/commerce/printProducts";
-import { FREE_SHIPPING } from "@/lib/commerce/pricing";
+import {
+  FREE_SHIPPING,
+  OPENING_LAUNCH_SALE_LABEL,
+} from "@/lib/commerce/pricing";
 
 /**
  * The sticky commerce strip. Shows a live total for the current selection
@@ -49,7 +52,7 @@ export function BuyBar({
   const hint = !canBuy
     ? "Add a place to start"
     : savedCents > 0
-      ? `${shipNote} · you save ${formatUsd(savedCents)}`
+      ? `${OPENING_LAUNCH_SALE_LABEL} · save ${formatUsd(savedCents)} · ${shipNote}`
       : shipNote;
   const title = format === "digital" ? "Digital download" : product.label;
   const subtitle =

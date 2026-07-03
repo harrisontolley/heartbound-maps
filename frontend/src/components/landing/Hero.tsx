@@ -73,7 +73,7 @@ export function Hero() {
           fill
           priority
           sizes="100vw"
-          className="object-cover object-[65%_center] lg:object-center"
+          className="object-cover object-[72%_center] lg:object-[68%_center]"
         />
         {/* Soft ivory wash keeps overlaid copy readable at every crop. */}
         <div

@@ -13,23 +13,21 @@ import type { OrderStatus } from "./orders.js";
 
 /** Print retail by product id (the surfaced 2:3 portrait ladder). */
 export const PRINT_PRICE_CENTS: Record<string, number> = {
-  "portrait-12x18": 6100, // German Etching COGS $27.21 → ~55% margin
-  "portrait-16x24": 9100, // German Etching COGS $41.14 → ~55% margin
+  "portrait-12x18": 6000, // German Etching COGS $27.21 → 54.7% margin
+  "portrait-16x24": 9000, // German Etching COGS $41.14 → 54.3% margin
   "portrait-24x36": 16500, // German Etching COGS $74.14 → ~55% margin
 };
 
 /**
  * Anchor ("regular") price by product id, shown struck-through next to the
- * charged price above. The custom-map-poster category (Mapiful, Grafomap,
- * Positive Prints, …) sells against a permanent "Save ~25%" discount, so we
- * anchor each list price ≈ charged ÷ 0.75 (clean round number) and charge the
- * sale price. This is display-only: the price actually charged is always
+ * opening-launch sale price above. These anchors remain display-only: the price
+ * actually charged is always
  * PRINT_PRICE_CENTS — there is no Stripe coupon and the server re-derives the
  * sale price (see selectionTotalCents). A list ≤ charged ⇒ no badge.
  */
 export const LIST_PRICE_CENTS: Record<string, number> = {
-  "portrait-12x18": 8200, // 25% off $61 (true 25.6%, floored to 25)
-  "portrait-16x24": 12200, // 25% off $91 (true 25.4%, floored to 25)
+  "portrait-12x18": 8200, // 26% off $60 (true 26.8%, floored to 26)
+  "portrait-16x24": 12200, // 26% off $90 (true 26.2%, floored to 26)
   "portrait-24x36": 22000, // 25% off $165 (true 25.0%, floored to 25)
 };
 
@@ -40,13 +38,13 @@ export const LIST_PRICE_CENTS: Record<string, number> = {
  * in a premium natural-oak ready-to-hang frame (PremiumOak/NaturalOak, framing
  * service on). Framed Artelo landed COGS (production + US shipping, verified
  * 2026-07-01): 12×18 $49.47 / 16×24 $67.88 / 24×36 $115.98.
- * Upcharges are set so framed totals (base + upcharge) stay at $125 / $169 / $289
- * at ~60% margin even as the loose base price rose for German Etching.
+ * Upcharges produce framed opening-launch totals of $124 / $168 / $289 at
+ * ~60% margin.
  */
 export const FRAME_UPCHARGE_CENTS: Record<string, number> = {
-  "portrait-12x18": 6400, // framed total $125 (~60% margin)
-  "portrait-16x24": 7800, // framed total $169 (~60% margin)
-  "portrait-24x36": 12400, // framed total $289 (~60% margin)
+  "portrait-12x18": 6400, // framed total $124 (60.1% margin)
+  "portrait-16x24": 7800, // framed total $168 (59.6% margin)
+  "portrait-24x36": 12400, // framed total $289 (59.9% margin)
 };
 
 /** Standalone digital download — also included free with any print. */

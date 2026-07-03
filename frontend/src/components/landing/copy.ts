@@ -200,9 +200,9 @@ export const copy = {
   },
 
   pricingPreview: {
-    eyebrow: "Pricing",
-    headline: "Priced like the object it is.",
-    body: "Three sizes, framed or unframed, printed on the same paper either way. Shipping in the United States is free, and every order includes the digital files.",
+    eyebrow: "Opening launch sale",
+    headline: "Opening prices, before they go up.",
+    body: "To mark our opening launch, all three print sizes are on sale. Shipping in the United States is free, and every order includes the digital files.",
     link: { label: "See pricing and sizes", href: "/pricing" },
   },
 

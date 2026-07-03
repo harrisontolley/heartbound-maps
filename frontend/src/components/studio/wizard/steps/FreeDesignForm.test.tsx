@@ -80,7 +80,7 @@ describe("FreeDesignForm", () => {
 
     expect(await screen.findByText("Check your inbox ✉")).toBeInTheDocument();
     expect(screen.getByText(/buyer@example\.com/)).toBeInTheDocument();
-    expect(screen.getByText(/from \$61 with free shipping/)).toBeInTheDocument();
+    expect(screen.getByText(/from \$60 with free shipping/)).toBeInTheDocument();
     // The old download buttons must never reappear.
     expect(screen.queryByRole("button", { name: /PNG|SVG/ })).not.toBeInTheDocument();
   });

@@ -9,6 +9,17 @@ import { CheckoutValidationError, isAllowedAssetUrl, priceCheckout } from "./che
 const popular = PRODUCTS_BASE_BY_ID["portrait-16x24"];
 
 describe("priceCheckout — server price authority", () => {
+  it("uses the opening-launch price ladder", () => {
+    const totals = ["portrait-12x18", "portrait-16x24", "portrait-24x36"].map(
+      (productId) =>
+        priceCheckout([
+          { productId, format: "print", addFrame: false, quantity: 1 },
+        ]).subtotalCents,
+    );
+
+    expect(totals).toEqual([6000, 9000, 16500]);
+  });
+
   it("prices a print from the catalogue and carries the poster snapshot", () => {
     const { orderItems, lineItems, subtotalCents, hasPhysical } = priceCheckout([
       {

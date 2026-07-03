@@ -49,21 +49,22 @@ describe("print products", () => {
     expect(OFFERED_PRODUCTS.filter((p) => p.popular)).toHaveLength(1);
   });
 
+  it("uses the opening-launch price ladder and regular-price anchors", () => {
+    expect(OFFERED_PRODUCTS.map((p) => p.priceCents)).toEqual([6000, 9000, 16500]);
+    expect(OFFERED_PRODUCTS.map((p) => p.listPriceCents)).toEqual([8200, 12200, 22000]);
+  });
+
   it("gives every product a frame upcharge", () => {
     for (const p of PRINT_PRODUCTS) {
       expect(p.frameUpchargeCents).toBeGreaterThan(0);
     }
   });
 
-  it("anchors each offered size above its charged price (honest 25% off)", () => {
-    for (const p of OFFERED_PRODUCTS) {
-      expect(p.listPriceCents).toBeGreaterThan(p.priceCents);
-      // Floored to match discountPercent — the badge must never overstate.
-      const off = Math.floor(
-        ((p.listPriceCents - p.priceCents) / p.listPriceCents) * 100,
-      );
-      expect(off).toBe(25);
-    }
+  it("floors each advertised opening-launch discount without overstating it", () => {
+    const discounts = OFFERED_PRODUCTS.map((p) =>
+      Math.floor(((p.listPriceCents - p.priceCents) / p.listPriceCents) * 100),
+    );
+    expect(discounts).toEqual([26, 26, 25]);
   });
 
   it("never lets an anchor fall below its charged price", () => {

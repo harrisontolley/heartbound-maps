@@ -10,7 +10,10 @@ import { CartNav } from "@/components/cart/CartNav";
 import { Card } from "@/components/account/Card";
 import { Button } from "@/components/ui/Button";
 import { formatUsd } from "@/lib/commerce/price";
-import { FREE_SHIPPING } from "@/lib/commerce/pricing";
+import {
+  FREE_SHIPPING,
+  OPENING_LAUNCH_SALE_LABEL,
+} from "@/lib/commerce/pricing";
 import {
   cartSubtotalCents,
   useCartStore,
@@ -175,6 +178,11 @@ export default function CartPage() {
                           )}{" "}
                           {formatUsd(item.selection.totalCents)} each
                         </p>
+                        {eachDiscounted ? (
+                          <p className="mt-1 text-[10px] font-semibold uppercase tracking-[0.08em] text-success">
+                            {OPENING_LAUNCH_SALE_LABEL}
+                          </p>
+                        ) : null}
                         <div className="mt-3 flex items-center gap-3">
                           <div className="flex items-center rounded-pill border border-hairline-strong">
                             <button
@@ -233,7 +241,7 @@ export default function CartPage() {
                 </div>
                 {saved > 0 && (
                   <div className="flex justify-between">
-                    <dt className="text-muted">You save</dt>
+                    <dt className="text-muted">Opening launch savings</dt>
                     <dd className="text-success">−{formatUsd(saved)}</dd>
                   </div>
                 )}

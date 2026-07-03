@@ -128,7 +128,7 @@ export function FreeDesignForm({
         <p className="text-sm text-muted">Your design is on its way to {sentEmail}.</p>
         <p className="text-sm text-body">
           Want it on your wall? This exact design, printed museum-quality on archival
-          fine-art paper — from $61 with free shipping.
+          fine-art paper — from $60 with free shipping.
         </p>
       </div>
     );

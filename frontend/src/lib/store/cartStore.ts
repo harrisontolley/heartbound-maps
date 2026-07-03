@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
-import type { StudioSelection } from "@/lib/commerce/price";
+import { buildSelection, type StudioSelection } from "@/lib/commerce/price";
+import { PRODUCTS_BY_ID } from "@/lib/commerce/printProducts";
 import type { PosterConfigSnapshot } from "@/lib/commerce/posterConfig";
 
 // The shopping cart: a localStorage-persisted list of fully-configured posters.
@@ -87,9 +88,33 @@ export const useCartStore = create<CartState>()(
       version: 1,
       storage: createJSONStorage(() => localStorage),
       skipHydration: true,
+      merge: (persistedState, currentState) => {
+        const persisted = persistedState as Partial<CartState>;
+        return {
+          ...currentState,
+          ...persisted,
+          items: repriceCartItems(Array.isArray(persisted.items) ? persisted.items : []),
+        };
+      },
     },
   ),
 );
+
+/** Refresh saved display snapshots from the catalogue checkout already trusts. */
+export function repriceCartItems(items: CartItem[]): CartItem[] {
+  return items.map((item) => {
+    const product = PRODUCTS_BY_ID[item.selection.productId];
+    if (!product) return item;
+    return {
+      ...item,
+      selection: buildSelection({
+        format: item.selection.format,
+        product,
+        addFrame: item.selection.addFrame,
+      }),
+    };
+  });
+}
 
 /** Total unit count across the cart (for the nav badge). */
 export function cartCount(items: CartItem[]): number {

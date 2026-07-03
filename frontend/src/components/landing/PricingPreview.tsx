@@ -5,14 +5,27 @@ import { copy } from "./copy";
 import { OFFERED_PRODUCTS } from "@/lib/commerce/printProducts";
 import { formatUsd } from "@/lib/commerce/price";
 
-/** Whole-dollar display for the calm ladder ("$91", not "$91.00"). */
+/** Whole-dollar display for the calm ladder ("$90", not "$90.00"). */
 const usd = (cents: number) =>
   cents % 100 === 0 ? `$${cents / 100}` : formatUsd(cents);
 
+const PRICE_GRID_CLASS =
+  "grid grid-cols-[minmax(80px,1fr)_72px_72px] gap-x-2 sm:grid-cols-[minmax(96px,1fr)_84px_84px] sm:gap-x-6";
+
+function PriceCell({ listCents, priceCents }: { listCents: number; priceCents: number }) {
+  return (
+    <span className="flex flex-col items-end gap-0.5 tabular-nums">
+      <s className="text-[12px] text-muted-soft">{usd(listCents)}</s>
+      <span className="text-[16px] font-medium text-body-strong">
+        {usd(priceCents)}
+      </span>
+    </span>
+  );
+}
+
 /**
- * Calm pricing teaser: price stated beside the size like a fact of the object
- * (King & McGaw register), no badges, no discount chrome. The full ladder
- * (framed, digital, anchors) lives on /pricing.
+ * Landing-page pricing teaser. It mirrors the authoritative catalogue and makes
+ * the temporary opening-launch pricing explicit before a buyer enters the studio.
  */
 export function PricingPreview() {
   const { pricingPreview } = copy;
@@ -20,7 +33,7 @@ export function PricingPreview() {
     <Section>
       <div className="grid gap-10 md:grid-cols-[0.9fr_1.1fr] md:gap-16">
         <div className="flex flex-col items-start gap-4">
-          <SectionLabel>{pricingPreview.eyebrow}</SectionLabel>
+          <SectionLabel tone="accent">{pricingPreview.eyebrow}</SectionLabel>
           <h2 className="max-w-[20ch] font-display text-heading font-normal text-ink">
             {pricingPreview.headline}
           </h2>
@@ -32,22 +45,34 @@ export function PricingPreview() {
           </TextLink>
         </div>
 
-        <ul className="flex flex-col self-center border-t border-hairline">
-          {OFFERED_PRODUCTS.map((p) => (
-            <li
-              key={p.id}
-              className="flex items-baseline justify-between gap-6 border-b border-hairline py-5"
-            >
-              <span className="flex items-baseline gap-3">
-                <span className="font-display text-[24px] text-ink">{p.label}</span>
-                {p.popular && <SectionLabel tone="accent">Popular</SectionLabel>}
-              </span>
-              <span className="text-[16px] tabular-nums text-body-strong">
-                {usd(p.priceCents)}
-              </span>
-            </li>
-          ))}
-        </ul>
+        <div className="self-center border-t border-hairline">
+          <div className={`${PRICE_GRID_CLASS} border-b border-hairline py-3`}>
+            <span className="sr-only">Size</span>
+            <SectionLabel className="text-right">Unframed</SectionLabel>
+            <SectionLabel className="text-right">Framed</SectionLabel>
+          </div>
+          <ul className="flex flex-col">
+            {OFFERED_PRODUCTS.map((p) => {
+              const framedPrice = p.priceCents + p.frameUpchargeCents;
+              const framedListPrice = p.listPriceCents + p.frameUpchargeCents;
+              return (
+                <li
+                  key={p.id}
+                  className={`${PRICE_GRID_CLASS} items-center border-b border-hairline py-5`}
+                >
+                  <span className="flex flex-col items-start gap-1 sm:flex-row sm:items-baseline sm:gap-3">
+                    <span className="font-display text-[20px] text-ink sm:text-[24px]">
+                      {p.label}
+                    </span>
+                    {p.popular && <SectionLabel tone="accent">Popular</SectionLabel>}
+                  </span>
+                  <PriceCell listCents={p.listPriceCents} priceCents={p.priceCents} />
+                  <PriceCell listCents={framedListPrice} priceCents={framedPrice} />
+                </li>
+              );
+            })}
+          </ul>
+        </div>
       </div>
     </Section>
   );
