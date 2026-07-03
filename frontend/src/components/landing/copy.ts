@@ -42,7 +42,8 @@ export const copy = {
     secondaryCta: "See how it works",
     // Quiet materials line under the CTAs: the upmarket signal is the spec.
     specLine: "Hahnemühle 310gsm · archival giclée · solid oak frames",
-    reassurance: "Free to design. Pay only when you print.",
+    reassurance:
+      "Free to design and download. Pay only for the print, shipped free to your door.",
     media: {
       label: "A warm living room wall above a long oak sideboard",
       aspect: "33 / 14",
@@ -60,29 +61,30 @@ export const copy = {
   // star widgets: specifics are the trust currency (DESIGN.md).
   trustLine: {
     items: [
+      "Free US shipping",
+      "Free to design and download",
       "Hahnemühle 310gsm paper",
       "Archival giclée inks",
       "Natural oak frames",
-      "Free US shipping",
       "Damage replacement guarantee",
     ],
   },
 
   howItWorks: {
     eyebrow: "How it works",
-    headline: "Three steps to a finished print.",
+    headline: "Designed in about five minutes. Free until you print.",
     steps: [
       {
-        title: "Start at home",
-        body: "Search for the place you call home, or drop a pin on the map. Every arrow and every distance on your print is measured from here.",
+        title: "Pick a preset, set your home",
+        body: "Start from one of ten designer presets and search for the place you call home. Every arrow and every distance is measured from here. Free to design, no account needed.",
       },
       {
         title: "Add the places that matter",
-        body: "The town you were born in. The city you fell in love with. The coast your family still lives on. Tag each one as born, lived, visited, or family.",
+        body: "The town you were born in. The city where you met. The coast your family still lives on. Tag each one with what it means: born, lived, studied, met, married, family, visited, adventure.",
       },
       {
-        title: "Make it yours, then print",
-        body: "Choose one of ten looks and watch the preview redraw as you work. Order it framed or unframed, or take the files and print it yourself.",
+        title: "Download it free, or have it printed",
+        body: "We email you a free screen-size copy of your design to keep. When you want the real thing, we print it on fine art paper and ship it to your door, shipping on us.",
       },
     ],
   },
@@ -125,11 +127,12 @@ export const copy = {
   },
 
   styles: {
-    eyebrow: "Pick a look",
-    headline: "Ten looks. The same places, drawn true.",
-    body: "Switch between looks at any time. Your home, your places, and every bearing stay exactly where they are.",
+    eyebrow: "Start from a preset",
+    headline: "Pick a preset. Make it yours.",
+    body: "Ten designer looks, ready to go. Pick one, drop in your places, then change anything you like: colors, labels, pins, sizes. Your places and every bearing stay exactly where they are. Most people go from blank page to finished design in about five minutes.",
     // The look cards themselves come straight from src/lib/looks/looks.ts so
     // the gallery can never drift from what the studio actually ships.
+    startHere: "Start here",
   },
 
   stories: {

@@ -11,7 +11,7 @@ import { copy, STUDIO_HREF } from "./copy";
 export function GiftSection() {
   const { gift } = copy;
   return (
-    <Section id="gift">
+    <Section id="gift" tone="soft">
       <div className="grid items-center gap-12 md:grid-cols-2 md:gap-16">
         <div
           className="overflow-hidden rounded-xl shadow-[0_24px_48px_-12px_rgba(31,27,22,0.25)]"
