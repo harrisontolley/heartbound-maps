@@ -44,10 +44,15 @@ export const copy = {
     specLine: "Hahnemühle 310gsm · archival giclée · solid oak frames",
     reassurance: "Free to design. Pay only when you print.",
     media: {
-      label: "A framed Pinprint on a panoramic living room wall",
+      label: "A warm living room wall above a long oak sideboard",
       aspect: "33 / 14",
-      src: "/showcase/scene-hero-wide.png",
-      alt: "Framed warm-minimal Pinprint of San Francisco hanging on a warm ivory wall above a long oak sideboard",
+      src: "/showcase/scene-hero-bg.png",
+      alt: "Warm ivory plaster wall above a long oak sideboard with a vase and books",
+    },
+    framed: {
+      label: "The hero print in its oak frame",
+      src: "/showcase/framed-hero.png",
+      alt: "A warm-minimal Pinprint of San Francisco in a natural oak frame",
     },
   },
 

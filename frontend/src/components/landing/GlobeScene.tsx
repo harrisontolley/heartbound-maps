@@ -207,11 +207,11 @@ export default function GlobeScene({
       atmosphereColor="#a9cdec"
       atmosphereAltitude={0.2}
       onGlobeReady={() => {
-        // react-globe fires this synchronously during the commit in some cases;
-        // defer a tick so React never sees a set-state-before-mount.
-        queueMicrotask(() => {
+        // react-globe fires this synchronously during render; a microtask still
+        // lands before the mount commit, so defer with a macrotask.
+        setTimeout(() => {
           if (mountedRef.current) setReady(true);
-        });
+        }, 0);
       }}
       // Country outlines.
       polygonsData={countries}

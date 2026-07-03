@@ -49,9 +49,34 @@ Close-up frame scene (kept for reference; the shipped hero uses the wide scene b
 > frame onto the wall. Cream and clay palette, photorealistic, landscape 3:2
 > composition with the frame just left of center.
 
+## frame-blank-raw.png (→ /showcase/framed-hero.png)
+
+The hero's framed print is a standalone element (`cropToFrame` in
+compose-scenes.ts): poster composited into the black rect at native render
+resolution, then cropped to the frame's outer edge. Wall shadow is CSS.
+
+> Product photograph of a thin natural oak picture frame, photographed
+> perfectly straight-on, filling almost the entire image with only a tiny
+> plain pure white margin around it. Portrait orientation, 2:3 aspect ratio.
+> The area inside the frame is a single uniform solid pure black rectangle:
+> completely flat black, no mat, no glass reflections, no texture. The oak is
+> light, fine-grained, with clean mitred corners. Soft even studio light, no
+> cast shadow, plain pure white background. Photorealistic, ultra sharp.
+
+## scene-hero-bg-raw.png (→ /showcase/scene-hero-bg.png)
+
+The hero background: the wide scene with its frame removed via Gemini EDIT
+mode (input scene-hero-wide-raw.png), so the poster can live in the DOM and
+center against the copy on every viewport.
+
+> Remove the picture frame from the wall completely, leaving clean empty warm
+> ivory plaster wall where it was. Change absolutely nothing else in the
+> image: keep the sideboard, vase, books, dried grasses, lighting and colors
+> exactly the same.
+
 ## scene-hero-wide-raw.png
 
-The shipped hero: panoramic wall, copy overlays the empty left two-thirds. Composited at 2x lanczos upscale so the wall stays sharp full-bleed; the poster is composited at native render resolution.
+Source for the bg edit above; its baked composite is retired.
 
 > Very wide interior photograph of a warm, quiet living room wall in soft
 > morning light, panoramic 21:9 composition. On the right third hangs a large

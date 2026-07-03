@@ -41,16 +41,29 @@ type Composite = {
    * this because the full-bleed hero has no vertical crop slack.
    */
   shiftDown?: number;
+  /**
+   * After compositing, crop the output to the frame's outer edge (for scenes
+   * that are a product shot of a single frame on a plain white background).
+   * The outer edge is found by walking outward from the black rect until the
+   * white backdrop starts. Produces a standalone framed-print element whose
+   * wall shadow is applied in CSS, not baked.
+   */
+  cropToFrame?: boolean;
 };
 
 const SCENES: Composite[] = [
   { out: "scene-hero", scene: "scene-hero-raw.png", poster: "hero-poster" },
+  // Layered hero: frameless room backdrop + a standalone framed print that the
+  // layout positions (so it centers against the copy on every viewport).
+  { out: "scene-hero-bg", scene: "scene-hero-bg-raw.png", poster: null, upscale: 2 },
   {
-    out: "scene-hero-wide",
-    scene: "scene-hero-wide-raw.png",
+    out: "framed-hero",
+    scene: "frame-blank-raw.png",
     poster: "hero-poster",
+    cropToFrame: true,
+    // The oak shell is only ~660px wide in the raw; scale it up before the
+    // native-resolution poster lands inside so the element stays crisp at 2x DPR.
     upscale: 2,
-    shiftDown: 0.06,
   },
   { out: "scene-gift", scene: "scene-gift-raw.png", poster: "story-the-honeymoon" },
   { out: "scene-craft", scene: "scene-craft-raw.png", poster: null },
@@ -133,7 +146,48 @@ function innerShadowSvg(w: number, h: number): Buffer {
   );
 }
 
-async function composeOne({ out, scene, poster, upscale, shiftDown }: Composite) {
+/**
+ * Outer boundary of the frame surrounding `rect` (the black print area): from
+ * each side's midpoint, walk outward across the oak until the near-white studio
+ * backdrop begins.
+ */
+async function frameOuterBounds(
+  img: Sharp,
+  rect: { left: number; top: number; width: number; height: number },
+) {
+  const { data, info } = await img
+    .clone()
+    .raw()
+    .toBuffer({ resolveWithObject: true });
+  const { width, height, channels } = info;
+  const WHITE = 235;
+  const isWhite = (x: number, y: number) => {
+    const i = (y * width + x) * channels;
+    return data[i] > WHITE && data[i + 1] > WHITE && data[i + 2] > WHITE;
+  };
+  const midY = rect.top + Math.round(rect.height / 2);
+  const midX = rect.left + Math.round(rect.width / 2);
+
+  let left = rect.left;
+  while (left > 0 && !isWhite(left - 1, midY)) left--;
+  let right = rect.left + rect.width - 1;
+  while (right < width - 1 && !isWhite(right + 1, midY)) right++;
+  let top = rect.top;
+  while (top > 0 && !isWhite(midX, top - 1)) top--;
+  let bottom = rect.top + rect.height - 1;
+  while (bottom < height - 1 && !isWhite(midX, bottom + 1)) bottom++;
+
+  return { left, top, width: right - left + 1, height: bottom - top + 1 };
+}
+
+async function composeOne({
+  out,
+  scene,
+  poster,
+  upscale,
+  shiftDown,
+  cropToFrame,
+}: Composite) {
   const scenePath = path.join(SCENES_DIR, scene);
   let sceneBuf: Buffer = await readFile(scenePath);
   if (upscale && upscale > 1) {
@@ -173,8 +227,10 @@ async function composeOne({ out, scene, poster, upscale, shiftDown }: Composite)
   const base = sharp(sceneBuf);
 
   let composed: Sharp;
+  let frameBounds: Awaited<ReturnType<typeof frameOuterBounds>> | undefined;
   if (poster) {
     const rect = await findBlackRect(base);
+    if (cropToFrame) frameBounds = await frameOuterBounds(base, rect);
     // Posters are 2:3 but the AI frames only approximate it. Near-ratio frames
     // get a stretch-to-fill (imperceptible under ~6%); wider frames get a
     // contain-fit padded with the poster's own paper color, which reads as the
@@ -208,6 +264,10 @@ async function composeOne({ out, scene, poster, upscale, shiftDown }: Composite)
     ]);
   } else {
     composed = base;
+  }
+
+  if (frameBounds) {
+    composed = sharp(await composed.png().toBuffer()).extract(frameBounds);
   }
 
   const png = await composed

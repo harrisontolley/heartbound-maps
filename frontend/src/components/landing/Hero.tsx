@@ -4,10 +4,14 @@ import { LinkButton } from "./LinkButton";
 import { copy, STUDIO_HREF } from "./copy";
 
 /**
- * Above-the-fold hero: a full-bleed panoramic room scene (real engine-rendered
- * poster composited into the oak frame at native resolution, see
- * scripts/compose-scenes.ts) with the copy overlaid on the empty wall. On
- * small screens the scene sits above the copy instead of behind it.
+ * Above-the-fold hero, layered so the poster centers against the copy on
+ * EVERY viewport: the room (frameless wall + sideboard) is a full-bleed
+ * background, and the framed print is a separate DOM element sharing a grid
+ * row with the copy (`items-center` makes the two centers equal by
+ * construction). The framed print is the native-resolution engine render
+ * inside a photoreal oak frame (scripts/compose-scenes.ts `cropToFrame`), so
+ * it stays pixel-crisp at any DPR; its wall shadow is a CSS drop-shadow.
+ * Below lg the layers stack: framed print centered over the wall, copy below.
  */
 function HeroCopy() {
   const { hero } = copy;
@@ -41,14 +45,32 @@ function HeroCopy() {
   );
 }
 
+function FramedPrint({ className = "" }: { className?: string }) {
+  const { framed } = copy.hero;
+  return (
+    <Image
+      src={framed.src}
+      alt={framed.alt}
+      width={1319}
+      height={1933}
+      priority
+      sizes="(min-width: 1024px) 30vw, 70vw"
+      className={`h-auto [filter:drop-shadow(0_30px_40px_rgba(31,27,22,0.32))] ${className}`}
+      data-hero-poster
+    />
+  );
+}
+
 export function Hero() {
   const { hero } = copy;
   return (
     <div id="top" className="relative">
-      <div className="relative aspect-[16/10] w-full md:aspect-auto md:h-[78vh] md:max-h-[820px] md:min-h-[560px]">
+      {/* Background room: frameless wall + sideboard; any crop is fine. */}
+      <div className="absolute inset-0">
         <Image
           src={hero.media.src}
-          alt={hero.media.alt}
+          alt=""
+          aria-hidden
           fill
           priority
           sizes="100vw"
@@ -57,18 +79,28 @@ export function Hero() {
         {/* Soft ivory wash keeps overlaid copy readable at every crop. */}
         <div
           aria-hidden
-          className="absolute inset-0 hidden bg-[linear-gradient(90deg,rgba(250,248,243,0.88)_0%,rgba(250,248,243,0.55)_38%,rgba(250,248,243,0)_60%)] md:block"
+          className="absolute inset-0 bg-[linear-gradient(90deg,rgba(250,248,243,0.9)_0%,rgba(250,248,243,0.6)_38%,rgba(250,248,243,0.12)_62%)]"
         />
-        <div className="absolute inset-0 hidden items-center md:flex">
-          <div className="mx-auto w-full max-w-[1200px] px-6">
-            <div className="max-w-[520px]">
-              <HeroCopy />
-            </div>
-          </div>
+      </div>
+
+      {/* Desktop: copy and framed print share one centered grid row. */}
+      <div className="relative mx-auto hidden min-h-[560px] w-full max-w-[1200px] items-center px-6 py-20 md:h-[78vh] md:max-h-[820px] lg:grid lg:grid-cols-[1.05fr_0.95fr] lg:gap-12">
+        <div data-hero-copy className="max-w-[560px]">
+          <HeroCopy />
+        </div>
+        <div className="flex items-center justify-center">
+          <FramedPrint className="w-[clamp(300px,30vw,440px)]" />
         </div>
       </div>
-      <div className="mx-auto w-full max-w-[1200px] px-6 py-14 md:hidden">
-        <HeroCopy />
+
+      {/* Stacked (below lg): framed print centered over the wall, copy below. */}
+      <div className="relative lg:hidden">
+        <div className="flex items-center justify-center px-6 py-16">
+          <FramedPrint className="w-[min(70vw,360px)]" />
+        </div>
+        <div className="mx-auto w-full max-w-[1200px] px-6 pb-14">
+          <HeroCopy />
+        </div>
       </div>
     </div>
   );
