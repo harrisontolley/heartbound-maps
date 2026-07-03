@@ -265,7 +265,11 @@ export const copy = {
           },
           {
             q: "Can I get it framed?",
-            a: "Yes. Add a natural oak frame at checkout: solid wood, glass front, arrives wired so it goes straight on the wall. Framed prints use 300gsm cotton rag paper, so there's no compromise on the paper.",
+            a: "Yes. Choose a ready-to-hang frame in the studio: oak or metal, in four colors each (natural, black, white, and walnut oak; or white, black, silver, and gold metal). Every frame is solid, glass-fronted, and arrives wired straight on the wall, no assembly needed. Framed prints use smooth 300gsm cotton rag paper, so there's no compromise on the paper.",
+          },
+          {
+            q: "What's the difference between the frame colors?",
+            a: "Only the look. Every color, in both oak and metal, is the same solid frame, the same glass front, and the same price. Pick whichever suits the wall it's going on.",
           },
           {
             q: "Can I just buy the digital file?",
