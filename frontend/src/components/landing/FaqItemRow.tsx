@@ -2,16 +2,20 @@
 
 import { ANALYTICS_EVENTS } from "@/lib/analytics/events";
 import { useTrackEvent } from "@/lib/analytics/useTrackEvent";
+import { MailingListForm } from "./MailingListForm";
+import type { FaqItem } from "./copy";
 
 /**
  * One FAQ disclosure. Split out from FaqAccordion (a server component) so
- * only this leaf needs client JS, for the onToggle → faq_item_expand capture.
+ * only this leaf needs client JS, for the onToggle → faq_item_expand capture
+ * and for embedding a `formId` widget (e.g. the mailing-list signup) below
+ * the answer.
  */
 export function FaqItemRow({
   item,
   group,
 }: {
-  item: { q: string; a: string };
+  item: Pick<FaqItem, "q" | "a" | "formId">;
   group?: string;
 }) {
   const track = useTrackEvent();
@@ -36,6 +40,11 @@ export function FaqItemRow({
       <p className="mt-3 max-w-[60ch] text-[16px] leading-[1.5] tracking-[0.16px] text-body">
         {item.a}
       </p>
+      {item.formId === "mailing-list-size" && (
+        <div className="max-w-[60ch]">
+          <MailingListForm />
+        </div>
+      )}
     </details>
   );
 }

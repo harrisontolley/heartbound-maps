@@ -1,4 +1,5 @@
 import { FaqItemRow } from "./FaqItemRow";
+import type { FaqItem } from "./copy";
 
 /**
  * Presentational FAQ accordion. Stays a server component itself — each
@@ -11,7 +12,7 @@ export function FaqAccordion({
   items,
   group,
 }: {
-  items: readonly { q: string; a: string; group?: string }[];
+  items: readonly (Pick<FaqItem, "q" | "a" | "formId"> & { group?: string })[];
   group?: string;
 }) {
   return (

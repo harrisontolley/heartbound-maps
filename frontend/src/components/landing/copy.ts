@@ -12,7 +12,13 @@ export const STUDIO_HREF = "/studio";
 export const PRIMARY_CTA = "Create your print";
 
 /** A single FAQ entry. `featured` items are surfaced on the landing-page teaser. */
-export type FaqItem = { q: string; a: string; featured?: boolean };
+export type FaqItem = {
+  q: string;
+  a: string;
+  featured?: boolean;
+  /** Renders an embedded widget below the answer — see FaqItemRow. */
+  formId?: "mailing-list-size";
+};
 /** A category of FAQ entries, rendered as one block on the /faq page. */
 export type FaqGroup = { title: string; items: readonly FaqItem[] };
 
@@ -260,6 +266,11 @@ export const copy = {
           {
             q: "Can I just buy the digital file?",
             a: "Yes. The digital download is a print-ready PNG plus a scalable SVG you can print yourself at any size. Every printed order includes the digital files too.",
+          },
+          {
+            q: "We don't have your size, material, or map style?",
+            a: "We're always adding new sizes, materials, and map styles based on what people ask for. Tell us what you're after and we'll email you the moment it ships.",
+            formId: "mailing-list-size",
           },
         ],
       },
