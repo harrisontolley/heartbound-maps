@@ -73,7 +73,7 @@ export function Hero() {
           fill
           priority
           sizes="100vw"
-          className="object-cover object-[72%_center] lg:object-[68%_center]"
+          className="object-cover object-[72%_center] lg:object-[85%_top]"
         />
         {/* Soft ivory wash keeps overlaid copy readable at every crop. */}
         <div
@@ -94,7 +94,9 @@ export function Hero() {
           <HeroCopy />
         </div>
         <div className="flex items-center justify-center">
-          <FramedPrint className="w-[clamp(300px,30vw,440px)]" />
+          {/* Nudged up so the frame hangs fully on the wall, clear of the
+              sideboard along the bottom of the background scene. */}
+          <FramedPrint className="w-[clamp(270px,26vw,385px)] -translate-y-10" />
         </div>
       </div>
 

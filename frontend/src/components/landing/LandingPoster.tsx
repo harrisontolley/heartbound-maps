@@ -10,29 +10,31 @@ import { getTemplate } from "@/lib/templates/registry";
 import { quadToMatrix3d, type Quad } from "@/lib/mockup/perspective";
 import type { Place } from "@/lib/types";
 
-// Force the Archivo faces the bold-modern template uses to load before we
+// Force the serif faces the celestial template uses to load before we
 // measure, so labels never settle against the swap fallback.
-const FONT_PROBES = ['700 40px "Archivo"', '800 40px "Archivo"'];
+const FONT_PROBES = ['500 40px "Fraunces"', '500 40px "EB Garamond"'];
 
-// The room mockup (an oak frame above a study desk, shot straight-on) and its
+// The room mockup (a moody green lounge: oak frame over a deep green wall,
+// cognac leather chair and brass lamp below, shot straight-on) and its
 // dimensions. The live poster is mapped onto the frame's print area. Generated
-// with the frame interior solid black (scripts/scenes/PROMPTS.md); the quad
-// below is the measured bounding box of that black area.
-const ROOM_SRC = "/showcase/room-study.png";
-const ROOM_W = 1312;
+// with the frame interior solid black (scripts/scenes/PROMPTS.md), then
+// squeezed horizontally so that black area is exactly 2:3; the quad below is
+// its measured bounding box.
+const ROOM_SRC = "/showcase/room-lounge.png";
+const ROOM_W = 1203;
 const ROOM_H = 816;
 
 /**
  * Corners of the print area inside the frame, as fractions of the room image,
  * in [TL, TR, BR, BL] order. The frame is photographed straight-on, so the
- * quad is axis-aligned (measured by scripts/compose-scenes.ts' black-rect
- * detection against scene-room-raw.png).
+ * quad is axis-aligned (measured with compose-scenes.ts' black-rect detection
+ * against scene-room-raw.png, threshold lowered to 8 for the dark wall).
  */
 const PRINT_QUAD: Quad = [
-  [0.3986, 0.1789], // top-left
-  [0.6014, 0.1789], // top-right
-  [0.6014, 0.6458], // bottom-right
-  [0.3986, 0.6458], // bottom-left
+  [0.3516, 0.0748], // top-left
+  [0.6492, 0.0748], // top-right
+  [0.6492, 0.7316], // bottom-right
+  [0.3516, 0.7316], // bottom-left
 ];
 
 /**
@@ -50,7 +52,7 @@ export function LandingPoster({
   home: Place;
   places: Place[];
 }) {
-  const template = getTemplate("bold-modern");
+  const template = getTemplate("celestial");
   const fontsReady = useFontsReady(FONT_PROBES);
   const mounted = useHydrated();
 
@@ -100,7 +102,7 @@ export function LandingPoster({
     >
       <Image
         src={ROOM_SRC}
-        alt="A framed Pinprint piece hanging above a study desk with a brass lamp"
+        alt="A framed Pinprint piece hanging on a deep green wall above a leather armchair and a brass lamp"
         width={ROOM_W}
         height={ROOM_H}
         className="absolute inset-0 h-full w-full object-cover"
@@ -137,22 +139,23 @@ export function LandingPoster({
             title={home.label}
           />
 
-          {/* 1 · Warm printed-paper tone + gentle vignette so the live SVG takes
-              on the room's warm afternoon light instead of reading screen-white. */}
+          {/* 1 · Printed-paper tone + a vignette biased away from the lamp so
+              the live SVG takes on the lounge's low evening light instead of
+              reading screen-bright. */}
           <div
             className="absolute inset-0 mix-blend-multiply"
             style={{
               backgroundImage:
-                "radial-gradient(120% 115% at 40% 35%, rgba(255,255,255,0) 55%, rgba(116,104,86,0.22) 100%), linear-gradient(#f1ead9, #f1ead9)",
+                "radial-gradient(125% 120% at 62% 62%, rgba(255,255,255,0) 50%, rgba(52,46,38,0.3) 100%), linear-gradient(#efe9dc, #efe9dc)",
             }}
           />
 
-          {/* 2 · Faint glass sheen from the window at frame-left. */}
+          {/* 2 · Warm brass-lamp glow catching the glass from the lower right. */}
           <div
             className="absolute inset-0 mix-blend-screen"
             style={{
               backgroundImage:
-                "linear-gradient(105deg, rgba(255,255,255,0.22) 0%, rgba(255,255,255,0.05) 22%, rgba(255,255,255,0) 45%)",
+                "linear-gradient(305deg, rgba(255,196,120,0.18) 0%, rgba(255,214,150,0.06) 26%, rgba(255,255,255,0) 50%)",
             }}
           />
         </div>

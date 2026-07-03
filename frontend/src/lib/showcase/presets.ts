@@ -205,32 +205,40 @@ export const PRESETS: PosterPreset[] = [
   },
 
   // ── Story prints ("Made with Pinprint") ───────────────────────────────────
+  // Each story home is chosen to sit roughly CENTRAL to its places so the
+  // arrows fan out in many directions (≥4 of the 6 compass sextants — checked
+  // with initialBearingDeg when these were authored), and together the six
+  // posters exercise all 8 affiliations.
   {
     slug: "story-where-it-started",
     slot: "story",
     templateId: "vintage-cartography",
     vintageVariant: "classic",
     units: "mi",
-    home: home("Nashville", 36.1627, -86.7816),
+    // Bearings from KC: N, NE, ENE, SE, SSE, W/WSW — a full fan.
+    home: home("Kansas City", 39.0997, -94.5786),
     places: [
       P("Memphis", 35.1495, -90.049, "born"),
-      P("Knoxville", 35.9606, -83.9207, "lived"),
-      P("Asheville", 35.5951, -82.5515, "visited"),
-      P("Chicago", 41.8781, -87.6298, "lived"),
+      P("Minneapolis", 44.9778, -93.265, "studied"),
+      P("Denver", 39.7392, -104.9903, "lived"),
+      P("Chicago", 41.8781, -87.6298, "met"),
       P("New Orleans", 29.9511, -90.0715, "visited"),
+      P("Santa Fe", 35.687, -105.9378, "adventure"),
     ],
   },
   {
     slug: "story-the-honeymoon",
     slot: "story",
     templateId: "celestial",
-    units: "mi",
-    home: home("Seattle", 47.6062, -122.3321),
+    units: "km",
+    // From Auckland: N, ENE, W, WNW, SSW.
+    home: home("Auckland", -36.8485, 174.7633),
     places: [
-      P("Florence", 43.7696, 11.2558, "visited"),
-      P("Santorini", 36.3932, 25.4615, "visited"),
-      P("Paris", 48.8566, 2.3522, "visited"),
-      P("Kyoto", 35.0116, 135.7681, "visited"),
+      P("Rarotonga", -21.2129, -159.7823, "married"),
+      P("Sydney", -33.8688, 151.2093, "lived"),
+      P("Queenstown", -45.0312, 168.6626, "adventure"),
+      P("Nadi", -17.7765, 177.4356, "visited", "Nadi, Fiji"),
+      P("Bali", -8.4095, 115.1889, "visited"),
     ],
   },
   {
@@ -238,12 +246,14 @@ export const PRESETS: PosterPreset[] = [
     slot: "story",
     templateId: "minimal-compass",
     units: "mi",
-    home: home("Portland", 45.5152, -122.6784),
+    // From Denver: NE, ENE, SE, WSW, WNW.
+    home: home("Denver", 39.7392, -104.9903),
     places: [
       P("San Diego", 32.7157, -117.1611, "born"),
-      P("Berkeley", 37.8715, -122.273, "lived"),
-      P("Brooklyn", 40.6782, -73.9442, "lived"),
+      P("Portland", 45.5152, -122.6784, "lived"),
       P("Austin", 30.2672, -97.7431, "lived"),
+      P("Brooklyn", 40.6782, -73.9442, "lived"),
+      P("Minneapolis", 44.9778, -93.265, "studied"),
     ],
   },
   {
@@ -252,13 +262,14 @@ export const PRESETS: PosterPreset[] = [
     templateId: "vintage-cartography",
     vintageVariant: "atlas",
     units: "km",
-    home: home("Toronto", 43.6532, -79.3832),
+    // From London: ENE, E, S, WNW, NNW.
+    home: home("London", 51.5074, -0.1278),
     places: [
-      P("Manila", 14.5995, 120.9842, "family"),
-      P("Lisbon", 38.7223, -9.1393, "family"),
-      P("Accra", 5.6037, -0.187, "family"),
+      P("Hong Kong", 22.3193, 114.1694, "family"),
       P("Mumbai", 19.076, 72.8777, "family"),
-      P("Glasgow", 55.8642, -4.2518, "family"),
+      P("Lagos", 6.5244, 3.3792, "family"),
+      P("Toronto", 43.6532, -79.3832, "family"),
+      P("Reykjavik", 64.1466, -21.9426, "family"),
     ],
   },
   {
@@ -266,13 +277,15 @@ export const PRESETS: PosterPreset[] = [
     slot: "story",
     templateId: "swiss-editorial",
     units: "km",
-    home: home("Bristol", 51.4545, -2.5879),
+    // From Prague: NNE, NW, SE, SSE, SW, WSW.
+    home: home("Prague", 50.0755, 14.4378),
     places: [
-      P("Prague", 50.0755, 14.4378, "lived"),
-      P("Budapest", 47.4979, 19.0402, "visited"),
-      P("Ljubljana", 46.0569, 14.5058, "visited"),
+      P("Lisbon", 38.7223, -9.1393, "visited"),
       P("Athens", 37.9838, 23.7275, "visited"),
+      P("Stockholm", 59.3293, 18.0686, "met"),
       P("Marrakech", 31.6295, -7.9811, "visited"),
+      P("Istanbul", 41.0082, 28.9784, "visited"),
+      P("Edinburgh", 55.9533, -3.1883, "studied"),
     ],
   },
   {
@@ -280,13 +293,14 @@ export const PRESETS: PosterPreset[] = [
     slot: "story",
     templateId: "topographic",
     units: "km",
-    home: home("Wellington", -41.2865, 174.7762),
+    // From Melbourne: NE, E, W, SSE, NNW.
+    home: home("Melbourne", -37.8136, 144.9631),
     places: [
-      P("Christchurch", -43.5321, 172.6362, "born"),
-      P("Dunedin", -45.8788, 170.5028, "lived"),
-      P("Melbourne", -37.8136, 144.9631, "lived"),
-      P("London", 51.5074, -0.1278, "lived"),
-      P("Amsterdam", 52.3676, 4.9041, "lived"),
+      P("Darwin", -12.4634, 130.8456, "born"),
+      P("Perth", -31.9523, 115.8613, "lived"),
+      P("Hobart", -42.8821, 147.3272, "lived"),
+      P("Brisbane", -27.4698, 153.0251, "lived"),
+      P("Auckland", -36.8485, 174.7633, "lived"),
     ],
   },
 
