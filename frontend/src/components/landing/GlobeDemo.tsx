@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { Component, type ReactNode, useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import { Section } from "./Section";
 import { SectionLabel } from "./SectionLabel";
@@ -9,6 +9,7 @@ import { LandingPoster } from "./LandingPoster";
 import { PlaceSearch } from "@/components/controls/PlaceSearch";
 import { copy, STUDIO_HREF } from "./copy";
 import { GLOBE_DEMO_HOME, GLOBE_DEMO_PLACES } from "@/lib/globe/demoData";
+import { isWebGLAvailable } from "@/lib/globe/webgl";
 import type { GeoResult, Place } from "@/lib/types";
 
 // react-globe.gl pulls in three.js and touches the DOM at import, so it must be
@@ -20,6 +21,28 @@ const GlobeScene = dynamic(() => import("./GlobeScene"), {
     <div className="h-full w-full animate-pulse rounded-full bg-surface-strong/40" />
   ),
 });
+
+/**
+ * Catches render-time crashes from the three.js scene (chunk failures, WebGL
+ * context refusals that slip past the capability probe) so a broken globe can
+ * never take the landing page down — the section collapses to the poster-only
+ * layout instead.
+ */
+class GlobeErrorBoundary extends Component<
+  { onError: () => void; children: ReactNode },
+  { failed: boolean }
+> {
+  state = { failed: false };
+  static getDerivedStateFromError() {
+    return { failed: true };
+  }
+  componentDidCatch() {
+    this.props.onError();
+  }
+  render() {
+    return this.state.failed ? null : this.props.children;
+  }
+}
 
 /**
  * The comprehension beat: teaches a first-time visitor how to *read* a Pinprint —
@@ -38,6 +61,19 @@ export function GlobeDemo() {
   const [inView, setInView] = useState(false);
   const [reduceMotion, setReduceMotion] = useState(false);
   const [home, setHome] = useState<Place>(GLOBE_DEMO_HOME);
+  // null until the client-side probe runs (SSR markup renders the globe shell,
+  // so hydration is stable); false collapses to the poster-only layout.
+  const [webglOk, setWebglOk] = useState<boolean | null>(null);
+  const [crashed, setCrashed] = useState(false);
+  const showGlobe = webglOk !== false && !crashed;
+
+  // Probe WebGL before the three.js chunk is ever fetched. Must run in an
+  // effect: during render (or a state initializer) it would execute on the
+  // server too and desync hydration.
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- one-shot read of an external capability
+    setWebglOk(isWebGLAvailable());
+  }, []);
 
   function handleSelectHome(r: GeoResult) {
     setHome({
@@ -92,7 +128,8 @@ export function GlobeDemo() {
     return () => mq.removeEventListener("change", update);
   }, []);
 
-  const ready = inView && size.width > 0 && size.height > 0;
+  const ready =
+    showGlobe && webglOk === true && inView && size.width > 0 && size.height > 0;
 
   return (
     <Section id="accuracy">
@@ -151,29 +188,39 @@ export function GlobeDemo() {
       </div>
 
       {/* The measurement (globe) and its output (poster), both from the same
-          home — change it above and watch both update. */}
-      <div className="mt-12 grid items-center gap-8 md:grid-cols-2 md:gap-10">
-        {/* Square box reserves height so the late mount causes no layout shift. */}
-        <div
-          ref={wrapRef}
-          className="relative mx-auto aspect-square w-full max-w-[560px] max-md:max-w-[min(72vw,400px)]"
-          aria-hidden
-        >
-          {/* Soft contact shadow grounds the (transparent-background) globe. */}
+          home — change it above and watch both update. Without WebGL (or after
+          a globe crash) the poster column alone carries the section: it's live
+          SVG off the same `home` state, so the try-it demo still works. */}
+      <div
+        className={`mt-12 grid items-center gap-8 md:gap-10 ${
+          showGlobe ? "md:grid-cols-2" : ""
+        }`}
+      >
+        {showGlobe && (
+          /* Square box reserves height so the late mount causes no layout shift. */
           <div
-            className="pointer-events-none absolute inset-x-[12%] bottom-[6%] h-[12%] rounded-[50%] bg-[radial-gradient(ellipse_at_center,rgba(12,10,9,0.28),rgba(12,10,9,0)_70%)] blur-md"
+            ref={wrapRef}
+            className="relative mx-auto aspect-square w-full max-w-[560px] max-md:max-w-[min(72vw,400px)]"
             aria-hidden
-          />
-          {ready && (
-            <GlobeScene
-              width={size.width}
-              height={size.height}
-              reduceMotion={reduceMotion}
-              home={home}
-              places={GLOBE_DEMO_PLACES}
+          >
+            {/* Soft contact shadow grounds the (transparent-background) globe. */}
+            <div
+              className="pointer-events-none absolute inset-x-[12%] bottom-[6%] h-[12%] rounded-[50%] bg-[radial-gradient(ellipse_at_center,rgba(12,10,9,0.28),rgba(12,10,9,0)_70%)] blur-md"
+              aria-hidden
             />
-          )}
-        </div>
+            {ready && (
+              <GlobeErrorBoundary onError={() => setCrashed(true)}>
+                <GlobeScene
+                  width={size.width}
+                  height={size.height}
+                  reduceMotion={reduceMotion}
+                  home={home}
+                  places={GLOBE_DEMO_PLACES}
+                />
+              </GlobeErrorBoundary>
+            )}
+          </div>
+        )}
 
         <div className="mx-auto flex w-full max-w-[520px] flex-col items-center gap-3">
           <SectionLabel className="self-start">
