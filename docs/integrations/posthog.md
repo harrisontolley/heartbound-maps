@@ -12,6 +12,8 @@ it (and tests/CI stay clean).
 | `NEXT_PUBLIC_POSTHOG_KEY` | frontend | `phc_…` project key. Safe to expose. |
 | `NEXT_PUBLIC_POSTHOG_HOST` | frontend | `/ingest` — the reverse-proxy path (below). |
 | `NEXT_PUBLIC_POSTHOG_UPSTREAM` | frontend | Region the proxy forwards to (`us`/`eu`). |
+| `POSTHOG_PROJECT_API_KEY` | backend | Same kind of `phc_…` project key, for server-side capture (`backend/src/posthog.ts`). Separate from the frontend's so it can be rotated/disabled independently. Leave unset to disable. |
+| `POSTHOG_HOST` | backend | Capture API base URL, e.g. `https://us.i.posthog.com` (no `/ingest` proxy needed server-side — no ad blocker in the loop). |
 | `POSTHOG_PERSONAL_API_KEY` | backend/MCP | Only for the PostHog MCP server, not the app. |
 
 Project key: <https://us.posthog.com> → Project settings.
@@ -25,6 +27,11 @@ Project key: <https://us.posthog.com> → Project settings.
 - `frontend/src/lib/flags.ts` — `useFeatureFlag(key)` helper (the flag pattern; no flag
   is consumed yet).
 - `frontend/next.config.ts` — `rewrites()` reverse-proxy: `/ingest/*` → PostHog.
+- `frontend/src/lib/analytics/events.ts` + `useTrackEvent.ts` — the typed client
+  event registry; call sites use `useTrackEvent()`, never raw `posthog.capture()`.
+- `backend/src/posthog.ts` — `capturePostHogServerEvent(event, distinctId, props)`,
+  a lazy/env-guarded fetch wrapper (no SDK) for the canonical server-side events
+  (`checkout_completed` in `webhooks.ts`, `order_fulfilled` in `fulfillment.ts`).
 
 ## Reverse proxy (why `/ingest`)
 

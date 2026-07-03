@@ -5,6 +5,7 @@ import { pingDb } from "./db.js";
 import { constructWebhookEvent, isStripeConfigured } from "./stripe.js";
 import { isArteloConfigured, verifyArteloWebhookSignature } from "./artelo.js";
 import { isResendConfigured } from "./email.js";
+import { isPostHogServerConfigured } from "./posthog.js";
 import { isAdminConfigured, isAuthConfigured } from "./auth.js";
 import { isRedisConfigured, pingRedis } from "./redis.js";
 import { extractArteloOrder, handleArteloPayload, handleStripeEvent } from "./webhooks.js";
@@ -55,6 +56,7 @@ function registerRoutes(r: Hono): Hono {
       sentry: isSentryConfigured(),
       maptiler: isMaptilerConfigured(),
       resend: isResendConfigured(),
+      posthog: isPostHogServerConfigured(),
       // Count of vendored print-render TTFs the function can actually see —
       // verifies backend/assets/fonts survived Vercel's bundling (expect 25).
       // 0 here is serious, not cosmetic: resvg 2.6.2 does NOT throw on an empty

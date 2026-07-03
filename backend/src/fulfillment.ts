@@ -1,6 +1,7 @@
 import { arteloProductInfoFor } from "@pinprint/shared";
 import { arteloFetch, getArteloConfig } from "./artelo.js";
 import { signAssetUrl } from "./blob.js";
+import { capturePostHogServerEvent } from "./posthog.js";
 import { ensurePrintAsset, physicalInches } from "./renderPrint.js";
 import { fetchPngDimensions } from "./pngMeta.js";
 import {
@@ -321,6 +322,10 @@ export async function submitOrderToArtelo(orderId: string): Promise<SubmitResult
       message: `Submitted to Artelo${cfg.testOrders ? " (test order)" : ""}`,
       source: "artelo",
     }).catch(() => {});
+    await capturePostHogServerEvent("order_fulfilled", order.id, {
+      order_id: order.id,
+      is_test_order: cfg.testOrders,
+    });
 
     return { submitted: true };
   } catch (err) {
