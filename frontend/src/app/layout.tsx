@@ -40,7 +40,17 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${fontVariables} h-full antialiased`}>
+    // Neon Auth's UI provider (auth-provider.tsx) injects a next-themes-style
+    // blocking script that sets `documentElement.style.colorScheme` before
+    // hydration to avoid a flash of the wrong theme. React's hydration diff
+    // has no way to know that mutation is intentional, so this element (only
+    // this element, not its children) opts out of the mismatch warning —
+    // the standard fix for this exact pattern.
+    <html
+      lang="en"
+      className={`${fontVariables} h-full antialiased`}
+      suppressHydrationWarning
+    >
       <body className="min-h-full bg-canvas text-body">
         <Providers>{children}</Providers>
         <Analytics />
