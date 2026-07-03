@@ -82,7 +82,7 @@ export const copy = {
     steps: [
       {
         title: "Pick a preset, set your home",
-        body: "Start from one of ten designer presets and search for the place you call home. Every arrow and every distance is measured from here. Free to design, no account needed.",
+        body: "Start from one of nine designer presets and search for the place you call home. Every arrow and every distance is measured from here. Free to design, no account needed.",
       },
       {
         title: "Add the places that matter",
@@ -135,7 +135,7 @@ export const copy = {
   styles: {
     eyebrow: "Start from a preset",
     headline: "Pick a preset. Make it yours.",
-    body: "Ten designer looks, ready to go. Pick one, drop in your places, then change anything you like: colors, labels, pins, sizes. Your places and every bearing stay exactly where they are. Most people go from blank page to finished design in about five minutes.",
+    body: "Nine designer looks, ready to go. Pick one, drop in your places, then change anything you like: colors, labels, pins, sizes. Your places and every bearing stay exactly where they are. Most people go from blank page to finished design in about five minutes.",
     // The look cards themselves come straight from src/lib/looks/looks.ts so
     // the gallery can never drift from what the studio actually ships.
     startHere: "Start here",
@@ -243,7 +243,7 @@ export const copy = {
           },
           {
             q: "Can I change the design after I've added places?",
-            a: "Yes. Switch between all ten looks at any time. Your home and places stay exactly where they are.",
+            a: "Yes. Switch between all nine looks at any time. Your home and places stay exactly where they are.",
           },
         ],
       },
