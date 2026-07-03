@@ -88,20 +88,28 @@ Source for the bg edit above; its baked composite is retired.
 > a stack of art books and dried grasses near the right. Warm cream and clay
 > palette, fine-art gallery calm, photorealistic.
 
-## scene-room-raw.png (published as-is at /showcase/room-study.png)
+## scene-room-raw.png (published as-is at /showcase/room-lounge.png)
 
 Used by `LandingPoster.tsx` as the live-mockup room: the LIVE poster SVG is
 CSS-mapped onto the frame's black area at runtime, so this scene is published
 uncomposited. The measured black-rect fractions live in `PRINT_QUAD` there.
+The raw generation's black rect came out ~9% wider than 2:3, so the published
+file is the raw squeezed horizontally (1312→1203 px) until the rect is exactly
+2:3 — regenerate the squeeze if you swap this scene (see PR notes). Black-rect
+detection needs `THRESH ≈ 8` here: the shadowed green wall corners sit under
+the default 40.
 
-> Interior photograph of a calm home study corner in warm afternoon light. A
-> single picture frame hangs on a warm ivory plaster wall above a light oak
-> desk with a closed notebook, a small brass lamp and a ceramic cup. The frame
-> is thin natural oak, portrait orientation, 2:3 aspect ratio, photographed
-> perfectly straight-on with no perspective distortion, frame edges perfectly
-> vertical and horizontal, and the area inside the frame is solid pure black
-> with no mat. Warm cream and oak palette, soft shadows, photorealistic,
-> landscape 16:10 composition with the frame centered.
+> Professional interior photograph, close view of a large picture frame in a
+> moody sophisticated lounge. The frame fills about three quarters of the
+> image height, centered, photographed perfectly straight-on with no
+> perspective distortion, frame edges perfectly vertical and horizontal. Thin
+> natural oak frame, portrait orientation, 2:3 aspect ratio, the entire area
+> inside the frame is a single uniform solid pure black rectangle, completely
+> flat black, no mat, no reflections. The wall is deep forest green painted
+> plaster, clearly green not black, evenly lit enough to stay well above
+> shadow black. At the bottom edge, the top of a cognac leather chair and a
+> small brass table lamp glowing warm. Intimate evening light, photorealistic
+> high-end interior magazine photography, landscape 16:10 composition.
 
 ## scene-gift-raw.png
 

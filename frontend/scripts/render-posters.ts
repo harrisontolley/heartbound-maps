@@ -62,10 +62,13 @@ async function renderOne(
   // The hero poster is rasterized standalone at native/near-native size in
   // the landing hero (see scripts/compose-scenes.ts), so it gets a higher
   // scale and skips palette quantization to avoid banding on the smooth
-  // paper-tone gradient. Every other preset stays palette-quantized at the
-  // default scale — see the comment below on why (noise-texture looks).
+  // paper-tone gradient. Story prints also render at scale 3 (they're the
+  // closest-viewed cards on the landing page) but stay palette-quantized.
+  // Every other preset stays at the default scale — see the comment below
+  // on why (noise-texture looks).
   const hiFi = slug === "hero-poster";
-  const scale = hiFi ? 3 : SCALE; // hero-poster: 1000x1500 -> 3000x4500
+  const preset = PRESETS.find((p) => p.slug === slug);
+  const scale = hiFi || preset?.slot === "story" ? 3 : SCALE; // 3: 1000x1500 -> 3000x4500
 
   const page = await browser.newPage({ viewport: { width: 1000, height: 1500 } });
   try {
