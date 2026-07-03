@@ -1,8 +1,10 @@
 # Stripe
 
-Payments. **Pricing/products are out of scope for now** — this doc covers the
-plumbing that is scaffolded today (client init, webhook signature verification,
-readiness) so the checkout flow can be built later with no surprises.
+Payments. Checkout is fully built: `backend/src/checkout.ts::priceCheckout()`
+prices every cart server-side from `packages/shared/src/commerce.ts` and hands
+Stripe **inline `price_data`** per line item — there is no persistent Stripe
+Product/Price catalogue to manage, even with 8 frame color variants, since the
+price is computed fresh per request rather than looked up by a price ID.
 
 ## Env vars
 
@@ -58,3 +60,35 @@ curl -i -X POST localhost:8787/webhooks/stripe   # no signature → 400
 
 The Stripe MCP server is in `.mcp.json` (`npx @stripe/mcp`, reads `STRIPE_SECRET_KEY`).
 It can inspect test-mode objects and search Stripe docs from the agent session.
+
+## Go-live checklist
+
+Everything above is built and verified in **test mode**. These are the
+remaining steps — all user-executed, none of them a code change — before
+real checkout can accept a real card. Do them in this order:
+
+1. **Register the live webhook endpoint.** Stripe dashboard → Developers →
+   Webhooks → Add endpoint → `https://<your-domain>/webhooks/stripe` (or the
+   Vercel-issued domain if a custom one isn't set up yet — see CLAUDE.md's
+   `NEXT_PUBLIC_SITE_URL` TODO). Subscribe at least to
+   `checkout.session.completed`, `checkout.session.async_payment_succeeded`,
+   `payment_intent.succeeded`, `charge.refunded`, `checkout.session.expired`,
+   and `charge.dispute.created` (the events `backend/src/webhooks.ts::
+   handleStripeEvent` switches on). Copy the endpoint's signing secret.
+2. **Add the live keys to Vercel Production**: `STRIPE_SECRET_KEY` (`sk_live_…`),
+   `STRIPE_WEBHOOK_SECRET` (the `whsec_…` from step 1). **This is currently
+   missing** — verified 2026-07-03 via `vercel env ls production`; every
+   webhook delivery 400s until it's set (see CLAUDE.md's Pre-launch TODO).
+   `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` isn't actually used yet (Checkout is
+   server-redirected, not Stripe.js-embedded) — skip it unless that changes.
+3. **No product/price migration needed.** Since pricing is dynamic
+   `price_data`, there's nothing to "promote" from test to live mode — the
+   same code path just starts hitting Stripe's live API once the key changes.
+4. **Run one real test-card purchase against the live-configured deploy**
+   before announcing launch, including a framed variant — confirm the order
+   reaches `paid`, a `fulfillments` row appears, and the digital-delivery
+   email sends. (Once real, immediately also flip `ARTELO_TEST_ORDERS` to
+   `false` in Vercel — see docs/integrations/artelo.md — or Stripe will
+   charge real money for orders Artelo silently never produces.)
+5. **Revert to test mode is just as easy**: swap the keys back. Nothing else
+   depends on which mode is active.

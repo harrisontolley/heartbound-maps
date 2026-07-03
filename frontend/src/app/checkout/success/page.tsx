@@ -10,6 +10,8 @@ import { CartNav } from "@/components/cart/CartNav";
 import { Card } from "@/components/account/Card";
 import { Button } from "@/components/ui/Button";
 import { useCartStore } from "@/lib/store/cartStore";
+import { ANALYTICS_EVENTS } from "@/lib/analytics/events";
+import { useTrackEvent } from "@/lib/analytics/useTrackEvent";
 
 // Order confirmation. Stripe redirects here with ?session_id=… after payment.
 // We look the order up by session id and poll briefly: the order exists
@@ -31,6 +33,20 @@ export default function CheckoutSuccessPage() {
   const [orderNumber, setOrderNumber] = useState<string | null>(null);
   const [status, setStatus] = useState<OrderStatus | null>(null);
   const [state, setState] = useState<"loading" | "ready" | "error">("loading");
+  const track = useTrackEvent();
+
+  // Client-side, low-trust signal that the buyer actually landed here — the
+  // canonical checkout_completed is captured server-side (backend/src/
+  // webhooks.ts) so it's trustworthy even if this page never loads.
+  useEffect(() => {
+    if (orderNumber && status) {
+      track(ANALYTICS_EVENTS.checkoutSuccessViewed, {
+        order_number: orderNumber,
+        status,
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [orderNumber, status]);
 
   // Clear the cart once, after hydration finishes (otherwise the global
   // rehydrate could repopulate it from localStorage after we've cleared).
