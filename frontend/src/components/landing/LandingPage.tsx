@@ -20,12 +20,14 @@ import { MobileCtaBar } from "./MobileCtaBar";
  * imagery is real engine renders or composited lifestyle scenes
  * (scripts/compose-scenes.ts).
  *
- * Order: emotional hook (Hero) → quality facts (TrustLine) → mechanics
- * (HowItWorks) → range (StyleGallery) → outcomes (Stories) → authority
+ * Order: emotional hook (Hero) → quality facts (TrustLine) → outcomes
+ * (Stories: emotive proof of what people actually made) → range
+ * (StyleGallery: pick a preset, make it yours) → mechanics (HowItWorks:
+ * design free → download free → or printed and shipped free) → authority
  * (GlobeDemo: the accuracy story with the live globe) → materials (Craft) →
- * gifting (Gift) → price → objections (FAQ) → close (FinalCTA). The visual
- * proof (gallery, stories) comes before the heavy interactive globe so a
- * first scroll — especially on a phone — sells the object before the demo.
+ * price (PricingPreview: the launch sale, after value is built) → gifting →
+ * objections (FAQ) → close (FinalCTA). Emotional proof leads and the sale
+ * lands late, once the object and the craft have justified the number.
  */
 export function LandingPage() {
   return (
@@ -33,13 +35,13 @@ export function LandingPage() {
       <SiteHeader />
       <Hero />
       <TrustLine />
-      <HowItWorks />
-      <StyleGallery />
       <Stories />
+      <StyleGallery />
+      <HowItWorks />
       <GlobeDemo />
       <CraftSection />
-      <GiftSection />
       <PricingPreview />
+      <GiftSection />
       <FAQ />
       <FinalCTA />
       <SiteFooter />
