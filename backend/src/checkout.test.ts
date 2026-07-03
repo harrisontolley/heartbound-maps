@@ -65,7 +65,7 @@ describe("priceCheckout — server price authority", () => {
     }
   });
 
-  it("rejects a malformed frame (mismatched material/color pair)", () => {
+  it("rejects a malformed frame on a print (mismatched material/color pair)", () => {
     expect(() =>
       priceCheckout([
         {
@@ -75,7 +75,22 @@ describe("priceCheckout — server price authority", () => {
           quantity: 1,
         },
       ]),
-    ).toThrow(CheckoutValidationError);
+    ).toThrow(/invalid_frame/);
+  });
+
+  it("writes the validated frame into posterConfig for a framed print", () => {
+    // This is the value fulfilment later reads to pick Artelo's frame.
+    const frame = { material: "Metal" as const, color: "BlackMetal" as const };
+    const { orderItems } = priceCheckout([
+      {
+        productId: "portrait-16x24",
+        format: "print",
+        frame,
+        quantity: 1,
+        posterConfig: { templateId: "vintage" },
+      },
+    ]);
+    expect(orderItems[0].posterConfig).toEqual({ templateId: "vintage", frame });
   });
 
   it("prices digital flat and never marks the cart physical", () => {
@@ -84,6 +99,20 @@ describe("priceCheckout — server price authority", () => {
       { productId: "portrait-24x36", format: "digital", frame: { material: "Oak", color: "NaturalOak" }, quantity: 3 },
     ]);
     expect(orderItems[0].unitPriceCents).toBe(DIGITAL_PRICE_CENTS);
+    expect(hasPhysical).toBe(false);
+  });
+
+  it("ignores even a malformed frame on a digital item (coerced to null, not a 400)", () => {
+    const { orderItems, hasPhysical } = priceCheckout([
+      {
+        productId: "portrait-16x24",
+        format: "digital",
+        frame: { material: "Oak", color: "GoldMetal" } as never,
+        quantity: 1,
+      },
+    ]);
+    expect(orderItems[0].unitPriceCents).toBe(DIGITAL_PRICE_CENTS);
+    expect(orderItems[0].posterConfig).toEqual({ frame: null });
     expect(hasPhysical).toBe(false);
   });
 

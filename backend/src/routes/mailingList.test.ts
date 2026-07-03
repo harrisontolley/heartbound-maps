@@ -137,6 +137,14 @@ describe("POST /mailing-list — success", () => {
   });
 });
 
+describe("POST /mailing-list — Vercel service prefix mount", () => {
+  it("also serves the route at /_/backend (Vercel doesn't strip the prefix)", async () => {
+    const res = await post("/_/backend/mailing-list", signupBody());
+    expect(res.status).toBe(202);
+    expect(await res.json()).toEqual({ status: "subscribed" });
+  });
+});
+
 describe("POST /mailing-list — rate limiting", () => {
   it("429s after the per-window cap", async () => {
     for (let i = 0; i < 5; i++) {

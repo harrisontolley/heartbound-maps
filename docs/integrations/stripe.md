@@ -84,10 +84,15 @@ real checkout can accept a real card. Do them in this order:
 3. **No product/price migration needed.** Since pricing is dynamic
    `price_data`, there's nothing to "promote" from test to live mode — the
    same code path just starts hitting Stripe's live API once the key changes.
-4. **Run one real test-card purchase against the live-configured deploy**
-   before announcing launch, including a framed variant — confirm the order
-   reaches `paid`, a `fulfillments` row appears, and the digital-delivery
-   email sends. (Once real, immediately also flip `ARTELO_TEST_ORDERS` to
+4. **Run real test-card purchases against the live-configured deploy**
+   before announcing launch, including one framed order **per material (one
+   oak, one metal)** — confirm each order reaches `paid`, a `fulfillments`
+   row appears, and the digital-delivery email sends. Per-material matters:
+   only `PremiumOak`/`NaturalOak` has ever been verified against Artelo's
+   live order validator (the 2026-07-03 COGS spike only priced the others),
+   and `submitOrderToArtelo` swallows submission errors — a rejected
+   frameStyle/frameColor combo would be a paid order that silently never
+   gets produced. (Once real, immediately also flip `ARTELO_TEST_ORDERS` to
    `false` in Vercel — see docs/integrations/artelo.md — or Stripe will
    charge real money for orders Artelo silently never produces.)
 5. **Revert to test mode is just as easy**: swap the keys back. Nothing else

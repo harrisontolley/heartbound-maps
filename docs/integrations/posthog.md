@@ -85,13 +85,15 @@ since they must be trustworthy even when client JS never runs.
 | `faq_item_expand` | An FAQ `<details>` opened (`FaqItemRow`) | `question`, `group` |
 | `studio_step_advance` | Wizard step changes (`PosterStudio.goTo`) | `from_step`, `to_step`, `direction` (`next`/`back`/`jump`) |
 | `look_selected` | A look card picked, in the studio grid or the landing style gallery | `look_id`, `template_id`, `source` (`studio_grid`/`landing_gallery`) |
-| `place_added` | A place added/promoted in the studio (`StepPlaces`) | `places_count`, `outcome` (`home`/`added`/`duplicate`) |
+| `place_added` | A place added/promoted in the studio (`StepPlaces`) | `places_count`, `affiliation_type`, `outcome` (`home`/`added`/`duplicate`) |
 | `size_selected` | A size card picked (`SizePicker`) | `product_id`, `price_cents` |
-| `frame_selected` | Frame material/color chosen (once the frame picker ships) | `frame_material`, `frame_color`, `upcharge_cents` |
+| `frame_selected` | Frame material/color chosen (`FrameUpsellCard`) | `frame_material`, `frame_color`, `upcharge_cents` |
 | `add_to_cart` | An item added to cart (`PosterStudio.addToCart`) | `product_id`, `format`, `framed` |
-| `mailing_list_signup` | Mailing-list form submitted (once it ships) | `reasons`, `has_other_text` |
-| `checkout_started` / `checkout_failed` | Cart checkout click / API error (once wired) | `cart_item_count`, `subtotal_cents` / `error_code` |
-| `checkout_success_viewed` | Success page resolves order status (once wired) | `order_number`, `status` |
-| `checkout_completed` *(server)* | Order marked paid (webhook) | `order_id`, `total_cents`, `has_physical` |
+| `mailing_list_signup` | Mailing-list form submitted (`MailingListForm`) | `reasons`, `has_other_text` |
+| `checkout_started` / `checkout_failed` | Cart checkout click / API error (`cart/page.tsx`) | `cart_item_count`, `subtotal_cents` / `error_code` |
+| `checkout_success_viewed` | Success page resolves order status (`checkout/success`, once per order) | `order_number`, `status` |
+| `checkout_completed` *(server)* | Order marked paid (webhook) | `order_id`, `total_cents`, `currency` |
 | `order_fulfilled` *(server)* | Artelo submission succeeds | `order_id`, `is_test_order` |
-| `admin_action` *(server)* | Any admin mutation | `action`, `order_id`, `is_staff: true` |
+
+Admin mutations are deliberately *not* PostHog events — they're durably logged to
+the `admin_actions` table (see `docs/admin.md`), which is the better audit trail.

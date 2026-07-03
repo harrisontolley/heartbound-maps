@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { SignedIn } from "@neondatabase/auth/react/ui";
 import type { CheckoutOrderStatus, OrderStatus } from "@pinprint/shared";
@@ -37,9 +37,13 @@ export default function CheckoutSuccessPage() {
 
   // Client-side, low-trust signal that the buyer actually landed here — the
   // canonical checkout_completed is captured server-side (backend/src/
-  // webhooks.ts) so it's trustworthy even if this page never loads.
+  // webhooks.ts) so it's trustworthy even if this page never loads. Fired once
+  // per order: the poll below flips `status` pending_payment → paid, and the
+  // effect must not re-fire on that transition (it would double-count views).
+  const trackedOrder = useRef<string | null>(null);
   useEffect(() => {
-    if (orderNumber && status) {
+    if (orderNumber && status && trackedOrder.current !== orderNumber) {
+      trackedOrder.current = orderNumber;
       track(ANALYTICS_EVENTS.checkoutSuccessViewed, {
         order_number: orderNumber,
         status,

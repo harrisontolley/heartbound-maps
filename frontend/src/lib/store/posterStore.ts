@@ -12,7 +12,11 @@ import {
   type Customization,
 } from "../templates/customize";
 import { DEFAULT_PRODUCT_ID } from "../commerce/printProducts";
-import type { StudioFormat, FrameSelection } from "../commerce/price";
+import {
+  DEFAULT_FRAME_COLOR,
+  type StudioFormat,
+  type FrameSelection,
+} from "../commerce/price";
 import { LOOKS_BY_ID, type LookId } from "../looks/looks";
 import { SEED_HOME, SEED_PLACES } from "../seed";
 
@@ -198,7 +202,10 @@ export const usePosterStore = create<PosterState>()(
         customization: s.customization,
       }),
       merge: (persisted, current) => {
-        const p = (persisted ?? {}) as Partial<PosterState>;
+        const { addFrame, ...p } = (persisted ?? {}) as Partial<PosterState> & {
+          /** Pre-frame-picker drafts stored a boolean toggle instead of `frame`. */
+          addFrame?: boolean;
+        };
         return {
           ...current,
           ...p,
@@ -207,6 +214,14 @@ export const usePosterStore = create<PosterState>()(
             p.templateId && p.templateId in TEMPLATES
               ? p.templateId
               : current.templateId,
+          // Drafts saved before the frame picker carry `addFrame` and no `frame`
+          // key; addFrame:true meant the one frame sold then (today's default).
+          frame:
+            "frame" in p
+              ? (p.frame ?? null)
+              : addFrame
+                ? { material: "Oak", color: DEFAULT_FRAME_COLOR }
+                : null,
           // Backfill any customization keys added since the draft was saved.
           customization: { ...DEFAULT_CUSTOMIZATION, ...(p.customization ?? {}) },
         };

@@ -2,8 +2,8 @@
  * Canonical PostHog event names + property shapes for the whole app. Single
  * source of truth so event names never drift between call sites — see
  * docs/integrations/posthog.md for the full taxonomy table and rationale.
- * Server-side events (checkout_completed, order_fulfilled, admin_action) are
- * defined in backend/src/posthog.ts instead, since they're captured there.
+ * Server-side events (checkout_completed, order_fulfilled) are defined in
+ * backend/src/posthog.ts instead, since they're captured there.
  */
 
 export const ANALYTICS_EVENTS = {

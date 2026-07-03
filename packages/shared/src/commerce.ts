@@ -431,7 +431,7 @@ export function selectionLineItems({
     ...(frame
       ? [
           {
-            label: `Ready-to-hang frame — ${FRAME_COLOR_LABELS[frame.color]}`,
+            label: `Ready-to-hang frame in ${FRAME_COLOR_LABELS[frame.color]}`,
             cents: product.frameUpchargeCents,
           },
         ]

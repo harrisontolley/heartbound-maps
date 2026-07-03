@@ -71,7 +71,13 @@ export function StyleGallery() {
       </div>
 
       <div className="mt-12">
-        <LinkButton href={STUDIO_HREF} variant="outline" size="md">
+        <LinkButton
+          href={STUDIO_HREF}
+          variant="outline"
+          size="md"
+          trackId="style_gallery"
+          trackLocation="style_gallery"
+        >
           {PRIMARY_CTA}
         </LinkButton>
       </div>

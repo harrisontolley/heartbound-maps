@@ -93,7 +93,7 @@ describe("selectionLineItems", () => {
       product,
       frame: oakFrame,
     });
-    expect(items.map((i) => i.label)).toContain("Ready-to-hang frame — Natural Oak");
+    expect(items.map((i) => i.label)).toContain("Ready-to-hang frame in Natural Oak");
   });
 
   it("is just the paid digital download in digital mode", () => {

@@ -31,7 +31,6 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
 export function StepPlaces() {
   const home = usePosterStore((s) => s.home);
   const addFromGeo = usePosterStore((s) => s.addFromGeo);
-  const places = usePosterStore((s) => s.places);
   const [notice, setNotice] = useState<string | null>(null);
   const track = useTrackEvent();
 
@@ -46,7 +45,10 @@ export function StepPlaces() {
     else if (result === "home") flash(`${r.label} set as home`);
     else flash(`Added ${r.label}`);
     track(ANALYTICS_EVENTS.placeAdded, {
-      places_count: places.length,
+      // Read the store, not the render snapshot — addFromGeo just mutated it.
+      places_count: usePosterStore.getState().places.length,
+      // Mirrors the affiliations addFromGeo assigns (home = lived).
+      affiliation_type: result === "home" ? "lived" : "visited",
       outcome: result,
     });
   }

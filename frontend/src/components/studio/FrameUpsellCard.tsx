@@ -102,7 +102,7 @@ export function FrameUpsellCard() {
             </span>
           </span>
           <span className="text-xs text-muted">
-            Premium oak or metal, glass front — arrives wired, ready to hang.
+            Premium oak or metal with a glass front. Arrives wired, ready to hang.
           </span>
         </span>
       </label>

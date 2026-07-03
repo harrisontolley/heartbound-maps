@@ -84,10 +84,12 @@ export function priceCheckout(items: CheckoutItemInput[]): PricedCheckout {
     if (it.svgAssetUrl && !isAllowedAssetUrl(it.svgAssetUrl)) {
       throw new CheckoutValidationError("invalid_asset_url");
     }
-    // A frame only ever applies to a print; digital always ignores it. A
-    // present-but-malformed frame is a validation error (never silently
-    // dropped) — a tampered/buggy client should 400, not quietly go unframed.
-    if (it.frame !== null && it.frame !== undefined && !isValidFrame(it.frame)) {
+    // A frame only ever applies to a print; digital ignores whatever was sent
+    // (a valid one is already silently dropped below, so a malformed one gets
+    // the same treatment). On a print, a present-but-malformed frame is a
+    // validation error (never silently dropped) — a tampered/buggy client
+    // should 400, not quietly go unframed.
+    if (isPrint && it.frame != null && !isValidFrame(it.frame)) {
       throw new CheckoutValidationError("invalid_frame");
     }
     const frame: FrameSelection = isPrint && isValidFrame(it.frame) ? it.frame : null;
