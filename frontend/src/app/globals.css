@@ -45,6 +45,39 @@
   --radius-xl: 16px;
   --radius-xxl: 24px;
   --radius-pill: 9999px;
+
+  /* Type scale — one fluid clamp per level so headings share leading/tracking
+     instead of re-typing bespoke clusters per section. Usage: text-display
+     (hero h1), text-title (page h1 / FinalCTA), text-heading (section h2),
+     text-heading-sm (in-page h2), text-copy (body copy everywhere). */
+  --text-display: clamp(2.375rem, 5.5vw, 4rem);
+  --text-display--line-height: 1.04;
+  --text-display--letter-spacing: -0.02em;
+  --text-title: clamp(2rem, 5vw, 2.75rem);
+  --text-title--line-height: 1.1;
+  --text-title--letter-spacing: -0.01em;
+  --text-heading: clamp(1.75rem, 4vw, 2.25rem);
+  --text-heading--line-height: 1.15;
+  --text-heading--letter-spacing: -0.01em;
+  --text-heading-sm: clamp(1.5rem, 3.6vw, 2rem);
+  --text-heading-sm--line-height: 1.18;
+  --text-heading-sm--letter-spacing: -0.01em;
+  --text-copy: 1rem;
+  --text-copy--line-height: 1.55;
+  --text-copy--letter-spacing: 0.01em;
+
+  /* Shadows — ink-tinted, replacing bespoke rgba() literals. */
+  --shadow-card: 0 8px 24px rgba(31, 27, 22, 0.08);
+  --shadow-menu: 0 12px 32px rgba(31, 27, 22, 0.12);
+  --drop-shadow-print: 0 30px 40px rgba(31, 27, 22, 0.32);
+}
+
+/* Shared page container: the 1200px editorial column with standard gutters. */
+@utility container-page {
+  margin-inline: auto;
+  width: 100%;
+  max-width: 1200px;
+  padding-inline: 1.5rem;
 }
 
 /* Font tokens reference the next/font variables set on <html>, so they stay in the
