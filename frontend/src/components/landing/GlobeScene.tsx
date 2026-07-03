@@ -15,6 +15,7 @@ import {
   type GlobeArc,
   type GlobePoint,
 } from "@/lib/globe/arcs";
+import { homePov } from "@/lib/globe/pov";
 
 /**
  * The actual react-globe.gl (three.js) scene. This is the ONLY module that pulls
@@ -36,15 +37,6 @@ const LAND_SIDE = "rgba(40,80,50,0.25)"; // faint extruded edge
 const BORDER = "#3a6b4f"; // darker green country lines
 
 const POV_MS = 1200; // camera glide duration
-
-/** Camera framing centered on the home (clamped off the poles). */
-function homePov(home: Place) {
-  return {
-    lat: Math.max(-55, Math.min(70, home.lat)),
-    lng: home.lng,
-    altitude: 2.2,
-  };
-}
 
 /** Natural Earth feature — only the fields we touch. */
 type GeoFeature = { geometry: { type: string; coordinates: unknown } };
@@ -124,22 +116,20 @@ export default function GlobeScene({
   places,
 }: Props) {
   const globeRef = useRef<GlobeMethods | undefined>(undefined);
-  // Starts false so callbacks fired synchronously during the first render
-  // (react-globe's onGlobeReady) can't set state before the mount commit;
-  // the mount effect below flips it true.
-  const mountedRef = useRef(false);
+  // react-globe fires onGlobeReady synchronously DURING render, and it fires
+  // only once — if that one signal is lost, the glide/lights/callouts below
+  // never arm. So the callback records it in a ref (safe mid-render) and the
+  // mount effect reconciles it into state after the commit. The setTimeout in
+  // onGlobeReady covers the reverse ordering (commit before the callback).
+  const globeReadyRef = useRef(false);
   const [ready, setReady] = useState(false);
   const { arcs, points } = useMemo(
     () => buildGlobeData(home, places),
     [home, places],
   );
 
-  // Guard async globe callbacks against StrictMode/HMR unmounts (dev only).
   useEffect(() => {
-    mountedRef.current = true;
-    return () => {
-      mountedRef.current = false;
-    };
+    if (globeReadyRef.current || globeRef.current) setReady(true);
   }, []);
 
   // Solid ocean sphere; country polygons sit just above it. A cool specular
@@ -210,11 +200,10 @@ export default function GlobeScene({
       atmosphereColor="#a9cdec"
       atmosphereAltitude={0.2}
       onGlobeReady={() => {
-        // react-globe fires this synchronously during render; a microtask still
-        // lands before the mount commit, so defer with a macrotask.
-        setTimeout(() => {
-          if (mountedRef.current) setReady(true);
-        }, 0);
+        globeReadyRef.current = true;
+        // Fires synchronously during render; defer the state flip past the
+        // commit (a microtask can still land before it, hence a macrotask).
+        setTimeout(() => setReady(true), 0);
       }}
       // Country outlines.
       polygonsData={countries}
