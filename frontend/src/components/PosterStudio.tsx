@@ -60,7 +60,7 @@ export function PosterStudio() {
   const bearingMode = usePosterStore((s) => s.bearingMode);
   const productId = usePosterStore((s) => s.productId);
   const format = usePosterStore((s) => s.format);
-  const addFrame = usePosterStore((s) => s.addFrame);
+  const frame = usePosterStore((s) => s.frame);
   const customization = usePosterStore((s) => s.customization);
   const resetDesign = usePosterStore((s) => s.resetDesign);
 
@@ -203,7 +203,10 @@ export function PosterStudio() {
     track(ANALYTICS_EVENTS.addToCart, {
       product_id: selection.productId,
       format: selection.format,
-      framed: selection.addFrame,
+      framed: selection.frame !== null,
+      ...(selection.frame
+        ? { frame_material: selection.frame.material, frame_color: selection.frame.color }
+        : {}),
     });
     setJustAdded(true);
     window.setTimeout(() => setJustAdded(false), 2500);
@@ -256,7 +259,7 @@ export function PosterStudio() {
         <BuyBar
           product={product}
           format={format}
-          addFrame={addFrame}
+          frame={frame}
           canBuy={!!home}
           justAdded={justAdded}
           busy={addingToCart}

@@ -9,6 +9,7 @@ import {
   buildSelection,
   type StudioFormat,
   type StudioSelection,
+  type FrameSelection,
 } from "@/lib/commerce/price";
 import type { PrintProduct } from "@/lib/commerce/printProducts";
 import {
@@ -25,7 +26,7 @@ import {
 export function BuyBar({
   product,
   format,
-  addFrame,
+  frame,
   canBuy,
   justAdded = false,
   busy = false,
@@ -33,7 +34,7 @@ export function BuyBar({
 }: {
   product: PrintProduct;
   format: StudioFormat;
-  addFrame: boolean;
+  frame: FrameSelection;
   /** False until a home is set (mirrors export gating). */
   canBuy: boolean;
   /** True for a moment after an add, to show the confirmation link. */
@@ -42,8 +43,8 @@ export function BuyBar({
   busy?: boolean;
   onAddToCart: (selection: StudioSelection) => void;
 }) {
-  const total = selectionTotalCents({ format, product, addFrame });
-  const items = selectionLineItems({ format, product, addFrame });
+  const total = selectionTotalCents({ format, product, frame });
+  const items = selectionLineItems({ format, product, frame });
   const savedCents = items.reduce(
     (sum, it) => sum + Math.max(0, (it.listCents ?? it.cents) - it.cents),
     0,
@@ -58,7 +59,7 @@ export function BuyBar({
   const subtitle =
     format === "digital"
       ? "Print-ready 300 DPI files (PNG + SVG)"
-      : addFrame
+      : frame
         ? "Premium-framed cotton-rag fine art print · digital file included"
         : "Hahnemühle German Etching 310gsm fine art print · digital file included";
 
@@ -114,7 +115,7 @@ export function BuyBar({
             variant="primary"
             className="shrink-0 whitespace-nowrap"
             onClick={() =>
-              onAddToCart(buildSelection({ format, product, addFrame }))
+              onAddToCart(buildSelection({ format, product, frame }))
             }
             disabled={!canBuy || busy}
             title={canBuy ? "Add to cart" : "Add a place to start"}

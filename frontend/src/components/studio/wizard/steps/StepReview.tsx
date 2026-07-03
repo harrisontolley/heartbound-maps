@@ -3,6 +3,7 @@
 import { usePosterStore } from "@/lib/store/posterStore";
 import { activeLookId, LOOKS_BY_ID } from "@/lib/looks/looks";
 import { PRODUCTS_BY_ID } from "@/lib/commerce/printProducts";
+import { FRAME_COLOR_LABELS } from "@/lib/commerce/price";
 import { FreeDesignForm } from "./FreeDesignForm";
 
 /**
@@ -25,7 +26,7 @@ export function StepReview({
   const vintageVariant = usePosterStore((s) => s.vintageVariant);
   const productId = usePosterStore((s) => s.productId);
   const format = usePosterStore((s) => s.format);
-  const addFrame = usePosterStore((s) => s.addFrame);
+  const frame = usePosterStore((s) => s.frame);
 
   const lookId = activeLookId(templateId, vintageVariant);
   const lookLabel = lookId ? LOOKS_BY_ID[lookId].label : "Custom";
@@ -33,7 +34,7 @@ export function StepReview({
   const sizeLabel =
     format === "digital"
       ? "Digital download"
-      : `${product.label}${addFrame ? " · framed" : ""}`;
+      : `${product.label}${frame ? ` · ${FRAME_COLOR_LABELS[frame.color]} frame` : ""}`;
 
   const rows = [
     { k: "Style", v: lookLabel },

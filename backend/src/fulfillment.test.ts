@@ -69,7 +69,7 @@ describe("buildCreateOrderBody", () => {
     expect(item.productInfo.designs[0].sourceImage.url).toBe("https://blob.example/poster.png");
   });
 
-  it("includes frame attributes when the buyer added a frame", () => {
+  it("includes frame attributes for a legacy addFrame:true order (pre-frame-picker)", () => {
     const o = order({
       items: [
         {
@@ -91,6 +91,81 @@ describe("buildCreateOrderBody", () => {
       includeFramingService: true,
       frameStyle: "PremiumOak",
       frameColor: "NaturalOak",
+    });
+  });
+
+  it("includes frame attributes for the current {material, color} shape (Oak)", () => {
+    const o = order({
+      items: [
+        {
+          id: "item-1",
+          productId: "portrait-16x24",
+          productLabel: "16 × 24 in print (framed)",
+          quantity: 1,
+          unitPriceCents: 16900,
+          assetUrl: "https://blob.example/poster.png",
+          svgAssetUrl: null,
+          renderAssetUrl: null,
+          posterConfig: { format: "print", frame: { material: "Oak", color: "WalnutOak" } },
+        },
+      ],
+    });
+    const body = buildCreateOrderBody(o, false);
+    expect(body.items[0].productInfo).toMatchObject({
+      paperType: "HotPressFineArt",
+      includeFramingService: true,
+      frameStyle: "PremiumOak",
+      frameColor: "WalnutOak",
+    });
+  });
+
+  it("includes frame attributes for the current {material, color} shape (Metal)", () => {
+    const o = order({
+      items: [
+        {
+          id: "item-1",
+          productId: "portrait-16x24",
+          productLabel: "16 × 24 in print (framed)",
+          quantity: 1,
+          unitPriceCents: 16900,
+          assetUrl: "https://blob.example/poster.png",
+          svgAssetUrl: null,
+          renderAssetUrl: null,
+          posterConfig: { format: "print", frame: { material: "Metal", color: "GoldMetal" } },
+        },
+      ],
+    });
+    const body = buildCreateOrderBody(o, false);
+    expect(body.items[0].productInfo).toMatchObject({
+      paperType: "HotPressFineArt",
+      includeFramingService: true,
+      frameStyle: "PremiumMetal",
+      frameColor: "GoldMetal",
+    });
+  });
+
+  it("treats a malformed frame (mismatched material/color) as unframed rather than guessing", () => {
+    const o = order({
+      items: [
+        {
+          id: "item-1",
+          productId: "portrait-16x24",
+          productLabel: "16 × 24 in print",
+          quantity: 1,
+          unitPriceCents: 9500,
+          assetUrl: "https://blob.example/poster.png",
+          svgAssetUrl: null,
+          renderAssetUrl: null,
+          posterConfig: { format: "print", frame: { material: "Oak", color: "GoldMetal" } },
+        },
+      ],
+    });
+    const body = buildCreateOrderBody(o, false);
+    expect(body.items[0].productInfo).toMatchObject({
+      paperType: "GermanEtchingFineArt",
+      includeFramingService: false,
+      frameStyle: "Unframed",
+      frameColor: "Unframed",
     });
   });
 

@@ -10,10 +10,17 @@ export {
   selectionTotalCents,
   selectionLineItems,
   buildSelection,
+  FRAME_MATERIALS,
+  FRAME_COLORS_BY_MATERIAL,
+  FRAME_COLOR_LABELS,
+  DEFAULT_FRAME_COLOR,
 } from "@pinprint/shared";
 
 export type {
   StudioFormat,
   StudioLineItem,
   StudioSelection,
+  FrameMaterial,
+  FrameColor,
+  FrameSelection,
 } from "@pinprint/shared";

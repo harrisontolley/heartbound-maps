@@ -10,6 +10,7 @@ import { PRODUCTS_BY_ID } from "./printProducts";
 import { DIGITAL_PRICE_CENTS, DIGITAL_LIST_PRICE_CENTS } from "./pricing";
 
 const product = PRODUCTS_BY_ID["portrait-16x24"];
+const oakFrame = { material: "Oak" as const, color: "NaturalOak" as const };
 
 describe("formatUsd", () => {
   it("renders integer cents as US dollars", () => {
@@ -38,19 +39,26 @@ describe("discountPercent", () => {
 describe("selectionTotalCents", () => {
   it("prints at the base price without a frame", () => {
     expect(
-      selectionTotalCents({ format: "print", product, addFrame: false }),
+      selectionTotalCents({ format: "print", product, frame: null }),
     ).toBe(product.priceCents);
   });
 
-  it("adds the per-size frame upcharge when framed", () => {
+  it("adds the per-size frame upcharge when framed, regardless of material/color", () => {
     expect(
-      selectionTotalCents({ format: "print", product, addFrame: true }),
+      selectionTotalCents({ format: "print", product, frame: oakFrame }),
+    ).toBe(product.priceCents + product.frameUpchargeCents);
+    expect(
+      selectionTotalCents({
+        format: "print",
+        product,
+        frame: { material: "Metal", color: "GoldMetal" },
+      }),
     ).toBe(product.priceCents + product.frameUpchargeCents);
   });
 
-  it("is flat for digital regardless of the frame flag", () => {
+  it("is flat for digital regardless of the frame selection", () => {
     expect(
-      selectionTotalCents({ format: "digital", product, addFrame: true }),
+      selectionTotalCents({ format: "digital", product, frame: oakFrame }),
     ).toBe(DIGITAL_PRICE_CENTS);
   });
 });
@@ -60,7 +68,7 @@ describe("selectionLineItems", () => {
     const items = selectionLineItems({
       format: "print",
       product,
-      addFrame: false,
+      frame: null,
     });
     expect(items.map((i) => i.label)).toEqual([
       `${product.label} fine art print`,
@@ -73,26 +81,26 @@ describe("selectionLineItems", () => {
     const [printLine] = selectionLineItems({
       format: "print",
       product,
-      addFrame: false,
+      frame: null,
     });
     expect(printLine.cents).toBe(product.priceCents);
     expect(printLine.listCents).toBe(product.listPriceCents);
   });
 
-  it("includes the frame line when framed", () => {
+  it("includes the frame line, naming the chosen color, when framed", () => {
     const items = selectionLineItems({
       format: "print",
       product,
-      addFrame: true,
+      frame: oakFrame,
     });
-    expect(items.map((i) => i.label)).toContain("Ready-to-hang frame");
+    expect(items.map((i) => i.label)).toContain("Ready-to-hang frame — Natural Oak");
   });
 
   it("is just the paid digital download in digital mode", () => {
     const items = selectionLineItems({
       format: "digital",
       product,
-      addFrame: false,
+      frame: null,
     });
     expect(items).toEqual([
       {
@@ -106,14 +114,14 @@ describe("selectionLineItems", () => {
 
 describe("buildSelection", () => {
   it("forces the frame off and total flat when digital", () => {
-    const sel = buildSelection({ format: "digital", product, addFrame: true });
-    expect(sel.addFrame).toBe(false);
+    const sel = buildSelection({ format: "digital", product, frame: oakFrame });
+    expect(sel.frame).toBeNull();
     expect(sel.totalCents).toBe(DIGITAL_PRICE_CENTS);
     expect(sel.productId).toBe(product.id);
   });
 
   it("snapshots a framed print total + size", () => {
-    const sel = buildSelection({ format: "print", product, addFrame: true });
+    const sel = buildSelection({ format: "print", product, frame: oakFrame });
     expect(sel.totalCents).toBe(product.priceCents + product.frameUpchargeCents);
     expect(sel.size.label).toBe(product.label);
   });

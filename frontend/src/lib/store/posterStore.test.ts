@@ -74,7 +74,7 @@ describe("posterStore", () => {
       places: [p({ id: "a" })],
       units: "mi",
       templateId: "bold-modern",
-      addFrame: true,
+      frame: { material: "Oak", color: "NaturalOak" },
     });
     usePosterStore.getState().setCustomization({ scaleArrowsByDistance: false });
 
@@ -84,7 +84,7 @@ describe("posterStore", () => {
     expect(s.home).toBeNull();
     expect(s.places).toHaveLength(0);
     expect(s.templateId).toBe(DEFAULT_TEMPLATE_ID);
-    expect(s.addFrame).toBe(false);
+    expect(s.frame).toBeNull();
     expect(s.customization).toEqual(DEFAULT_CUSTOMIZATION);
     expect(s.units).toBe("mi"); // display preference is preserved, not a design field
   });

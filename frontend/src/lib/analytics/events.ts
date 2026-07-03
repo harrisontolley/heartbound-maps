@@ -61,6 +61,8 @@ export type AnalyticsEventProps = {
     product_id: string;
     format: string;
     framed: boolean;
+    frame_material?: string;
+    frame_color?: string;
   };
   [ANALYTICS_EVENTS.mailingListSignup]: {
     reasons: string[];

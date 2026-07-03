@@ -9,7 +9,7 @@ import { AccountNav } from "@/components/account/AccountNav";
 import { CartNav } from "@/components/cart/CartNav";
 import { Card } from "@/components/account/Card";
 import { Button } from "@/components/ui/Button";
-import { formatUsd } from "@/lib/commerce/price";
+import { formatUsd, FRAME_COLOR_LABELS } from "@/lib/commerce/price";
 import {
   FREE_SHIPPING,
   OPENING_LAUNCH_SALE_LABEL,
@@ -31,7 +31,8 @@ import { useHydrated } from "@/hooks/useHydrated";
 function lineDescriptor(item: CartItem): string {
   const { selection } = item;
   if (selection.format === "digital") return "Digital download";
-  return selection.addFrame ? "Framed print + digital file" : "Print + digital file";
+  if (!selection.frame) return "Print + digital file";
+  return `Framed print (${FRAME_COLOR_LABELS[selection.frame.color]}) + digital file`;
 }
 
 /** Anchor ("regular") total for one unit, summing each line's list price. */
@@ -86,7 +87,7 @@ export default function CartPage() {
         items: items.map((i) => ({
           productId: i.selection.productId,
           format: i.selection.format,
-          addFrame: i.selection.addFrame,
+          frame: i.selection.frame,
           quantity: i.quantity,
           posterConfig: i.posterConfig,
           assetUrl: i.assetUrl,
