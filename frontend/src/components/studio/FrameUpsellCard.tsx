@@ -108,48 +108,64 @@ export function FrameUpsellCard() {
       </label>
 
       {framed && (
-        <div className="flex flex-col gap-2 pl-7">
-          <div className="flex gap-1.5">
-            {FRAME_MATERIALS.map((m) => (
-              <PillButton
-                key={m}
-                size="sm"
-                active={m === material}
-                onClick={() => selectMaterial(m)}
-              >
-                {MATERIAL_LABELS[m]}
-              </PillButton>
-            ))}
+        <div className="flex flex-col gap-3 pl-7">
+          <div className="flex gap-3">
+            {/* Large preview of the chosen frame — the small swatches below are
+                for picking, this is for actually seeing the material/color. */}
+            <span className="relative size-28 shrink-0 overflow-hidden rounded-lg border border-hairline-strong/40 bg-surface-strong sm:size-32">
+              <Image
+                key={frame.color}
+                src={SWATCH_SRC[frame.color]}
+                alt={FRAME_COLOR_LABELS[frame.color]}
+                fill
+                sizes="128px"
+                className="object-cover"
+              />
+            </span>
+            <div className="flex min-w-0 flex-1 flex-col gap-2">
+              <p className="text-sm font-medium text-ink">{FRAME_COLOR_LABELS[frame.color]}</p>
+              <div className="flex gap-1.5">
+                {FRAME_MATERIALS.map((m) => (
+                  <PillButton
+                    key={m}
+                    size="sm"
+                    active={m === material}
+                    onClick={() => selectMaterial(m)}
+                  >
+                    {MATERIAL_LABELS[m]}
+                  </PillButton>
+                ))}
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {FRAME_COLORS_BY_MATERIAL[material].map((color) => {
+                  const active = frame?.color === color;
+                  return (
+                    <button
+                      key={color}
+                      type="button"
+                      aria-pressed={active}
+                      aria-label={FRAME_COLOR_LABELS[color]}
+                      title={FRAME_COLOR_LABELS[color]}
+                      onClick={() => selectColor(color)}
+                      className={`flex size-12 items-center justify-center rounded-full border-2 transition-colors ${
+                        active ? "border-ink" : "border-transparent hover:border-hairline-strong"
+                      }`}
+                    >
+                      <span className="relative size-10 overflow-hidden rounded-full border border-hairline-strong/40">
+                        <Image
+                          src={SWATCH_SRC[color]}
+                          alt={FRAME_COLOR_LABELS[color]}
+                          fill
+                          sizes="40px"
+                          className="object-cover"
+                        />
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
           </div>
-          <div className="flex flex-wrap gap-2">
-            {FRAME_COLORS_BY_MATERIAL[material].map((color) => {
-              const active = frame?.color === color;
-              return (
-                <button
-                  key={color}
-                  type="button"
-                  aria-pressed={active}
-                  aria-label={FRAME_COLOR_LABELS[color]}
-                  title={FRAME_COLOR_LABELS[color]}
-                  onClick={() => selectColor(color)}
-                  className={`flex size-11 items-center justify-center rounded-full border-2 transition-colors ${
-                    active ? "border-ink" : "border-transparent hover:border-hairline-strong"
-                  }`}
-                >
-                  <span className="relative size-9 overflow-hidden rounded-full border border-hairline-strong/40">
-                    <Image
-                      src={SWATCH_SRC[color]}
-                      alt={FRAME_COLOR_LABELS[color]}
-                      fill
-                      sizes="36px"
-                      className="object-cover"
-                    />
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-          <p className="text-xs text-muted">{FRAME_COLOR_LABELS[frame.color]}</p>
         </div>
       )}
     </div>
