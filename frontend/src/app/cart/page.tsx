@@ -9,7 +9,7 @@ import { AccountNav } from "@/components/account/AccountNav";
 import { CartNav } from "@/components/cart/CartNav";
 import { Card } from "@/components/account/Card";
 import { Button } from "@/components/ui/Button";
-import { formatUsd } from "@/lib/commerce/price";
+import { formatUsd, FRAME_COLOR_LABELS } from "@/lib/commerce/price";
 import {
   FREE_SHIPPING,
   OPENING_LAUNCH_SALE_LABEL,
@@ -22,6 +22,8 @@ import {
 import { snapshotSummary } from "@/lib/commerce/posterConfig";
 import { useCartHydrated } from "@/hooks/useCartHydrated";
 import { useHydrated } from "@/hooks/useHydrated";
+import { ANALYTICS_EVENTS } from "@/lib/analytics/events";
+import { useTrackEvent } from "@/lib/analytics/useTrackEvent";
 
 // The cart: review configured posters, adjust quantities, then hand the whole
 // cart to the backend, which prices it authoritatively and returns a Stripe
@@ -31,7 +33,8 @@ import { useHydrated } from "@/hooks/useHydrated";
 function lineDescriptor(item: CartItem): string {
   const { selection } = item;
   if (selection.format === "digital") return "Digital download";
-  return selection.addFrame ? "Framed print + digital file" : "Print + digital file";
+  if (!selection.frame) return "Print + digital file";
+  return `Framed print (${FRAME_COLOR_LABELS[selection.frame.color]}) + digital file`;
 }
 
 /** Anchor ("regular") total for one unit, summing each line's list price. */
@@ -56,6 +59,7 @@ export default function CartPage() {
   // the cart is unchanged (so a double-click / retry can't create a duplicate order
   // or Stripe session), regenerated once the cart changes (a fresh attempt).
   const idempotency = useRef<{ key: string; sig: string } | null>(null);
+  const track = useTrackEvent();
 
   // Read once on the client only (mounted is false during SSR + first paint, so
   // this never causes a hydration mismatch and needs no setState-in-effect).
@@ -73,6 +77,10 @@ export default function CartPage() {
     if (items.length === 0) return;
     setSubmitting(true);
     setError(null);
+    track(ANALYTICS_EVENTS.checkoutStarted, {
+      cart_item_count: items.reduce((n, i) => n + i.quantity, 0),
+      subtotal_cents: subtotal,
+    });
     // Reuse the key while the cart is unchanged (retry of the same attempt);
     // regenerate it once the cart changes.
     const sig = items
@@ -86,7 +94,7 @@ export default function CartPage() {
         items: items.map((i) => ({
           productId: i.selection.productId,
           format: i.selection.format,
-          addFrame: i.selection.addFrame,
+          frame: i.selection.frame,
           quantity: i.quantity,
           posterConfig: i.posterConfig,
           assetUrl: i.assetUrl,
@@ -100,6 +108,7 @@ export default function CartPage() {
         body: JSON.stringify(payload),
       });
       if (!res.ok) {
+        track(ANALYTICS_EVENTS.checkoutFailed, { error_code: String(res.status) });
         setError(
           res.status === 503
             ? "Checkout is temporarily unavailable. Please try again soon."
@@ -109,8 +118,9 @@ export default function CartPage() {
         return;
       }
       const { url } = (await res.json()) as CreateCheckoutResponse;
-      window.location.href = url; // redirect to Stripe; keep submitting state
+      window.location.assign(url); // redirect to Stripe; keep submitting state
     } catch {
+      track(ANALYTICS_EVENTS.checkoutFailed, { error_code: "client_error" });
       setError("Something went wrong. Please try again.");
       setSubmitting(false);
     }

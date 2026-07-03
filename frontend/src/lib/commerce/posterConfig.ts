@@ -1,7 +1,7 @@
 import type { BearingMode, Place, Units } from "@/lib/types";
 import type { TemplateId, VintageVariant } from "@/lib/templates/types";
 import type { Customization } from "@/lib/templates/customize";
-import type { StudioFormat } from "@/lib/commerce/price";
+import type { FrameSelection, StudioFormat } from "@/lib/commerce/price";
 import { usePosterStore } from "@/lib/store/posterStore";
 
 // An immutable snapshot of the poster design at the moment it's added to the
@@ -19,7 +19,7 @@ export type PosterConfigSnapshot = {
   customization: Customization;
   productId: string;
   format: StudioFormat;
-  addFrame: boolean;
+  frame: FrameSelection;
 };
 
 /** Capture the current poster design from the studio store as a decoupled snapshot. */
@@ -35,7 +35,7 @@ export function snapshotPosterConfig(): PosterConfigSnapshot {
     customization: { ...s.customization },
     productId: s.productId,
     format: s.format,
-    addFrame: s.addFrame,
+    frame: s.frame,
   };
 }
 

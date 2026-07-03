@@ -6,6 +6,7 @@ import { SignedIn, SignedOut } from "@neondatabase/auth/react/ui";
 import { authClient } from "@/lib/auth/client";
 import { ACCOUNT_LINKS } from "@/components/account/links";
 import { copy } from "./copy";
+import { CloseIcon, MenuIcon } from "@/lib/icons/icons";
 
 /**
  * Mobile-only nav menu. The desktop bar keeps the primary "Create your poster"
@@ -47,25 +48,7 @@ export function MobileNav() {
         onClick={() => setOpen((v) => !v)}
         className="flex size-11 items-center justify-center rounded-pill text-ink transition-colors hover:bg-surface-strong"
       >
-        <svg
-          className="h-5 w-5"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.75"
-          strokeLinecap="round"
-          aria-hidden
-        >
-          {open ? (
-            <path d="M5 5l14 14M19 5L5 19" />
-          ) : (
-            <>
-              <path d="M4 7h16" />
-              <path d="M4 12h16" />
-              <path d="M4 17h16" />
-            </>
-          )}
-        </svg>
+        {open ? <CloseIcon size={20} /> : <MenuIcon size={20} />}
       </button>
 
       {open && (

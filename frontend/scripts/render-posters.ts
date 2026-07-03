@@ -10,6 +10,7 @@
  *   pnpm --filter @pinprint/frontend render:posters            # spawns `next dev`
  *   RENDER_BASE_URL=http://localhost:3000 pnpm ... render:posters   # reuse a server
  *   pnpm --filter @pinprint/frontend render:posters --svg      # also emit SVGs
+ *   RENDER_ONLY=story-where-it-started pnpm ... render:posters # comma-separated slugs only
  *
  * This is on-demand asset generation — NOT part of `next build` or CI.
  */
@@ -26,6 +27,7 @@ const OUT_DIR = path.resolve(FRONTEND_DIR, "public/showcase");
 const SCALE = 2; // 1000x1500 -> 2000x3000
 const EMIT_SVG = process.argv.includes("--svg");
 const PROVIDED_BASE = process.env.RENDER_BASE_URL;
+const ONLY = process.env.RENDER_ONLY?.split(",").map((s) => s.trim());
 
 async function waitForServer(base: string, timeoutMs = 60_000): Promise<void> {
   const deadline = Date.now() + timeoutMs;
@@ -146,9 +148,10 @@ async function main() {
     await waitForServer(base);
   }
 
+  const targets = ONLY ? PRESETS.filter((p) => ONLY.includes(p.slug)) : PRESETS;
   const browser = await chromium.launch();
   try {
-    for (const preset of PRESETS) {
+    for (const preset of targets) {
       process.stdout.write(`Rendering ${preset.slug} … `);
       const { png, svg } = await renderOne(browser, base, preset.slug);
       await writeFile(path.join(OUT_DIR, `${preset.slug}.png`), png);
@@ -160,7 +163,7 @@ async function main() {
     if (proc) proc.kill("SIGTERM");
   }
 
-  console.log(`\nDone — ${PRESETS.length} posters written to ${OUT_DIR}`);
+  console.log(`\nDone — ${targets.length} posters written to ${OUT_DIR}`);
 }
 
 main().catch((err) => {

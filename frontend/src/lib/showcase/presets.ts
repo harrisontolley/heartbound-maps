@@ -125,20 +125,6 @@ export const PRESETS: PosterPreset[] = [
     ],
   },
   {
-    slug: "look-heirloom",
-    slot: "look",
-    templateId: "vintage-cartography",
-    vintageVariant: "classic",
-    units: "mi",
-    home: home("Boston", 42.3601, -71.0589),
-    places: [
-      P("Dublin", 53.3498, -6.2603, "family"),
-      P("Palermo", 38.1157, 13.3615, "family"),
-      P("Kraków", 50.0647, 19.945, "family"),
-      P("Halifax", 44.6488, -63.5752, "visited"),
-    ],
-  },
-  {
     slug: "look-nightfall",
     slot: "look",
     templateId: "night-sky",
@@ -212,8 +198,7 @@ export const PRESETS: PosterPreset[] = [
   {
     slug: "story-where-it-started",
     slot: "story",
-    templateId: "vintage-cartography",
-    vintageVariant: "classic",
+    templateId: "mid-century",
     units: "mi",
     // Bearings from KC: N, NE, ENE, SE, SSE, W/WSW — a full fan.
     home: home("Kansas City", 39.0997, -94.5786),

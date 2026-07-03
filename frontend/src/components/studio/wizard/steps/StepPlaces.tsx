@@ -6,6 +6,8 @@ import { usePosterStore } from "@/lib/store/posterStore";
 import { PlaceSearch } from "@/components/controls/PlaceSearch";
 import { PlaceList } from "@/components/controls/PlaceList";
 import type { GeoResult } from "@/lib/types";
+import { ANALYTICS_EVENTS } from "@/lib/analytics/events";
+import { useTrackEvent } from "@/lib/analytics/useTrackEvent";
 
 const MapPicker = dynamic(() => import("@/components/map/MapPicker"), {
   ssr: false,
@@ -30,6 +32,7 @@ export function StepPlaces() {
   const home = usePosterStore((s) => s.home);
   const addFromGeo = usePosterStore((s) => s.addFromGeo);
   const [notice, setNotice] = useState<string | null>(null);
+  const track = useTrackEvent();
 
   function flash(msg: string) {
     setNotice(msg);
@@ -41,6 +44,13 @@ export function StepPlaces() {
     if (result === "duplicate") flash(`${r.label} is already on your map`);
     else if (result === "home") flash(`${r.label} set as home`);
     else flash(`Added ${r.label}`);
+    track(ANALYTICS_EVENTS.placeAdded, {
+      // Read the store, not the render snapshot — addFromGeo just mutated it.
+      places_count: usePosterStore.getState().places.length,
+      // Mirrors the affiliations addFromGeo assigns (home = lived).
+      affiliation_type: result === "home" ? "lived" : "visited",
+      outcome: result,
+    });
   }
 
   if (!home) {

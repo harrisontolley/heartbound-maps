@@ -216,14 +216,6 @@ export type ArteloProductSpec = {
   /** Artelo size enum, e.g. "x12x18" (leading-`x` WxH form). */
   size: string;
   orientation: ArteloOrientation;
-  /** Frame attributes used when the buyer adds the ready-to-hang frame. */
-  frame: ArteloFrameSpec;
-};
-
-/** Frame applied to a framed order — a premium natural-oak ready-to-hang frame. */
-const DEFAULT_FRAME: ArteloFrameSpec = {
-  frameStyle: "PremiumOak",
-  frameColor: "NaturalOak",
 };
 
 /** Artelo requires both fields even on unframed orders. */
@@ -237,8 +229,7 @@ const UNFRAMED: ArteloFrameSpec = {
  *  - Loose (unframed): Hahnemühle German Etching 310gsm (GermanEtchingFineArt) —
  *    a heavily textured, tactile artist's paper; the upmarket piece you hold.
  *  - Framed: 300gsm 100% cotton-rag Hot Press (HotPressFineArt) — a smooth fine-art
- *    paper that looks cleaner behind glass; adds a premium natural-oak ready-to-hang
- *    frame (DEFAULT_FRAME) and the Artelo framing service.
+ *    paper that looks cleaner behind glass, whatever frame is chosen.
  * Both use archival pigment inks. Single place to retune.
  */
 const LOOSE_PAPER_TYPE = "GermanEtchingFineArt";
@@ -252,7 +243,6 @@ export const ARTELO_PRODUCT_BY_ID: Record<string, ArteloProductSpec> = {
     framedPaperType: FRAMED_PAPER_TYPE,
     size: "x12x18",
     orientation: "Vertical",
-    frame: DEFAULT_FRAME,
   },
   "portrait-16x24": {
     catalogProductId: "IndividualArtPrint",
@@ -260,7 +250,6 @@ export const ARTELO_PRODUCT_BY_ID: Record<string, ArteloProductSpec> = {
     framedPaperType: FRAMED_PAPER_TYPE,
     size: "x16x24",
     orientation: "Vertical",
-    frame: DEFAULT_FRAME,
   },
   "portrait-24x36": {
     catalogProductId: "IndividualArtPrint",
@@ -268,8 +257,64 @@ export const ARTELO_PRODUCT_BY_ID: Record<string, ArteloProductSpec> = {
     framedPaperType: FRAMED_PAPER_TYPE,
     size: "x24x36",
     orientation: "Vertical",
-    frame: DEFAULT_FRAME,
   },
+};
+
+// ── Frame picker (material + color) ──────────────────────────────────────────
+//
+// Ready-to-hang only (no insert-yourself option — see docs/integrations/artelo.md).
+// All 8 colors map onto the Premium* frameStyle tiers, matching the single frame
+// already in production use today, at a flat retail upcharge regardless of
+// material (see the 2026-07-03 COGS spike in docs/integrations/artelo.md for why:
+// frameColor never moves Artelo's quoted cost, and PremiumMetal actually runs a
+// little cheaper than PremiumOak, so pricing them the same never sells at a loss).
+
+export type FrameMaterial = "Oak" | "Metal";
+
+export type FrameColor =
+  | "NaturalOak"
+  | "BlackOak"
+  | "WhiteOak"
+  | "WalnutOak"
+  | "WhiteMetal"
+  | "BlackMetal"
+  | "SilverMetal"
+  | "GoldMetal";
+
+/** null = no frame (loose print). Non-null = the ready-to-hang frame chosen. */
+export type FrameSelection = { material: FrameMaterial; color: FrameColor } | null;
+
+export const FRAME_MATERIALS: readonly FrameMaterial[] = ["Oak", "Metal"];
+
+export const FRAME_COLORS_BY_MATERIAL: Record<FrameMaterial, readonly FrameColor[]> = {
+  Oak: ["NaturalOak", "BlackOak", "WhiteOak", "WalnutOak"],
+  Metal: ["WhiteMetal", "BlackMetal", "SilverMetal", "GoldMetal"],
+};
+
+export const FRAME_COLOR_LABELS: Record<FrameColor, string> = {
+  NaturalOak: "Natural Oak",
+  BlackOak: "Black Oak",
+  WhiteOak: "White Oak",
+  WalnutOak: "Walnut Oak",
+  WhiteMetal: "White Metal",
+  BlackMetal: "Black Metal",
+  SilverMetal: "Silver Metal",
+  GoldMetal: "Gold Metal",
+};
+
+/** The default frame color offered when a buyer turns framing on. */
+export const DEFAULT_FRAME_COLOR: FrameColor = "NaturalOak";
+
+/** color → Artelo frameStyle/frameColor pair (frameStyle is always the Premium tier). */
+export const FRAME_VARIANTS: Record<FrameColor, ArteloFrameSpec> = {
+  NaturalOak: { frameStyle: "PremiumOak", frameColor: "NaturalOak" },
+  BlackOak: { frameStyle: "PremiumOak", frameColor: "BlackOak" },
+  WhiteOak: { frameStyle: "PremiumOak", frameColor: "WhiteOak" },
+  WalnutOak: { frameStyle: "PremiumOak", frameColor: "WalnutOak" },
+  WhiteMetal: { frameStyle: "PremiumMetal", frameColor: "WhiteMetal" },
+  BlackMetal: { frameStyle: "PremiumMetal", frameColor: "BlackMetal" },
+  SilverMetal: { frameStyle: "PremiumMetal", frameColor: "SilverMetal" },
+  GoldMetal: { frameStyle: "PremiumMetal", frameColor: "GoldMetal" },
 };
 
 /** The `productInfo` shape an Artelo order line item carries (sans designs). */
@@ -288,29 +333,30 @@ export type ArteloProductInfo = {
 
 /**
  * Build the Artelo `productInfo` (minus the design/image) for a product id.
- * Returns null for products we don't fulfil through Artelo. When `addFrame` is
- * set, the frame attributes + framing service are included and the print runs on
- * the framed paper (HotPressFineArt, 300gsm cotton rag — smooth behind glass);
- * otherwise the frame fields are "Unframed" (required by Artelo's schema) and the
- * print runs on the loose paper (GermanEtchingFineArt, Hahnemühle 310gsm, textured).
+ * Returns null for products we don't fulfil through Artelo. When `frame` is set,
+ * the chosen frame's attributes + framing service (ready-to-hang) are included
+ * and the print runs on the framed paper (HotPressFineArt, 300gsm cotton rag —
+ * smooth behind glass); otherwise the frame fields are "Unframed" (required by
+ * Artelo's schema) and the print runs on the loose paper (GermanEtchingFineArt,
+ * Hahnemühle 310gsm, textured).
  */
 export function arteloProductInfoFor(
   productId: string,
-  addFrame: boolean,
+  frame: FrameSelection,
 ): ArteloProductInfo | null {
   const spec = ARTELO_PRODUCT_BY_ID[productId];
   if (!spec) return null;
-  const frame = addFrame ? spec.frame : UNFRAMED;
+  const frameSpec = frame ? FRAME_VARIANTS[frame.color] : UNFRAMED;
   return {
     catalogProductId: spec.catalogProductId,
-    paperType: addFrame ? spec.framedPaperType : spec.paperType,
+    paperType: frame ? spec.framedPaperType : spec.paperType,
     size: spec.size,
     orientation: spec.orientation,
-    includeFramingService: addFrame,
+    includeFramingService: frame !== null,
     includeMats: false,
     includeHangingPins: false,
-    frameStyle: frame.frameStyle,
-    frameColor: frame.frameColor,
+    frameStyle: frameSpec.frameStyle,
+    frameColor: frameSpec.frameColor,
   };
 }
 
@@ -330,7 +376,7 @@ export type StudioSelection = {
   format: StudioFormat;
   productId: string;
   size: { label: string; widthIn: number; heightIn: number };
-  addFrame: boolean;
+  frame: FrameSelection;
   totalCents: number;
   lineItems: StudioLineItem[];
 };
@@ -338,7 +384,7 @@ export type StudioSelection = {
 type PriceInput = {
   format: StudioFormat;
   product: ProductBase;
-  addFrame: boolean;
+  frame: FrameSelection;
 };
 
 const USD = new Intl.NumberFormat("en-US", {
@@ -351,21 +397,21 @@ export function formatUsd(cents: number): string {
   return USD.format(cents / 100);
 }
 
-/** Total in cents: digital is flat; a print adds the frame upcharge when on. */
+/** Total in cents: digital is flat; a print adds the flat frame upcharge when framed. */
 export function selectionTotalCents({
   format,
   product,
-  addFrame,
+  frame,
 }: PriceInput): number {
   if (format === "digital") return DIGITAL_PRICE_CENTS;
-  return product.priceCents + (addFrame ? product.frameUpchargeCents : 0);
+  return product.priceCents + (frame ? product.frameUpchargeCents : 0);
 }
 
 /** Line items for the buy-bar breakdown. A 0-cent item renders as "Free". */
 export function selectionLineItems({
   format,
   product,
-  addFrame,
+  frame,
 }: PriceInput): StudioLineItem[] {
   if (format === "digital") {
     return [
@@ -382,8 +428,13 @@ export function selectionLineItems({
       cents: product.priceCents,
       listCents: product.listPriceCents,
     },
-    ...(addFrame
-      ? [{ label: "Ready-to-hang frame", cents: product.frameUpchargeCents }]
+    ...(frame
+      ? [
+          {
+            label: `Ready-to-hang frame in ${FRAME_COLOR_LABELS[frame.color]}`,
+            cents: product.frameUpchargeCents,
+          },
+        ]
       : []),
     // Bundled free with every print.
     { label: "Digital download", cents: 0 },
@@ -394,10 +445,10 @@ export function selectionLineItems({
 export function buildSelection({
   format,
   product,
-  addFrame,
+  frame,
 }: PriceInput): StudioSelection {
-  const effectiveFrame = format === "print" && addFrame;
-  const input = { format, product, addFrame: effectiveFrame };
+  const effectiveFrame = format === "print" ? frame : null;
+  const input = { format, product, frame: effectiveFrame };
   return {
     format,
     productId: product.id,
@@ -406,7 +457,7 @@ export function buildSelection({
       widthIn: product.widthIn,
       heightIn: product.heightIn,
     },
-    addFrame: effectiveFrame,
+    frame: effectiveFrame,
     totalCents: selectionTotalCents(input),
     lineItems: selectionLineItems(input),
   };
@@ -416,14 +467,14 @@ export function buildSelection({
 
 /**
  * One cart line as sent to POST /checkout/session. The backend re-derives the
- * price from the catalogue above using (productId, format, addFrame) — the
+ * price from the catalogue above using (productId, format, frame) — the
  * client never sends amounts. `posterConfig` is the immutable design snapshot
  * persisted onto the order for reproducibility/fulfilment.
  */
 export type CheckoutItemInput = {
   productId: string;
   format: StudioFormat;
-  addFrame: boolean;
+  frame: FrameSelection;
   quantity: number;
   posterConfig?: Record<string, unknown>;
   /**

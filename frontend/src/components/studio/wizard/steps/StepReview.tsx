@@ -1,9 +1,24 @@
 "use client";
 
+import type { ReactNode } from "react";
+import Image from "next/image";
 import { usePosterStore } from "@/lib/store/posterStore";
 import { activeLookId, LOOKS_BY_ID } from "@/lib/looks/looks";
 import { PRODUCTS_BY_ID } from "@/lib/commerce/printProducts";
+import { FRAME_COLOR_LABELS, type FrameColor } from "@/lib/commerce/price";
 import { FreeDesignForm } from "./FreeDesignForm";
+
+/** Same mitred-corner swatches as FrameUpsellCard's picker (frontend/scripts/frames/PROMPTS.md). */
+const FRAME_SWATCH_SRC: Record<FrameColor, string> = {
+  NaturalOak: "/frames/oak-natural.png",
+  BlackOak: "/frames/oak-black.png",
+  WhiteOak: "/frames/oak-white.png",
+  WalnutOak: "/frames/oak-walnut.png",
+  WhiteMetal: "/frames/metal-white.png",
+  BlackMetal: "/frames/metal-black.png",
+  SilverMetal: "/frames/metal-silver.png",
+  GoldMetal: "/frames/metal-gold.png",
+};
 
 /**
  * Final step — a compact summary of the build plus the email-gated free
@@ -25,21 +40,37 @@ export function StepReview({
   const vintageVariant = usePosterStore((s) => s.vintageVariant);
   const productId = usePosterStore((s) => s.productId);
   const format = usePosterStore((s) => s.format);
-  const addFrame = usePosterStore((s) => s.addFrame);
+  const frame = usePosterStore((s) => s.frame);
 
   const lookId = activeLookId(templateId, vintageVariant);
   const lookLabel = lookId ? LOOKS_BY_ID[lookId].label : "Custom";
   const product = PRODUCTS_BY_ID[productId];
-  const sizeLabel =
-    format === "digital"
-      ? "Digital download"
-      : `${product.label}${addFrame ? " · framed" : ""}`;
 
-  const rows = [
+  const sizeValue: ReactNode =
+    format === "digital" ? (
+      "Digital download"
+    ) : frame ? (
+      <span className="flex items-center justify-end gap-2">
+        {product.label} · {FRAME_COLOR_LABELS[frame.color]} frame
+        <span className="relative size-6 shrink-0 overflow-hidden rounded-full border border-hairline-strong/40">
+          <Image
+            src={FRAME_SWATCH_SRC[frame.color]}
+            alt={`${FRAME_COLOR_LABELS[frame.color]} frame`}
+            fill
+            sizes="24px"
+            className="object-cover"
+          />
+        </span>
+      </span>
+    ) : (
+      product.label
+    );
+
+  const rows: { k: string; v: ReactNode }[] = [
     { k: "Style", v: lookLabel },
     { k: "Home", v: home?.label ?? "Not set" },
     { k: "Places", v: `${places.length} added` },
-    { k: "Size", v: sizeLabel },
+    { k: "Size", v: sizeValue },
   ];
 
   return (
@@ -55,7 +86,13 @@ export function StepReview({
             <dt className="text-[11px] uppercase tracking-[0.09em] text-muted">
               {r.k}
             </dt>
-            <dd className="truncate text-sm font-medium text-ink">{r.v}</dd>
+            <dd
+              className={`min-w-0 text-right text-sm font-medium text-ink ${
+                typeof r.v === "string" ? "truncate" : ""
+              }`}
+            >
+              {r.v}
+            </dd>
           </div>
         ))}
       </dl>

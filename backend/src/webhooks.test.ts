@@ -42,6 +42,11 @@ vi.mock("./digitalDelivery.js", () => ({
   deliverDigitalFiles: (...args: unknown[]) => deliverDigitalFiles(...args),
 }));
 
+const capturePostHogServerEvent = vi.fn();
+vi.mock("./posthog.js", () => ({
+  capturePostHogServerEvent: (...args: unknown[]) => capturePostHogServerEvent(...args),
+}));
+
 describe("artelo status mapping", () => {
   it("maps known statuses", () => {
     expect(mapArteloStatus("InProduction")).toBe("in_production");
@@ -173,6 +178,7 @@ describe("handleStripeEvent — paid-transition hook-in (fulfilment + digital de
     applyCheckoutDetails.mockResolvedValue(undefined);
     submitOrderToArtelo.mockResolvedValue({ submitted: true });
     deliverDigitalFiles.mockResolvedValue({ delivered: true });
+    capturePostHogServerEvent.mockResolvedValue(undefined);
   });
 
   function completedEvent(overrides: Record<string, unknown> = {}): Stripe.Event {
@@ -242,15 +248,21 @@ describe("handleStripeEvent — paid-transition hook-in (fulfilment + digital de
     const result = await handleStripeEvent(completedEvent(), (task) => {
       deferred.push(task);
     });
-    // Handler already resolved; neither side effect has been invoked yet.
+    // Handler already resolved; none of the deferred side effects has run yet.
     expect(result).toEqual({ handled: true, orderId: "ord-1" });
-    expect(deferred).toHaveLength(2);
+    expect(deferred).toHaveLength(3);
     expect(submitOrderToArtelo).not.toHaveBeenCalled();
     expect(deliverDigitalFiles).not.toHaveBeenCalled();
-    // The deferred tasks then actually invoke both side effects.
+    expect(capturePostHogServerEvent).not.toHaveBeenCalled();
+    // The deferred tasks then actually invoke all three side effects.
     await Promise.all(deferred.map((t) => t()));
     expect(submitOrderToArtelo).toHaveBeenCalledWith("ord-1");
     expect(deliverDigitalFiles).toHaveBeenCalledWith("ord-1");
+    expect(capturePostHogServerEvent).toHaveBeenCalledWith(
+      "checkout_completed",
+      "ord-1",
+      expect.objectContaining({ order_id: "ord-1" }),
+    );
   });
 
   it("still resolves cleanly when a deferred side effect ultimately fails", async () => {

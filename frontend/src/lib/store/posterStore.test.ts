@@ -74,7 +74,7 @@ describe("posterStore", () => {
       places: [p({ id: "a" })],
       units: "mi",
       templateId: "bold-modern",
-      addFrame: true,
+      frame: { material: "Oak", color: "NaturalOak" },
     });
     usePosterStore.getState().setCustomization({ scaleArrowsByDistance: false });
 
@@ -84,8 +84,39 @@ describe("posterStore", () => {
     expect(s.home).toBeNull();
     expect(s.places).toHaveLength(0);
     expect(s.templateId).toBe(DEFAULT_TEMPLATE_ID);
-    expect(s.addFrame).toBe(false);
+    expect(s.frame).toBeNull();
     expect(s.customization).toEqual(DEFAULT_CUSTOMIZATION);
     expect(s.units).toBe("mi"); // display preference is preserved, not a design field
+  });
+
+  describe("persisted-draft migration", () => {
+    const KEY = "pinprint-draft-v1";
+
+    async function rehydrateWith(state: Record<string, unknown>) {
+      localStorage.setItem(KEY, JSON.stringify({ state, version: 1 }));
+      await usePosterStore.persist.rehydrate();
+    }
+
+    beforeEach(() => localStorage.removeItem(KEY));
+
+    it("maps a legacy addFrame:true draft to the default oak frame", async () => {
+      await rehydrateWith({ units: "mi", addFrame: true });
+      const s = usePosterStore.getState();
+      expect(s.frame).toEqual({ material: "Oak", color: "NaturalOak" });
+      expect("addFrame" in s).toBe(false);
+    });
+
+    it("maps a legacy addFrame:false draft to no frame", async () => {
+      await rehydrateWith({ units: "mi", addFrame: false });
+      expect(usePosterStore.getState().frame).toBeNull();
+    });
+
+    it("keeps the frame of a current-shape draft", async () => {
+      await rehydrateWith({ frame: { material: "Metal", color: "GoldMetal" } });
+      expect(usePosterStore.getState().frame).toEqual({
+        material: "Metal",
+        color: "GoldMetal",
+      });
+    });
   });
 });

@@ -1,6 +1,7 @@
 import type Stripe from "stripe";
-import type { CheckoutItemInput } from "@pinprint/shared";
+import type { CheckoutItemInput, FrameColor, FrameMaterial, FrameSelection } from "@pinprint/shared";
 import {
+  FRAME_COLORS_BY_MATERIAL,
   PRODUCTS_BASE_BY_ID,
   selectionTotalCents,
 } from "@pinprint/shared";
@@ -8,9 +9,20 @@ import type { NewOrderItem } from "./orders.js";
 import { isAllowedAssetUrl } from "./assetUrl.js";
 
 // Server-side price authority for checkout. The client sends only what was
-// chosen (productId, format, addFrame, quantity); this module re-derives every
+// chosen (productId, format, frame, quantity); this module re-derives every
 // amount from the shared catalogue so a tampered client total can never reach
 // Stripe. Pure + dependency-light so it unit-tests without a DB or Stripe key.
+
+/** True for a well-formed frame selection (material/color pair from the shared catalogue). */
+function isValidFrame(frame: unknown): frame is Exclude<FrameSelection, null> {
+  if (typeof frame !== "object" || frame === null) return false;
+  const f = frame as { material?: unknown; color?: unknown };
+  if (typeof f.material !== "string" || typeof f.color !== "string") return false;
+  const colors = FRAME_COLORS_BY_MATERIAL[f.material as FrameMaterial] as
+    | readonly FrameColor[]
+    | undefined;
+  return colors !== undefined && colors.includes(f.color as FrameColor);
+}
 
 const MAX_QUANTITY = 25;
 
@@ -72,11 +84,19 @@ export function priceCheckout(items: CheckoutItemInput[]): PricedCheckout {
     if (it.svgAssetUrl && !isAllowedAssetUrl(it.svgAssetUrl)) {
       throw new CheckoutValidationError("invalid_asset_url");
     }
-    const addFrame = isPrint && it.addFrame === true;
+    // A frame only ever applies to a print; digital ignores whatever was sent
+    // (a valid one is already silently dropped below, so a malformed one gets
+    // the same treatment). On a print, a present-but-malformed frame is a
+    // validation error (never silently dropped) — a tampered/buggy client
+    // should 400, not quietly go unframed.
+    if (isPrint && it.frame != null && !isValidFrame(it.frame)) {
+      throw new CheckoutValidationError("invalid_frame");
+    }
+    const frame: FrameSelection = isPrint && isValidFrame(it.frame) ? it.frame : null;
     // Authoritative unit price — never trust a client-sent amount.
-    const unitPriceCents = selectionTotalCents({ format: it.format, product, addFrame });
+    const unitPriceCents = selectionTotalCents({ format: it.format, product, frame });
     const label = isPrint
-      ? `${product.label} print${addFrame ? " (framed)" : ""}`
+      ? `${product.label} print${frame ? " (framed)" : ""}`
       : "Digital download";
     if (isPrint) hasPhysical = true;
 
@@ -85,7 +105,9 @@ export function priceCheckout(items: CheckoutItemInput[]): PricedCheckout {
       productLabel: label,
       quantity,
       unitPriceCents,
-      posterConfig: it.posterConfig ?? {},
+      // `frame` is overwritten with the server-validated value (never the raw
+      // client one) so fulfilment always reads exactly what was charged.
+      posterConfig: { ...(it.posterConfig ?? {}), frame },
       // Public URL of the design source (browser-uploaded at add-to-cart).
       // For prints: the print-ready PNG (handed to Artelo).
       // For digital: the digital deliverable PNG.
@@ -105,7 +127,8 @@ export function priceCheckout(items: CheckoutItemInput[]): PricedCheckout {
           metadata: {
             productId: product.id,
             format: it.format,
-            addFrame: String(addFrame),
+            addFrame: String(frame !== null),
+            ...(frame ? { frameMaterial: frame.material, frameColor: frame.color } : {}),
           },
         },
       },

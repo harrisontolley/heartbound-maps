@@ -28,6 +28,8 @@ function HeroCopy() {
           href={STUDIO_HREF}
           variant="primary"
           size="md"
+          trackId="hero_primary"
+          trackLocation="hero"
           className="w-full sm:w-auto"
         >
           {hero.primaryCta}

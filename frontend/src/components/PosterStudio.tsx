@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { usePostHog } from "posthog-js/react";
 import { usePosterStore } from "@/lib/store/posterStore";
 import { useFontsReady } from "@/hooks/useFontsReady";
 import { useHydrated } from "@/hooks/useHydrated";
@@ -22,6 +21,9 @@ import type { TemplateId, VintageVariant } from "@/lib/templates/types";
 import { exportPngBlob, rasterizePng, serializePoster, slugify } from "@/lib/export";
 import { uploadPosterPng, uploadPosterSvg } from "@/lib/upload/uploadPosterPng";
 import { STEPS, STEP_INDEX } from "@/lib/studio/steps";
+import { ANALYTICS_EVENTS } from "@/lib/analytics/events";
+import { useTrackEvent } from "@/lib/analytics/useTrackEvent";
+import type { StudioStepDirection } from "@/lib/analytics/events";
 import { StudioHeader } from "@/components/studio/StudioHeader";
 import { ConfirmDialog } from "@/components/ui/Dialog";
 import { PosterStage } from "@/components/studio/PosterStage";
@@ -58,7 +60,7 @@ export function PosterStudio() {
   const bearingMode = usePosterStore((s) => s.bearingMode);
   const productId = usePosterStore((s) => s.productId);
   const format = usePosterStore((s) => s.format);
-  const addFrame = usePosterStore((s) => s.addFrame);
+  const frame = usePosterStore((s) => s.frame);
   const customization = usePosterStore((s) => s.customization);
   const resetDesign = usePosterStore((s) => s.resetDesign);
 
@@ -72,7 +74,7 @@ export function PosterStudio() {
   const fontsReady = useFontsReady();
   const mounted = useHydrated();
 
-  const posthog = usePostHog();
+  const track = useTrackEvent();
   const addItem = useCartStore((s) => s.addItem);
   const [justAdded, setJustAdded] = useState(false);
   const [addingToCart, setAddingToCart] = useState(false);
@@ -86,13 +88,20 @@ export function PosterStudio() {
   const headingRef = useRef<HTMLHeadingElement>(null);
   const firstFocus = useRef(true);
 
-  const goTo = (i: number) => {
+  const goTo = (i: number, direction: StudioStepDirection = "jump") => {
     const clamped = Math.max(0, Math.min(STEPS.length - 1, i));
+    if (clamped !== step) {
+      track(ANALYTICS_EVENTS.studioStepAdvance, {
+        from_step: STEPS[step].id,
+        to_step: STEPS[clamped].id,
+        direction,
+      });
+    }
     setStep(clamped);
     setFurthest((f) => Math.max(f, clamped));
   };
-  const next = () => goTo(step + 1);
-  const back = () => goTo(step - 1);
+  const next = () => goTo(step + 1, "next");
+  const back = () => goTo(step - 1, "back");
 
   // "Start over" wipes the design back to a fresh studio and returns to step 1.
   // Only offered once there's actually something to reset (mirrors the header's
@@ -191,10 +200,13 @@ export function PosterStudio() {
       setAddingToCart(false);
     }
     addItem({ selection, posterConfig, assetUrl, svgAssetUrl });
-    posthog.capture("add_to_cart", {
+    track(ANALYTICS_EVENTS.addToCart, {
       product_id: selection.productId,
       format: selection.format,
-      framed: selection.addFrame,
+      framed: selection.frame !== null,
+      ...(selection.frame
+        ? { frame_material: selection.frame.material, frame_color: selection.frame.color }
+        : {}),
     });
     setJustAdded(true);
     window.setTimeout(() => setJustAdded(false), 2500);
@@ -247,7 +259,7 @@ export function PosterStudio() {
         <BuyBar
           product={product}
           format={format}
-          addFrame={addFrame}
+          frame={frame}
           canBuy={!!home}
           justAdded={justAdded}
           busy={addingToCart}

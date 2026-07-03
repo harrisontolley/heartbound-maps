@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import type { Affiliation } from "../types";
+import { LineIconFrame, LINE_ICON_STROKE_WIDTH } from "../icons/base";
 
 /**
  * Vector glyphs in a 24×24 box, drawn as thin-stroke line art (fine hairline
@@ -53,8 +54,6 @@ export const AFFILIATION_GLYPHS: Record<Affiliation, ReactNode> = {
   ),
 };
 
-const STROKE_W = 1.75;
-
 /** Affiliation glyph for the poster SVG, centered on (x, y) at the given size. */
 export function PosterGlyph({
   type,
@@ -77,7 +76,7 @@ export function PosterGlyph({
       transform={`translate(${x - size / 2}, ${y - size / 2}) scale(${s})`}
       fill="none"
       stroke={color}
-      strokeWidth={STROKE_W}
+      strokeWidth={LINE_ICON_STROKE_WIDTH}
       strokeLinecap="round"
       strokeLinejoin="round"
       opacity={opacity}
@@ -100,19 +99,13 @@ export function AffiliationIcon({
   className?: string;
 }) {
   return (
-    <svg
-      viewBox="0 0 24 24"
-      width={size}
-      height={size}
-      fill="none"
-      stroke={color}
-      strokeWidth={STROKE_W * 1.15}
-      strokeLinecap="round"
-      strokeLinejoin="round"
+    <LineIconFrame
+      size={size}
+      color={color}
+      strokeWidth={LINE_ICON_STROKE_WIDTH * 1.15}
       className={className}
-      aria-hidden="true"
     >
       {AFFILIATION_GLYPHS[type]}
-    </svg>
+    </LineIconFrame>
   );
 }

@@ -15,7 +15,13 @@ export function FinalCTA() {
           {finalCta.headline}
         </h2>
         <p className="text-copy text-body">{finalCta.subhead}</p>
-        <LinkButton href={STUDIO_HREF} variant="primary" size="md">
+        <LinkButton
+          href={STUDIO_HREF}
+          variant="primary"
+          size="md"
+          trackId="final_cta"
+          trackLocation="final_cta"
+        >
           {finalCta.cta}
         </LinkButton>
       </div>

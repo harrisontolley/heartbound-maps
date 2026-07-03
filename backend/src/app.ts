@@ -5,6 +5,7 @@ import { pingDb } from "./db.js";
 import { constructWebhookEvent, isStripeConfigured } from "./stripe.js";
 import { isArteloConfigured, verifyArteloWebhookSignature } from "./artelo.js";
 import { isResendConfigured } from "./email.js";
+import { isPostHogServerConfigured } from "./posthog.js";
 import { isAdminConfigured, isAuthConfigured } from "./auth.js";
 import { isRedisConfigured, pingRedis } from "./redis.js";
 import { extractArteloOrder, handleArteloPayload, handleStripeEvent } from "./webhooks.js";
@@ -19,6 +20,7 @@ import { buildUploadsRouter } from "./routes/uploads.js";
 import { buildAdminRouter } from "./routes/admin.js";
 import { buildJobsRouter } from "./routes/jobs.js";
 import { buildLeadsRouter } from "./routes/leads.js";
+import { buildMailingListRouter } from "./routes/mailingList.js";
 import { initSentry, captureError, isSentryConfigured } from "./sentry.js";
 
 // The Pinprint API. Owns the Nominatim geocoding proxy (User-Agent, rate gate,
@@ -55,6 +57,7 @@ function registerRoutes(r: Hono): Hono {
       sentry: isSentryConfigured(),
       maptiler: isMaptilerConfigured(),
       resend: isResendConfigured(),
+      posthog: isPostHogServerConfigured(),
       // Count of vendored print-render TTFs the function can actually see —
       // verifies backend/assets/fonts survived Vercel's bundling (expect 25).
       // 0 here is serious, not cosmetic: resvg 2.6.2 does NOT throw on an empty
@@ -203,6 +206,7 @@ function registerRoutes(r: Hono): Hono {
   r.route("/track", buildTrackRouter()); // public order tracking
   r.route("/uploads", buildUploadsRouter()); // print-asset blob upload tokens
   r.route("/leads", buildLeadsRouter()); // lead-magnet: free screen-res design for an email
+  r.route("/mailing-list", buildMailingListRouter()); // "we don't have your size?" signups
   r.route("/admin", buildAdminRouter()); // operator-only (requireAdmin / ADMIN_EMAILS)
   r.route("/dev", buildDevRouter()); // dev-only, DEV_SEED_TOKEN-guarded
   r.route("/jobs", buildJobsRouter()); // cron-only, CRON_SECRET-guarded (blob GC)

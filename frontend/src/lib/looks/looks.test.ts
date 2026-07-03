@@ -9,8 +9,8 @@ import {
 
 describe("looks registry", () => {
   it("exposes the featured looks, in order, trend looks first", () => {
-    expect(LOOKS).toHaveLength(10);
-    expect(LOOK_ORDER).toHaveLength(10);
+    expect(LOOKS).toHaveLength(9);
+    expect(LOOK_ORDER).toHaveLength(9);
     expect(LOOK_ORDER).toEqual(LOOKS.map((l) => l.id));
     expect(LOOK_ORDER.slice(0, 4)).toEqual([
       "warm-minimal",
@@ -33,8 +33,8 @@ describe("looks registry", () => {
 });
 
 describe("activeLookId", () => {
-  it("maps the vintage classic variant to Heirloom", () => {
-    expect(activeLookId("vintage-cartography", "classic")).toBe("heirloom");
+  it("returns null for the vintage classic variant (heirloom look retired)", () => {
+    expect(activeLookId("vintage-cartography", "classic")).toBeNull();
   });
 
   it("maps non-vintage templates regardless of variant", () => {

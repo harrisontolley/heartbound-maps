@@ -113,11 +113,27 @@ the default 40.
 
 ## scene-gift-raw.png
 
-> Interior photograph of a gift moment: a framed picture leaning against a
-> warm ivory plaster wall, standing on light oak floorboards, next to a roll
-> of unbleached kraft wrapping paper, a spool of thin cotton twine and folded
-> ivory tissue paper. The picture frame is thin natural oak, portrait
-> orientation, photographed perfectly straight-on with no perspective
-> distortion, and the area inside the frame is solid pure black with a white
-> mat border. Soft warm side light, cream and clay palette, photorealistic,
-> landscape 3:2 composition with the frame left of center.
+Deliberately a cooler, brighter, more modern room than the rest of the site's
+warm-ivory default (hero, craft) or the moody green lounge (scene-room-raw) —
+the point is to show the print looks at home in more than one kind of room.
+The frame is also much larger in-image than the first version (was ~35% of
+image height with a lot of empty wall; now ~65-70%) so the composited artwork
+actually reads at landing-page card size.
+
+> Photorealistic interior product photograph, landscape 3:2 composition,
+> editorial high-end design magazine style. A single thin natural oak picture
+> frame, portrait orientation, leaning against a wall (not hanging),
+> photographed perfectly straight-on with no perspective distortion, frame
+> edges perfectly vertical and horizontal. The frame fills approximately
+> 65-70% of the image height, positioned left of center. The area inside the
+> frame, inside a thin white mat border, is a single uniform solid pure black
+> rectangle: completely flat matte black, no texture, no reflections, no
+> gradient, no glare. The wall behind is a smooth, bright, cool dove-grey
+> painted plaster (not ivory or cream), and the floor is pale polished
+> concrete (not oak floorboards). Crisp bright cool daylight streams in from a
+> large window out of frame, casting soft, cool-toned shadows, not warm golden
+> light. To the right of the frame, small and pushed to the edge: a neatly
+> wrapped gift box in kraft brown paper with a thin natural twine bow, a small
+> spool of twine, and a folded piece of ivory tissue paper, scaled small so
+> they do not compete with the frame. Generous calm negative space. Modern,
+> airy, minimal, photorealistic, sharp focus throughout.

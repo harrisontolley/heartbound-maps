@@ -110,7 +110,7 @@ export function repriceCartItems(items: CartItem[]): CartItem[] {
       selection: buildSelection({
         format: item.selection.format,
         product,
-        addFrame: item.selection.addFrame,
+        frame: item.selection.frame,
       }),
     };
   });

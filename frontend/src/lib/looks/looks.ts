@@ -16,7 +16,6 @@ export type LookId =
   | "mid-century"
   | "swiss"
   | "celestial"
-  | "heirloom"
   | "nightfall"
   | "blueprint"
   | "modern"
@@ -55,13 +54,6 @@ export const LOOKS: Look[] = [
     label: "Celestial",
     blurb: "Deep indigo, glowing center, muted gold.",
     templateId: "celestial",
-  },
-  {
-    id: "heirloom",
-    label: "Heirloom",
-    blurb: "Aged paper, compass rose, engraved serif.",
-    templateId: "vintage-cartography",
-    vintageVariant: "classic",
   },
   {
     id: "nightfall",

@@ -112,6 +112,15 @@ describe("POST /leads — env guards", () => {
     expect(upsertLead).not.toHaveBeenCalled();
   });
 
+  it("also serves the route at /_/backend (Vercel doesn't strip the prefix)", async () => {
+    getSql.mockReturnValue(null);
+    isResendConfigured.mockReturnValue(true);
+    // Any non-404 response proves the prefixed mount resolves the route.
+    const res = await post("/_/backend/leads", leadBody());
+    expect(res.status).toBe(503);
+    expect(await res.json()).toEqual({ error: "leads_unconfigured" });
+  });
+
   it("503s when Resend is unconfigured", async () => {
     getSql.mockReturnValue({});
     isResendConfigured.mockReturnValue(false);

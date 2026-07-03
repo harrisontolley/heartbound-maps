@@ -7,11 +7,16 @@ import { snapshotPosterConfig, snapshotSummary } from "./posterConfig";
 
 describe("snapshotPosterConfig", () => {
   it("captures the current studio design", () => {
-    usePosterStore.setState({ templateId: "bold-modern", productId: "portrait-24x36", format: "print", addFrame: true });
+    usePosterStore.setState({
+      templateId: "bold-modern",
+      productId: "portrait-24x36",
+      format: "print",
+      frame: { material: "Oak", color: "NaturalOak" },
+    });
     const snap = snapshotPosterConfig();
     expect(snap.templateId).toBe("bold-modern");
     expect(snap.productId).toBe("portrait-24x36");
-    expect(snap.addFrame).toBe(true);
+    expect(snap.frame).toEqual({ material: "Oak", color: "NaturalOak" });
   });
 
   it("is decoupled from later store edits (deep copy of places/home)", () => {

@@ -12,7 +12,11 @@ import {
   type Customization,
 } from "../templates/customize";
 import { DEFAULT_PRODUCT_ID } from "../commerce/printProducts";
-import type { StudioFormat } from "../commerce/price";
+import {
+  DEFAULT_FRAME_COLOR,
+  type StudioFormat,
+  type FrameSelection,
+} from "../commerce/price";
 import { LOOKS_BY_ID, type LookId } from "../looks/looks";
 import { SEED_HOME, SEED_PLACES } from "../seed";
 
@@ -54,7 +58,7 @@ type PosterState = {
   /** Whether the buyer is purchasing a physical print or the digital file. */
   format: StudioFormat;
   /** Ready-to-hang frame upsell on a print (ignored when format === "digital"). */
-  addFrame: boolean;
+  frame: FrameSelection;
   customization: Customization;
 
   setHome: (home: Place | null) => void;
@@ -71,7 +75,7 @@ type PosterState = {
   setSize: (id: PosterSizeId) => void;
   setProduct: (productId: string) => void;
   setFormat: (format: StudioFormat) => void;
-  setAddFrame: (addFrame: boolean) => void;
+  setFrame: (frame: FrameSelection) => void;
   /** Apply a curated look: set its template + variant and clear customization. */
   applyLook: (id: LookId) => void;
   /** Merge a partial customization patch. */
@@ -115,7 +119,7 @@ export const usePosterStore = create<PosterState>()(
   sizeId: DEFAULT_POSTER_SIZE_ID,
   productId: DEFAULT_PRODUCT_ID,
   format: "print",
-  addFrame: false,
+  frame: null,
   customization: DEFAULT_CUSTOMIZATION,
 
   setHome: (home) => set({ home }),
@@ -141,7 +145,7 @@ export const usePosterStore = create<PosterState>()(
   setSize: (sizeId) => set({ sizeId }),
   setProduct: (productId) => set({ productId }),
   setFormat: (format) => set({ format }),
-  setAddFrame: (addFrame) => set({ addFrame }),
+  setFrame: (frame) => set({ frame }),
   applyLook: (id) => {
     const look = LOOKS_BY_ID[id];
     set({
@@ -164,7 +168,7 @@ export const usePosterStore = create<PosterState>()(
       sizeId: DEFAULT_POSTER_SIZE_ID,
       productId: DEFAULT_PRODUCT_ID,
       format: "print",
-      addFrame: false,
+      frame: null,
       customization: DEFAULT_CUSTOMIZATION,
     }),
   loadSeed: () => set({ home: SEED_HOME, places: SEED_PLACES }),
@@ -194,11 +198,14 @@ export const usePosterStore = create<PosterState>()(
         sizeId: s.sizeId,
         productId: s.productId,
         format: s.format,
-        addFrame: s.addFrame,
+        frame: s.frame,
         customization: s.customization,
       }),
       merge: (persisted, current) => {
-        const p = (persisted ?? {}) as Partial<PosterState>;
+        const { addFrame, ...p } = (persisted ?? {}) as Partial<PosterState> & {
+          /** Pre-frame-picker drafts stored a boolean toggle instead of `frame`. */
+          addFrame?: boolean;
+        };
         return {
           ...current,
           ...p,
@@ -207,6 +214,14 @@ export const usePosterStore = create<PosterState>()(
             p.templateId && p.templateId in TEMPLATES
               ? p.templateId
               : current.templateId,
+          // Drafts saved before the frame picker carry `addFrame` and no `frame`
+          // key; addFrame:true meant the one frame sold then (today's default).
+          frame:
+            "frame" in p
+              ? (p.frame ?? null)
+              : addFrame
+                ? { material: "Oak", color: DEFAULT_FRAME_COLOR }
+                : null,
           // Backfill any customization keys added since the draft was saved.
           customization: { ...DEFAULT_CUSTOMIZATION, ...(p.customization ?? {}) },
         };

@@ -39,6 +39,14 @@ export type {
 // Lead-magnet contracts (free screen-res design, gated behind an email).
 export type { CreateLeadRequest, CreateLeadResponse } from "./leads.js";
 
+// Mailing-list signup contracts ("we don't have your size?" → join the list).
+export type {
+  MailingListReason,
+  CreateMailingListSignupRequest,
+  CreateMailingListSignupResponse,
+} from "./mailingList.js";
+export { MAILING_LIST_REASONS } from "./mailingList.js";
+
 // Commerce: product catalogue, pricing, and checkout contracts (values + types).
 export * from "./commerce.js";
 

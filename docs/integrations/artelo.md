@@ -78,6 +78,36 @@ After Stripe (2.9% + $0.30), loose nets ~54–55%, framed ~57%.
 Prior framed Archival Matte Oak COGS, for reference: $35.91 / $46.98 / $93.46.
 Prior Matte Poster unframed COGS, for reference: $11.62 / $14.14 / $23.55.)
 
+### Frame-variant COGS spike (2026-07-03) — for the 8-color frame picker
+
+Probed `POST /catalog/get-costs` for every `frameStyle` tier × size, plus a color-sensitivity
+check (4 Oak colors at 16×24), via a throwaway script against the live API (not shipped —
+research only). Landed COGS (production + US shipping), Hot Press cotton rag paper:
+
+| size | Oak | Metal | PremiumOak | PremiumMetal |
+| --- | --- | --- | --- | --- |
+| 12×18 | $40.88 | $40.88 | $49.47 | $46.31 |
+| 16×24 | $55.83 | $55.83 | $67.88 | $63.67 |
+| 24×36 | $113.38 | $100.42 | $115.98 | $109.65 |
+
+Two findings that shape the 8-variant frame picker (`packages/shared/src/commerce.ts`
+`FRAME_VARIANTS`):
+
+1. **`frameColor` never moves the price** — all 4 Oak colors (Natural/Black/White/Walnut) at
+   16×24 quoted identically ($47.37 production + $8.46 shipping = $55.83). Cost varies only by
+   `frameStyle` tier, so pricing keys off material (Oak vs Metal), not the specific color.
+2. **All 8 offered colors map onto the `Premium*` tiers** (`PremiumOak` for the 4 oak colors,
+   `PremiumMetal` for the 4 metal colors), matching the frame already in production use today
+   (`PremiumOak`/`NaturalOak`) rather than the plain `Oak`/`Metal` tier — keeps every color
+   choice at the same "ready-to-hang, premium" quality level instead of quietly downgrading
+   some colors to a cheaper tier.
+3. **Retail stays a single flat frame upcharge regardless of material** ($59/$73/$114, same
+   framed totals $124/$168/$289 as today) rather than pricing Oak and Metal separately, even
+   though PremiumMetal's COGS runs $3–6 lower per size — the gap is small relative to the
+   upcharge itself, and one upcharge is simpler to communicate than a pricing matrix. This
+   makes PremiumMetal's margin a little higher than PremiumOak's, never lower. Revisit if
+   Metal becomes the more popular choice and the margin gap matters at volume.
+
 ## Product mapping (confirmed against the live validator)
 
 An Artelo order line references a product by **attributes**, not a SKU. The offered

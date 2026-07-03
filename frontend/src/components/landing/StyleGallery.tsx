@@ -1,5 +1,5 @@
-import Link from "next/link";
 import { Section } from "./Section";
+import { TrackedLookLink } from "./TrackedLookLink";
 import { SectionLabel } from "./SectionLabel";
 import { LinkButton } from "./LinkButton";
 import { PosterImage } from "./PosterImage";
@@ -35,8 +35,10 @@ export function StyleGallery() {
 
       <div className="mt-12 grid grid-cols-2 gap-x-6 gap-y-10 md:grid-cols-3 lg:grid-cols-5">
         {LOOKS.map((look) => (
-          <Link
+          <TrackedLookLink
             key={look.id}
+            lookId={look.id}
+            templateId={look.templateId}
             href={lookHref(look)}
             className="group flex flex-col gap-3"
           >
@@ -64,12 +66,18 @@ export function StyleGallery() {
                 {look.blurb}
               </span>
             </span>
-          </Link>
+          </TrackedLookLink>
         ))}
       </div>
 
       <div className="mt-12">
-        <LinkButton href={STUDIO_HREF} variant="outline" size="md">
+        <LinkButton
+          href={STUDIO_HREF}
+          variant="outline"
+          size="md"
+          trackId="style_gallery"
+          trackLocation="style_gallery"
+        >
           {PRIMARY_CTA}
         </LinkButton>
       </div>

@@ -2,7 +2,6 @@
 
 import { formatUsd, discountPercent } from "@/lib/commerce/price";
 import type { PrintProduct } from "@/lib/commerce/printProducts";
-import { OPENING_LAUNCH_SALE_LABEL } from "@/lib/commerce/pricing";
 
 /**
  * One purchasable print size: the dimensions and the price. Active = ink ring
@@ -54,7 +53,7 @@ export function SizeCard({
           <span className="text-body-strong">{formatUsd(product.priceCents)}</span>
           {off > 0 && (
             <span className="text-[10px] font-semibold text-success">
-              {OPENING_LAUNCH_SALE_LABEL} · −{off}%
+              −{off}%
             </span>
           )}
         </span>

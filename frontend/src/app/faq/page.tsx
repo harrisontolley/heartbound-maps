@@ -44,7 +44,7 @@ export default function FaqPage() {
                 <h2 className="font-display text-[22px] font-normal leading-[1.2] tracking-[-0.22px] text-ink">
                   {group.title}
                 </h2>
-                <FaqAccordion items={group.items} />
+                <FaqAccordion items={group.items} group={group.title} />
               </div>
             ))}
           </div>

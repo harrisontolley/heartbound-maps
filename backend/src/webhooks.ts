@@ -14,6 +14,7 @@ import {
 import { submitOrderToArtelo } from "./fulfillment.js";
 import { deliverDigitalFiles } from "./digitalDelivery.js";
 import { runNow, type Deferrer } from "./defer.js";
+import { capturePostHogServerEvent } from "./posthog.js";
 
 // Order persistence driven by the Stripe and Artelo webhooks. The DB-touching
 // handlers no-op gracefully when DATABASE_URL is unset (the find* helpers return
@@ -182,6 +183,16 @@ export async function handleStripeEvent(
         // self-guarded, idempotent (claims digital_delivered_at once), and never
         // allowed to fail this webhook.
         defer(() => deliverDigitalFiles(located.id));
+        // Canonical checkout_completed — captured server-side (not from the
+        // client success page) so it's trustworthy even if the buyer closes the
+        // tab before the confirmation page loads. Never awaited into the webhook.
+        defer(() =>
+          capturePostHogServerEvent("checkout_completed", located.id, {
+            order_id: located.id,
+            total_cents: s.amount_total ?? undefined,
+            currency: s.currency ?? undefined,
+          }),
+        );
       }
       return { handled: true, orderId: located.id };
     }

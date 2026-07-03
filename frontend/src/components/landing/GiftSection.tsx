@@ -3,6 +3,7 @@ import { Section } from "./Section";
 import { SectionLabel } from "./SectionLabel";
 import { LinkButton } from "./LinkButton";
 import { copy, STUDIO_HREF } from "./copy";
+import { GiftIcon } from "@/lib/icons/icons";
 
 /**
  * The gifting beat: the gift scene (real print composited into the frame)
@@ -41,14 +42,20 @@ export function GiftSection() {
           <ul className="mt-2 flex flex-wrap gap-x-6 gap-y-2">
             {gift.occasions.map((o) => (
               <li key={o} className="flex items-center gap-2">
-                <span aria-hidden className="h-1 w-1 rounded-full bg-accent" />
+                <GiftIcon size={14} className="text-accent" />
                 <SectionLabel>{o}</SectionLabel>
               </li>
             ))}
           </ul>
 
           <div className="pt-2">
-            <LinkButton href={STUDIO_HREF} variant="outline" size="md">
+            <LinkButton
+              href={STUDIO_HREF}
+              variant="outline"
+              size="md"
+              trackId="gift_section"
+              trackLocation="gift_section"
+            >
               {gift.cta}
             </LinkButton>
           </div>

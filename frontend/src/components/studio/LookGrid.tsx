@@ -3,6 +3,8 @@
 import { usePosterStore } from "@/lib/store/posterStore";
 import { LOOKS, activeLookId } from "@/lib/looks/looks";
 import { LookCard } from "./LookCard";
+import { ANALYTICS_EVENTS } from "@/lib/analytics/events";
+import { useTrackEvent } from "@/lib/analytics/useTrackEvent";
 
 /**
  * The featured looks. Selecting one applies its template + variant and resets
@@ -14,6 +16,7 @@ export function LookGrid() {
   const templateId = usePosterStore((s) => s.templateId);
   const vintageVariant = usePosterStore((s) => s.vintageVariant);
   const applyLook = usePosterStore((s) => s.applyLook);
+  const track = useTrackEvent();
 
   const active = activeLookId(templateId, vintageVariant);
 
@@ -24,7 +27,14 @@ export function LookGrid() {
           key={look.id}
           look={look}
           active={look.id === active}
-          onSelect={() => applyLook(look.id)}
+          onSelect={() => {
+            applyLook(look.id);
+            track(ANALYTICS_EVENTS.lookSelected, {
+              look_id: look.id,
+              template_id: look.templateId,
+              source: "studio_grid",
+            });
+          }}
         />
       ))}
     </div>

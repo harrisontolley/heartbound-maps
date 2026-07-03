@@ -9,6 +9,7 @@
  * 1200x630 OpenGraph card.
  *
  *   pnpm --filter @pinprint/frontend render:scenes
+ *   COMPOSE_ONLY=scene-gift pnpm ... render:scenes   # comma-separated `out` names only
  *
  * Run AFTER `render:posters` (it consumes public/showcase/<poster>.png).
  * On-demand asset generation — NOT part of `next build` or CI.
@@ -302,9 +303,14 @@ async function ogCard(heroPng: Buffer) {
   console.log(`og-card.png (${(png.length / 1024).toFixed(0)} KB)`);
 }
 
+// COMPOSE_ONLY=scene-gift limits a run to specific `out` names — handy when
+// only one raw scene changed and re-compositing all of them isn't needed.
+const ONLY = process.env.COMPOSE_ONLY?.split(",").map((s) => s.trim());
+
 async function main() {
+  const targets = ONLY ? SCENES.filter((c) => ONLY.includes(c.out)) : SCENES;
   let hero: Buffer | undefined;
-  for (const c of SCENES) {
+  for (const c of targets) {
     const png = await composeOne(c);
     if (c.out === "scene-hero") hero = png;
   }

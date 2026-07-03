@@ -48,6 +48,8 @@ export function MobileCtaBar() {
           href={STUDIO_HREF}
           variant="primary"
           size="md"
+          trackId="mobile_cta_bar"
+          trackLocation="mobile_cta_bar"
           className="w-full"
         >
           {copy.hero.primaryCta}

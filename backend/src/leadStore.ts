@@ -124,7 +124,7 @@ export async function markLeadDownloaded(id: string): Promise<void> {
 
 /**
  * The subset of a poster config that defines the *design* — everything else
- * (productId, format, addFrame, units, bearingMode, ...) is checkout/print
+ * (productId, format, frame, units, bearingMode, ...) is checkout/print
  * metadata that doesn't change the artwork, so it's deliberately excluded from
  * the dedupe key.
  */

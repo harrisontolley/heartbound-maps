@@ -1,6 +1,14 @@
-import { arteloProductInfoFor } from "@pinprint/shared";
+import {
+  arteloProductInfoFor,
+  DEFAULT_FRAME_COLOR,
+  FRAME_COLORS_BY_MATERIAL,
+  type FrameColor,
+  type FrameMaterial,
+  type FrameSelection,
+} from "@pinprint/shared";
 import { arteloFetch, getArteloConfig } from "./artelo.js";
 import { signAssetUrl } from "./blob.js";
+import { capturePostHogServerEvent } from "./posthog.js";
 import { ensurePrintAsset, physicalInches } from "./renderPrint.js";
 import { fetchPngDimensions } from "./pngMeta.js";
 import {
@@ -17,6 +25,43 @@ import {
 // (skips if already submitted) and self-contained — it logs every attempt to the
 // `fulfillments` table (request/response + Artelo's COGS) and never throws back
 // into the webhook. See docs/integrations/artelo.md.
+
+/** The `posterConfig` fields this module reads to determine frame/format. */
+type PosterConfigFrameFields = {
+  format?: string;
+  /** Current shape (see packages/shared/src/commerce.ts FrameSelection). */
+  frame?: { material?: string; color?: string } | null;
+  /** Legacy shape — orders placed before the 8-color frame picker shipped. */
+  addFrame?: boolean;
+};
+
+/** Material for a legacy `addFrame: true` order — the only frame ever offered before. */
+const LEGACY_FRAME_MATERIAL: FrameMaterial = "Oak";
+
+/**
+ * Resolve a line item's frame selection from its stored `posterConfig`,
+ * supporting both the current `{material, color}` shape and the legacy
+ * `addFrame: boolean` shape from orders placed before the frame picker
+ * shipped — those map to the one frame that ever existed (Oak/NaturalOak).
+ * Falls back to unframed on anything malformed rather than guessing.
+ */
+function frameFromPosterConfig(config: PosterConfigFrameFields): FrameSelection {
+  if (config.frame !== undefined) {
+    const f = config.frame;
+    if (!f) return null;
+    const colors = FRAME_COLORS_BY_MATERIAL[f.material as FrameMaterial] as
+      | readonly FrameColor[]
+      | undefined;
+    if (colors && f.color && colors.includes(f.color as FrameColor)) {
+      return { material: f.material as FrameMaterial, color: f.color as FrameColor };
+    }
+    return null;
+  }
+  // Legacy shape: no `frame` key at all means this order predates it.
+  return config.addFrame === true
+    ? { material: LEGACY_FRAME_MATERIAL, color: DEFAULT_FRAME_COLOR }
+    : null;
+}
 
 /** Round a dollar amount to integer cents. */
 function toCents(dollars: unknown): number | null {
@@ -58,11 +103,11 @@ export function buildCreateOrderBody(
 
   const items = order.items
     .map((it, index) => {
-      const config = it.posterConfig as { format?: string; addFrame?: boolean };
+      const config = it.posterConfig as PosterConfigFrameFields;
       // Digital downloads aren't fulfilled by Artelo.
       if (config.format === "digital") return null;
-      const addFrame = config.addFrame === true;
-      const productInfo = arteloProductInfoFor(it.productId, addFrame);
+      const frame = frameFromPosterConfig(config);
+      const productInfo = arteloProductInfoFor(it.productId, frame);
       if (!productInfo) return null; // product we don't fulfil through Artelo
       if (!it.assetUrl) return null; // no print-ready asset → can't submit this line
       return {
@@ -189,9 +234,9 @@ const DPI_FLOOR = 150;
 
 /** True for a line item that should be fulfilled as a physical Artelo print. */
 function isArteloPrintItem(it: FulfillmentOrder["items"][number]): boolean {
-  const config = it.posterConfig as { format?: string; addFrame?: boolean };
+  const config = it.posterConfig as PosterConfigFrameFields;
   if (config.format === "digital") return false;
-  return arteloProductInfoFor(it.productId, config.addFrame === true) !== null;
+  return arteloProductInfoFor(it.productId, frameFromPosterConfig(config)) !== null;
 }
 
 /**
@@ -321,6 +366,10 @@ export async function submitOrderToArtelo(orderId: string): Promise<SubmitResult
       message: `Submitted to Artelo${cfg.testOrders ? " (test order)" : ""}`,
       source: "artelo",
     }).catch(() => {});
+    await capturePostHogServerEvent("order_fulfilled", order.id, {
+      order_id: order.id,
+      is_test_order: cfg.testOrders,
+    });
 
     return { submitted: true };
   } catch (err) {

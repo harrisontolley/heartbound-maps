@@ -13,7 +13,7 @@ function sel(totalCents: number, productId = "portrait-16x24"): StudioSelection 
     format: "print",
     productId,
     size: { label: "16 × 24 in", widthIn: 16, heightIn: 24 },
-    addFrame: false,
+    frame: null,
     totalCents,
     lineItems: [],
   };

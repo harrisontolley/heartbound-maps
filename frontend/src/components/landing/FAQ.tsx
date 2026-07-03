@@ -12,7 +12,9 @@ export function FAQ() {
   const { faq } = copy;
   const groups: readonly FaqGroup[] = faq.groups;
   const featured = groups.flatMap((group) =>
-    group.items.filter((item) => item.featured),
+    group.items
+      .filter((item) => item.featured)
+      .map((item) => ({ ...item, group: group.title })),
   );
 
   return (

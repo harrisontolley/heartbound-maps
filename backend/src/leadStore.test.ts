@@ -48,14 +48,14 @@ describe("hashPosterConfig", () => {
     expect(hashPosterConfig(baseConfig)).not.toBe(hashPosterConfig(changed));
   });
 
-  it("ignores non-identity keys (productId, units, format, addFrame)", () => {
+  it("ignores non-identity keys (productId, units, format, frame)", () => {
     const withExtras = {
       ...baseConfig,
       productId: "portrait-16x24",
       units: "mi",
       bearingMode: "great-circle",
       format: "print",
-      addFrame: true,
+      frame: { material: "Oak", color: "NaturalOak" },
     };
     expect(hashPosterConfig(baseConfig)).toBe(hashPosterConfig(withExtras));
   });
