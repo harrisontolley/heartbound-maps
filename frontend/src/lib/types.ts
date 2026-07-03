@@ -12,7 +12,15 @@ export type Units = "km" | "mi";
 export type BearingMode = "great-circle" | "rhumb";
 
 /** A person's tie to a place. Full categorization with per-type encoding. */
-export type Affiliation = "born" | "lived" | "visited" | "family";
+export type Affiliation =
+  | "born"
+  | "lived"
+  | "studied"
+  | "met"
+  | "married"
+  | "family"
+  | "visited"
+  | "adventure";
 
 export type Place = {
   id: string;

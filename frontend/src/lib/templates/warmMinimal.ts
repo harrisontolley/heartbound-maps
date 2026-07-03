@@ -1,4 +1,5 @@
 import type { TemplateSpec } from "./types";
+import { expandAffiliationColors } from "@/lib/affiliations/expandColors";
 
 /**
  * Warm Minimal — the Japandi flagship. Warm oat paper, soft warm charcoal, a
@@ -47,12 +48,12 @@ export const warmMinimal: TemplateSpec = {
   homeDotSize: 6,
   iconSize: 16,
 
-  affiliationColors: {
+  affiliationColors: expandAffiliationColors({
     born: "#b08741",
     lived: "#7a8266",
     visited: "#6e7f86",
     family: "#a86a55",
-  },
+  }),
   colorizeArrows: false,
   glyphOpacity: 0.9,
 };

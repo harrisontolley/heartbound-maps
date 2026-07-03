@@ -53,11 +53,20 @@ const NAMES = ["Lisbon", "Reykjavik", "Singapore", "Vancouver", "Nairobi", "Auck
 function randomScenario(seed: number): Computed[] {
   const rng = mulberry32(seed + 1);
   const n = 3 + Math.floor(rng() * 6); // 3..8
-  const ties: Place["affiliation"][] = ["born", "lived", "visited", "family"];
+  const ties: Place["affiliation"][] = [
+    "born",
+    "lived",
+    "studied",
+    "met",
+    "married",
+    "family",
+    "visited",
+    "adventure",
+  ];
   return Array.from({ length: n }, (_, k) => {
     const cluster = Math.floor(rng() * 4) * 90;
     const bearingDeg = (cluster + (rng() - 0.5) * 40 + 360) % 360;
-    return C(String(k), NAMES[k % NAMES.length], bearingDeg, 50 + Math.floor(rng() * 17950), ties[k % 4]);
+    return C(String(k), NAMES[k % NAMES.length], bearingDeg, 50 + Math.floor(rng() * 17950), ties[k % ties.length]);
   });
 }
 

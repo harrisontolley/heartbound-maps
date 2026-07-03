@@ -1,4 +1,5 @@
 import type { TemplateSpec } from "./types";
+import { expandAffiliationColors } from "@/lib/affiliations/expandColors";
 
 /**
  * HERO template — aged-paper cartography. Warm paper with a vignette + grain,
@@ -48,12 +49,12 @@ export const vintage: TemplateSpec = {
   homeDotSize: 9,
   iconSize: 27,
 
-  affiliationColors: {
+  affiliationColors: expandAffiliationColors({
     born: "#9c6b1e",
     lived: "#5c6b3a",
     visited: "#42586b",
     family: "#8a3b2e",
-  },
+  }),
   colorizeArrows: false,
   glyphOpacity: 0.92,
 };

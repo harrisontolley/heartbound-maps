@@ -4,15 +4,15 @@ import { useEffect, useRef, useState } from "react";
 import type { Affiliation } from "@/lib/types";
 import {
   AFFILIATIONS,
+  AFFILIATION_GROUP_STARTS,
   AFFILIATION_ORDER,
   AffiliationIcon,
 } from "@/lib/affiliations";
 
 /**
  * Tie-type selector. A compact trigger shows the current affiliation (colored
- * icon + label + chevron); clicking opens a small popover listing the four
- * options. Replaces the old four tiny low-opacity icon buttons — clearer to
- * read, easier to hit, and self-labelling.
+ * icon + label + chevron); clicking opens a small popover listing the eight
+ * options in three clusters (life / people / travel), separated by hairlines.
  */
 export function AffiliationPicker({
   value,
@@ -82,13 +82,17 @@ export function AffiliationPicker({
         <ul
           ref={menuRef}
           role="listbox"
-          className="absolute left-0 top-full z-50 mt-1 w-36 overflow-hidden rounded-lg border border-hairline bg-surface-card py-1 shadow-menu"
+          className="absolute left-0 top-full z-50 mt-1 w-40 overflow-hidden rounded-lg border border-hairline bg-surface-card py-1 shadow-menu"
         >
           {AFFILIATION_ORDER.map((a) => {
             const aff = AFFILIATIONS[a];
             const isActive = a === value;
+            const startsGroup = AFFILIATION_GROUP_STARTS.includes(a);
             return (
-              <li key={a}>
+              <li
+                key={a}
+                className={startsGroup ? "mt-1 border-t border-hairline pt-1" : undefined}
+              >
                 <button
                   type="button"
                   role="option"

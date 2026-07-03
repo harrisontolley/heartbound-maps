@@ -32,6 +32,18 @@ describe("template registry", () => {
     }
   });
 
+  it("no two affiliations share a color within a template", () => {
+    for (const id of TEMPLATE_ORDER) {
+      const spec = TEMPLATES[id];
+      const colors = AFFILIATION_ORDER.map((a) =>
+        spec.affiliationColors[a].toLowerCase(),
+      );
+      expect(new Set(colors).size, `duplicate affiliation color in ${id}`).toBe(
+        colors.length,
+      );
+    }
+  });
+
   it("includes the four trend designs, leading the order", () => {
     const trend = [
       "warm-minimal",

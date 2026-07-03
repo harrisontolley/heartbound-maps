@@ -1,5 +1,6 @@
 import type { TemplateSpec, VintageVariant } from "./types";
 import { vintage } from "./vintage";
+import { expandAffiliationColors } from "@/lib/affiliations/expandColors";
 
 // Three directions on the hero vintage template. They share the cartography
 // geometry + serif typography; palette, border weight, line weight, and the
@@ -25,12 +26,12 @@ const explorer: TemplateSpec = {
   arrowWidth: 1.9,
   arrowheadSize: 18,
   homeDotSize: 10,
-  affiliationColors: {
+  affiliationColors: expandAffiliationColors({
     born: "#9a5a16",
     lived: "#5e6630",
     visited: "#3f5560",
     family: "#8f3a22",
-  },
+  }),
 };
 
 // Cool antique sea-atlas: pale blue-grey paper, ink in slate, fine hairlines.
@@ -48,12 +49,12 @@ const atlas: TemplateSpec = {
   titleLetterSpacing: 5,
   arrowWidth: 1.3,
   arrowheadSize: 15,
-  affiliationColors: {
+  affiliationColors: expandAffiliationColors({
     born: "#9a7320",
     lived: "#3f6f57",
     visited: "#34607f",
     family: "#a3493f",
-  },
+  }),
 };
 
 export const VINTAGE_VARIANTS: Record<VintageVariant, TemplateSpec> = {

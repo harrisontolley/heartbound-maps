@@ -1,4 +1,5 @@
 import type { TemplateSpec } from "./types";
+import { expandAffiliationColors } from "@/lib/affiliations/expandColors";
 
 /**
  * Celestial — a refined night-sky. Deep warm indigo (less black than the older
@@ -47,12 +48,12 @@ export const celestial: TemplateSpec = {
   homeDotSize: 8,
   iconSize: 18,
 
-  affiliationColors: {
+  affiliationColors: expandAffiliationColors({
     born: "#e0b35c",
     lived: "#8fae9b",
     visited: "#9bb0d6",
     family: "#cf8f7a",
-  },
+  }),
   colorizeArrows: false,
   glyphOpacity: 0.85,
 };

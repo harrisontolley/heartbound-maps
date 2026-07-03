@@ -1,4 +1,5 @@
 import type { TemplateSpec } from "./types";
+import { expandAffiliationColors } from "@/lib/affiliations/expandColors";
 
 /**
  * Topographic — a contour-relief field map. Warm sand paper with layered
@@ -48,12 +49,12 @@ export const topographic: TemplateSpec = {
   homeDotSize: 9,
   iconSize: 20,
 
-  affiliationColors: {
+  affiliationColors: expandAffiliationColors({
     born: "#b5622e",
     lived: "#6f7a3f",
     visited: "#3f6f72",
     family: "#8a4a2e",
-  },
+  }),
   colorizeArrows: true,
   glyphOpacity: 1,
 };
