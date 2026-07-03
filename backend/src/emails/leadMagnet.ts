@@ -2,6 +2,11 @@
 // trivial to unit test. HTML is table-based with inline styles only, the
 // email-client-safe baseline (no <style> blocks, no flex/grid).
 
+import { OFFERED_PRODUCT_IDS, PRINT_PRICE_CENTS } from "@pinprint/shared";
+
+/** "from $65" — derived from the live catalogue so a reprice never strands this copy. */
+const FROM_PRICE = `$${Math.min(...OFFERED_PRODUCT_IDS.map((id) => PRINT_PRICE_CENTS[id])) / 100}`;
+
 export type LeadMagnetEmailInput = {
   /** Signed/public URL to the screen-res poster PNG. */
   downloadUrl: string;
@@ -85,7 +90,7 @@ export function leadMagnetEmail(input: LeadMagnetEmailInput): EmailContent {
               <td style="padding:24px 40px 40px 40px; border-top:1px solid #eee; text-align:center; color:#6b6b6b;">
                 <p style="margin:0; font-size:13px; line-height:1.7;">
                   Love how it looks on screen? This exact design can be printed museum-quality on
-                  archival fine-art paper and shipped to your door — loose prints start at $60,
+                  archival fine-art paper and shipped to your door — loose prints start at ${FROM_PRICE},
                   with free shipping. Just reply to this email if you'd like one.
                 </p>
               </td>
@@ -107,7 +112,7 @@ export function leadMagnetEmail(input: LeadMagnetEmailInput): EmailContent {
     "It's sized to look sharp as a phone or desktop wallpaper — save it and set it as your background any time.",
     "",
     "Love how it looks on screen? This exact design can be printed museum-quality on archival",
-    "fine-art paper and shipped to your door — loose prints start at $60, with free shipping.",
+    `fine-art paper and shipped to your door — loose prints start at ${FROM_PRICE}, with free shipping.`,
     "Just reply to this email if you'd like one.",
   ].join("\n");
 

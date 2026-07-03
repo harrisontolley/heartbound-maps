@@ -11,7 +11,7 @@ describe("PricingPreview", () => {
     expect(screen.getByText("Unframed")).toBeInTheDocument();
     expect(screen.getByText("Framed")).toBeInTheDocument();
 
-    for (const price of ["$60", "$90", "$165", "$124", "$168", "$289"]) {
+    for (const price of ["$65", "$95", "$175", "$124", "$168", "$289"]) {
       expect(screen.getByText(price)).toBeInTheDocument();
     }
   });
@@ -19,7 +19,7 @@ describe("PricingPreview", () => {
   it("strikes the catalogue-derived regular totals for framed prints", () => {
     render(<PricingPreview />);
 
-    for (const price of ["$146", "$200", "$344"]) {
+    for (const price of ["$147", "$202", "$350"]) {
       expect(screen.getByText(price).tagName).toBe("S");
     }
   });

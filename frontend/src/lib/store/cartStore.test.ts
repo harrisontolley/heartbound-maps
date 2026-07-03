@@ -83,10 +83,10 @@ describe("cartStore", () => {
     useCartStore.getState().addItem({ selection: sel(9100), posterConfig: cfg });
     const repriced = repriceCartItems(useCartStore.getState().items);
 
-    expect(repriced[0].selection.totalCents).toBe(9000);
+    expect(repriced[0].selection.totalCents).toBe(9500);
     expect(repriced[0].selection.lineItems[0]).toMatchObject({
-      cents: 9000,
-      listCents: 12200,
+      cents: 9500,
+      listCents: 12900,
     });
   });
 

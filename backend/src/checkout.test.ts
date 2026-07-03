@@ -17,7 +17,7 @@ describe("priceCheckout — server price authority", () => {
         ]).subtotalCents,
     );
 
-    expect(totals).toEqual([6000, 9000, 16500]);
+    expect(totals).toEqual([6500, 9500, 17500]);
   });
 
   it("prices a print from the catalogue and carries the poster snapshot", () => {

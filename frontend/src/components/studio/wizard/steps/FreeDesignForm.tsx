@@ -9,6 +9,10 @@ import { uploadFreePosterPng } from "@/lib/upload/uploadPosterPng";
 import { snapshotPosterConfig } from "@/lib/commerce/posterConfig";
 import { apiSend, ApiError } from "@/lib/apiClient";
 import { Button } from "@/components/ui/Button";
+import { OFFERED_PRODUCTS } from "@/lib/commerce/printProducts";
+
+/** "from $65" — derived from the catalogue so a reprice never strands this copy. */
+const FROM_PRICE = `$${Math.min(...OFFERED_PRODUCTS.map((p) => p.priceCents)) / 100}`;
 
 // Same shape the backend uses to validate (routes/leads.ts) — kept in sync
 // deliberately so an obviously-malformed address never round-trips.
@@ -131,7 +135,7 @@ export function FreeDesignForm({
         </p>
         <p className="text-sm text-body">
           Want it on your wall? This exact design, printed museum-quality on
-          archival fine art paper, from $60 with free shipping.
+          archival fine art paper, from {FROM_PRICE} with free shipping.
         </p>
       </div>
     );

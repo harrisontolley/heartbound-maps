@@ -11,11 +11,17 @@ import type { OrderStatus } from "./orders.js";
 
 // ── Tunable money (the single place to reprice) ──────────────────────────────
 
-/** Print retail by product id (the surfaced 2:3 portrait ladder). */
+/**
+ * Print retail by product id (the surfaced 2:3 portrait ladder).
+ * COGS re-verified live against Artelo /catalog/get-costs 2026-07-03 —
+ * unchanged from 2026-07-01. Loose prices nudged +$5/+$5/+$10 (2026-07-03)
+ * to lift loose margins from ~55% toward the 60–75% D2C wall-art band while
+ * keeping 12×18 under $69 and 16×24 under $100 for launch.
+ */
 export const PRINT_PRICE_CENTS: Record<string, number> = {
-  "portrait-12x18": 6000, // German Etching COGS $27.21 → 54.7% margin
-  "portrait-16x24": 9000, // German Etching COGS $41.14 → 54.3% margin
-  "portrait-24x36": 16500, // German Etching COGS $74.14 → ~55% margin
+  "portrait-12x18": 6500, // German Etching landed COGS $27.21 → 58.1% margin
+  "portrait-16x24": 9500, // German Etching landed COGS $41.14 → 56.7% margin
+  "portrait-24x36": 17500, // German Etching landed COGS $74.14 → 57.6% margin
 };
 
 /**
@@ -26,9 +32,9 @@ export const PRINT_PRICE_CENTS: Record<string, number> = {
  * sale price (see selectionTotalCents). A list ≤ charged ⇒ no badge.
  */
 export const LIST_PRICE_CENTS: Record<string, number> = {
-  "portrait-12x18": 8200, // 26% off $60 (true 26.8%, floored to 26)
-  "portrait-16x24": 12200, // 26% off $90 (true 26.2%, floored to 26)
-  "portrait-24x36": 22000, // 25% off $165 (true 25.0%, floored to 25)
+  "portrait-12x18": 8800, // 26% off $65 (true 26.1%, floored to 26)
+  "portrait-16x24": 12900, // 26% off $95 (true 26.4%, floored to 26)
+  "portrait-24x36": 23600, // 25% off $175 (true 25.8%, floored to 25)
 };
 
 /**
@@ -37,14 +43,14 @@ export const LIST_PRICE_CENTS: Record<string, number> = {
  * different, smooth stock from the textured German Etching used for loose prints —
  * in a premium natural-oak ready-to-hang frame (PremiumOak/NaturalOak, framing
  * service on). Framed Artelo landed COGS (production + US shipping, verified
- * 2026-07-01): 12×18 $49.47 / 16×24 $67.88 / 24×36 $115.98.
- * Upcharges produce framed opening-launch totals of $124 / $168 / $289 at
- * ~60% margin.
+ * 2026-07-01, re-verified 2026-07-03): 12×18 $49.47 / 16×24 $67.88 /
+ * 24×36 $115.98. Upcharges shrank with the 2026-07-03 loose nudge so framed
+ * opening-launch totals HOLD at $124 / $168 / $289, still ~60% margin.
  */
 export const FRAME_UPCHARGE_CENTS: Record<string, number> = {
-  "portrait-12x18": 6400, // framed total $124 (60.1% margin)
-  "portrait-16x24": 7800, // framed total $168 (59.6% margin)
-  "portrait-24x36": 12400, // framed total $289 (59.9% margin)
+  "portrait-12x18": 5900, // framed total $124 (60.1% margin)
+  "portrait-16x24": 7300, // framed total $168 (59.6% margin)
+  "portrait-24x36": 11400, // framed total $289 (59.9% margin)
 };
 
 /** Standalone digital download — also included free with any print. */

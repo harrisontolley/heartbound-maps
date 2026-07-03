@@ -61,13 +61,18 @@ Verified end-to-end against the **live** Artelo API with the production key:
 Live landed COGS (production + US shipping), 2:3 — used for pricing/margins. **Substrates
 updated 2026-07-01**: loose prints use Hahnemühle German Etching 310gsm (`GermanEtchingFineArt`);
 framed prints use Hot Press 300gsm 100% cotton rag (`HotPressFineArt`) with a premium natural-oak
-ready-to-hang frame (`PremiumOak`/`NaturalOak`, framing service on). Verified live 2026-07-01:
+ready-to-hang frame (`PremiumOak`/`NaturalOak`, framing service on). Verified live 2026-07-01,
+**re-verified live 2026-07-03 (unchanged)**:
 
 | size | unframed (German Etching 310gsm) | framed Premium Oak Natural (Hot Press cotton rag) |
 | --- | --- | --- |
 | 12×18 | $27.21 | $49.47 |
 | 16×24 | $41.14 | $67.88 |
 | 24×36 | $74.14 | $115.98 |
+
+Retail against these (2026-07-03 reprice): loose $65 / $95 / $175 (~58/57/58% gross margin),
+framed totals held at $124 / $168 / $289 (~60%) via smaller frame upcharges ($59/$73/$114).
+After Stripe (2.9% + $0.30), loose nets ~54–55%, framed ~57%.
 
 (Prior loose Hot Press unframed COGS, for reference: $16.74 / $22.51 / $38.55.
 Prior framed Archival Matte Oak COGS, for reference: $35.91 / $46.98 / $93.46.

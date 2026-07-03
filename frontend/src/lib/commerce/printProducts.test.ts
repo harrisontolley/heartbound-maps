@@ -50,8 +50,8 @@ describe("print products", () => {
   });
 
   it("uses the opening-launch price ladder and regular-price anchors", () => {
-    expect(OFFERED_PRODUCTS.map((p) => p.priceCents)).toEqual([6000, 9000, 16500]);
-    expect(OFFERED_PRODUCTS.map((p) => p.listPriceCents)).toEqual([8200, 12200, 22000]);
+    expect(OFFERED_PRODUCTS.map((p) => p.priceCents)).toEqual([6500, 9500, 17500]);
+    expect(OFFERED_PRODUCTS.map((p) => p.listPriceCents)).toEqual([8800, 12900, 23600]);
   });
 
   it("gives every product a frame upcharge", () => {
