@@ -35,7 +35,9 @@ export function DigitalOption() {
           </span>
         </div>
         <span className="text-xs text-muted">
-          Print-ready high-resolution file. Yours to print anywhere.
+          Print-ready 300 DPI files (PNG + SVG), yours to print anywhere. The
+          free emailed design is screen resolution; this is the full-resolution
+          version.
         </span>
         <Button
           variant="outline"
@@ -55,9 +57,9 @@ export function DigitalOption() {
       onClick={() => setFormat("digital")}
       className="text-left text-xs text-muted transition-colors hover:text-ink"
     >
-      Just want the file?{" "}
+      Printing it yourself?{" "}
       <span className="font-medium text-ink underline underline-offset-2">
-        Download a print-ready high-res version for {formatUsd(DIGITAL_PRICE_CENTS)}
+        Get the print-ready 300 DPI file for {formatUsd(DIGITAL_PRICE_CENTS)}
       </span>
     </button>
   );

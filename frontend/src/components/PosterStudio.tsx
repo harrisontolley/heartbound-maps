@@ -320,6 +320,12 @@ export function PosterStudio() {
                 </button>
               )}
             </div>
+            {current.id === "style" && (
+              <p className="-mt-2 mb-4 text-[13px] leading-[1.5] text-muted">
+                Free to design. Download your finished design free by email; you
+                only pay if you want it printed.
+              </p>
+            )}
             {renderStep()}
           </div>
           {renderBottom()}

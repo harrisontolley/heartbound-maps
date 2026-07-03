@@ -125,10 +125,13 @@ export function FreeDesignForm({
     return (
       <div className="flex flex-col gap-3 rounded-xl border border-hairline bg-surface-card p-4">
         <p className="font-display text-lg leading-none text-ink">Check your inbox ✉</p>
-        <p className="text-sm text-muted">Your design is on its way to {sentEmail}.</p>
+        <p className="text-sm text-muted">
+          Your free design is on its way to {sentEmail}. It&apos;s yours to keep, no
+          purchase needed.
+        </p>
         <p className="text-sm text-body">
-          Want it on your wall? This exact design, printed museum-quality on archival
-          fine-art paper — from $60 with free shipping.
+          Want it on your wall? This exact design, printed museum-quality on
+          archival fine art paper, from $60 with free shipping.
         </p>
       </div>
     );
@@ -139,12 +142,23 @@ export function FreeDesignForm({
   }
 
   return (
-    <form onSubmit={submit} className="flex flex-col gap-3">
+    <form
+      onSubmit={submit}
+      className="flex flex-col gap-3 rounded-xl border border-accent/40 bg-surface-card p-4"
+    >
       <div>
-        <p className="font-display text-lg leading-none text-ink">Get your free design</p>
-        <p className="mt-1 text-sm text-muted">
-          We&apos;ll email you the finished design — perfect on screens, ideal as a phone
-          wallpaper.
+        <div className="flex items-center gap-2">
+          <span className="rounded-pill bg-accent-deep px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.96px] text-canvas">
+            Free
+          </span>
+          <p className="font-display text-lg leading-none text-ink">
+            Download your design free
+          </p>
+        </div>
+        <p className="mt-1.5 text-sm text-muted">
+          We&apos;ll email you a screen-resolution copy of this exact design. Great
+          on screens, ideal as a phone wallpaper, yours to keep. Designing costs
+          nothing; you only pay if you want it printed.
         </p>
       </div>
 

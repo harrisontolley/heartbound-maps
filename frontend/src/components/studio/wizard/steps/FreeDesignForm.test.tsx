@@ -67,7 +67,7 @@ async function fillAndSubmit(email: string) {
 describe("FreeDesignForm", () => {
   it("shows the form with the email input and submit button", () => {
     render(<FreeDesignForm getSvg={fakeSvg} canSubmit />);
-    expect(screen.getByText("Get your free design")).toBeInTheDocument();
+    expect(screen.getByText("Download your design free")).toBeInTheDocument();
     expect(screen.getByLabelText("Email")).toHaveAttribute("type", "email");
     expect(screen.getByRole("button", { name: "Email my free design" })).toBeInTheDocument();
   });

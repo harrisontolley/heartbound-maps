@@ -63,8 +63,8 @@ export function StepReview({
       <FreeDesignForm getSvg={getSvg} canSubmit={canSubmit} />
 
       <p className="text-[12px] leading-[1.5] text-muted">
-        Your preview is screen resolution. The file we print from is rendered on
-        our servers at 300 DPI, so every hairline and label comes out sharp.
+        The free emailed design is screen resolution. Ordered prints are rendered
+        on our servers at 300 DPI, so every hairline and label comes out sharp.
       </p>
     </div>
   );

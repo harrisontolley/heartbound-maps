@@ -57,7 +57,7 @@ export function BuyBar({
   const title = format === "digital" ? "Digital download" : product.label;
   const subtitle =
     format === "digital"
-      ? "High-resolution digital download"
+      ? "Print-ready 300 DPI files (PNG + SVG)"
       : addFrame
         ? "Premium-framed cotton-rag fine art print · digital file included"
         : "Hahnemühle German Etching 310gsm fine art print · digital file included";
