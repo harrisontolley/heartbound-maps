@@ -1,4 +1,5 @@
 import type { TemplateSpec } from "./types";
+import { expandAffiliationColors } from "@/lib/affiliations/expandColors";
 
 /**
  * Mid-Century — 70s retro-earth. Warm cream paper, espresso ink, burnt-terracotta
@@ -47,12 +48,12 @@ export const midCentury: TemplateSpec = {
   homeDotSize: 11,
   iconSize: 20,
 
-  affiliationColors: {
+  affiliationColors: expandAffiliationColors({
     born: "#d98a2b",
     lived: "#6f7b3a",
     visited: "#4a7a78",
     family: "#c15c2c",
-  },
+  }),
   colorizeArrows: true,
   glyphOpacity: 1,
 };

@@ -47,11 +47,17 @@ export const swissEditorial: TemplateSpec = {
   homeDotSize: 8,
   iconSize: 16,
 
+  // Hand-tuned (not derived): the core set is half-achromatic, so HSL shifts
+  // of black/gray are no-ops. Flat poster-red/ink/steel family instead.
   affiliationColors: {
     born: "#d62828",
     lived: "#1a1a1a",
-    visited: "#6e6e6e",
+    studied: "#4a4a8c",
+    met: "#e07020",
+    married: "#9d2450",
     family: "#0a3d62",
+    visited: "#6e6e6e",
+    adventure: "#2f7d5a",
   },
   colorizeArrows: false,
   glyphOpacity: 1,

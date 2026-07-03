@@ -46,11 +46,17 @@ export const nightSky: TemplateSpec = {
   homeDotSize: 11,
   iconSize: 25,
 
+  // Hand-tuned (not derived): everything must stay pale enough to read on the
+  // dark navy ground, so derived darkening/hue shifts can't be trusted here.
   affiliationColors: {
     born: "#cfe0f2",
     lived: "#9ec8b8",
-    visited: "#a8c4ee",
+    studied: "#d9cfa8",
+    met: "#c4aee0",
+    married: "#eec3d2",
     family: "#e0a9b8",
+    visited: "#a8c4ee",
+    adventure: "#a8dede",
   },
   colorizeArrows: false,
   glyphOpacity: 0.95,

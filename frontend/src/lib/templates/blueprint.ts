@@ -48,11 +48,17 @@ export const blueprint: TemplateSpec = {
   homeDotSize: 8,
   iconSize: 20,
 
+  // Hand-tuned (not derived): the template is monochrome cyan by intent, so
+  // new categories are lightness steps of the same family, not hue shifts.
   affiliationColors: {
     born: "#bfe0ff",
     lived: "#9fd0ff",
-    visited: "#d6ebff",
+    studied: "#aed6fa",
+    met: "#8fc8f5",
+    married: "#71aede",
     family: "#7fb8e6",
+    visited: "#d6ebff",
+    adventure: "#549ad0",
   },
   colorizeArrows: false,
   glyphOpacity: 0.85,

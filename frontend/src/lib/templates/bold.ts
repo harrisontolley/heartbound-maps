@@ -1,4 +1,5 @@
 import type { TemplateSpec } from "./types";
+import { expandAffiliationColors } from "@/lib/affiliations/expandColors";
 
 /**
  * Bold modern — a 2026 gallery-poster. Warm off-white field, thick arrows with
@@ -47,12 +48,12 @@ export const bold: TemplateSpec = {
   homeDotSize: 15,
   iconSize: 22,
 
-  affiliationColors: {
+  affiliationColors: expandAffiliationColors({
     born: "#e0922a",
     lived: "#4f8a6a",
     visited: "#2d7d8f",
     family: "#c8502a",
-  },
+  }),
   colorizeArrows: true,
   glyphOpacity: 1,
 };

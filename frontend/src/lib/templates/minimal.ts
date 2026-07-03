@@ -1,4 +1,5 @@
 import type { TemplateSpec } from "./types";
+import { expandAffiliationColors } from "@/lib/affiliations/expandColors";
 
 /**
  * Minimal compass — chalk background, the finest ebony hairline arrows, maximal
@@ -47,12 +48,12 @@ export const minimal: TemplateSpec = {
   homeDotSize: 6,
   iconSize: 16,
 
-  affiliationColors: {
+  affiliationColors: expandAffiliationColors({
     born: "#b08a4a",
     lived: "#5f8068",
     visited: "#5a7794",
     family: "#b06a62",
-  },
+  }),
   colorizeArrows: false,
   glyphOpacity: 0.8,
 };
