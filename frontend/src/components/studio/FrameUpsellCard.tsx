@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { usePosterStore } from "@/lib/store/posterStore";
 import {
   formatUsd,
@@ -16,19 +17,20 @@ import { ANALYTICS_EVENTS } from "@/lib/analytics/events";
 import { useTrackEvent } from "@/lib/analytics/useTrackEvent";
 
 /**
- * Swatch color per frame color, for the picker before a photoreal preview
- * exists for every variant (see frontend/scripts/scenes/PROMPTS.md's frame
- * shots) — this map is presentation-only, not the wire contract.
+ * Mitred-corner product shot per frame color (frontend/scripts/frames/
+ * PROMPTS.md — our own renders, matching Artelo's own corner-shot picker
+ * convention but never their photos). Presentation-only, not the wire
+ * contract.
  */
-const SWATCH_HEX: Record<FrameColor, string> = {
-  NaturalOak: "#c8a26b",
-  BlackOak: "#2b2420",
-  WhiteOak: "#ede6d9",
-  WalnutOak: "#5c3a21",
-  WhiteMetal: "#f2f2f0",
-  BlackMetal: "#1c1c1c",
-  SilverMetal: "#b8bcc0",
-  GoldMetal: "#c9a227",
+const SWATCH_SRC: Record<FrameColor, string> = {
+  NaturalOak: "/frames/oak-natural.png",
+  BlackOak: "/frames/oak-black.png",
+  WhiteOak: "/frames/oak-white.png",
+  WalnutOak: "/frames/oak-walnut.png",
+  WhiteMetal: "/frames/metal-white.png",
+  BlackMetal: "/frames/metal-black.png",
+  SilverMetal: "/frames/metal-silver.png",
+  GoldMetal: "/frames/metal-gold.png",
 };
 
 const MATERIAL_LABELS: Record<FrameMaterial, string> = { Oak: "Oak", Metal: "Metal" };
@@ -130,14 +132,19 @@ export function FrameUpsellCard() {
                   aria-label={FRAME_COLOR_LABELS[color]}
                   title={FRAME_COLOR_LABELS[color]}
                   onClick={() => selectColor(color)}
-                  className={`flex size-9 items-center justify-center rounded-full border-2 transition-colors ${
+                  className={`flex size-11 items-center justify-center rounded-full border-2 transition-colors ${
                     active ? "border-ink" : "border-transparent hover:border-hairline-strong"
                   }`}
                 >
-                  <span
-                    className="size-7 rounded-full border border-hairline-strong/40"
-                    style={{ backgroundColor: SWATCH_HEX[color] }}
-                  />
+                  <span className="relative size-9 overflow-hidden rounded-full border border-hairline-strong/40">
+                    <Image
+                      src={SWATCH_SRC[color]}
+                      alt={FRAME_COLOR_LABELS[color]}
+                      fill
+                      sizes="36px"
+                      className="object-cover"
+                    />
+                  </span>
                 </button>
               );
             })}
