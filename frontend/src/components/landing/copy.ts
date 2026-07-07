@@ -304,6 +304,11 @@ export const copy = {
             featured: true,
           },
           {
+            // These figures are single-sourced as PRODUCTION_BUSINESS_DAYS
+            // and TOTAL_BUSINESS_DAYS in lib/commerce/deliveryEstimate.ts,
+            // which also drives the live "Arrives [date] to [date]" estimate
+            // shown at the buy decision (BuyBar, cart, studio review). Update
+            // both places together if the figures ever change.
             q: "When will my print arrive?",
             a: "Your print is made and shipped within 2 to 3 business days, and arrives within 5 to 10 business days total. You'll get a tracking link by email the moment it's on its way.",
           },

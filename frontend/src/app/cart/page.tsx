@@ -25,6 +25,8 @@ import { useCartHydrated } from "@/hooks/useCartHydrated";
 import { useHydrated } from "@/hooks/useHydrated";
 import { ANALYTICS_EVENTS } from "@/lib/analytics/events";
 import { useTrackEvent } from "@/lib/analytics/useTrackEvent";
+import { estimateDeliveryWindow, formatDeliveryWindow } from "@/lib/commerce/deliveryEstimate";
+import { OccasionBanner } from "@/components/studio/OccasionBanner";
 
 // The cart: review configured posters, adjust quantities, then hand the whole
 // cart to the backend, which prices it authoritatively and returns a Stripe
@@ -73,6 +75,17 @@ export default function CartPage() {
     0,
   );
   const saved = Math.max(0, listSubtotal - subtotal);
+
+  // Estimate only — no ETA data exists from Artelo or a carrier. Digital
+  // downloads deliver instantly by email, so skip the line when the cart is
+  // digital-only. Computed fresh on the client only, after hydration (see the
+  // `mounted` comment above), so the server-rendered shell never disagrees
+  // with the visitor's own clock.
+  const hasPhysicalItem = items.some((i) => i.selection.format !== "digital");
+  const etaLabel =
+    mounted && hasPhysicalItem
+      ? formatDeliveryWindow(estimateDeliveryWindow(new Date()))
+      : null;
 
   async function checkout() {
     if (items.length === 0) return;
@@ -273,6 +286,11 @@ export default function CartPage() {
                   <dd className="font-display text-xl text-ink">{formatUsd(subtotal)}</dd>
                 </div>
               </dl>
+
+              {etaLabel && (
+                <p className="mt-3 text-[11px] text-muted">{etaLabel}</p>
+              )}
+              <OccasionBanner className="mt-1" />
 
               <p className="mt-3 text-[11px] text-muted">
                 Covered by the{" "}

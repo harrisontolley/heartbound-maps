@@ -8,6 +8,9 @@ import { activeLookId, LOOKS_BY_ID } from "@/lib/looks/looks";
 import { PRODUCTS_BY_ID } from "@/lib/commerce/printProducts";
 import { FRAME_COLOR_LABELS, type FrameColor } from "@/lib/commerce/price";
 import { copy } from "@/components/landing/copy";
+import { useHydrated } from "@/hooks/useHydrated";
+import { estimateDeliveryWindow, formatDeliveryWindow } from "@/lib/commerce/deliveryEstimate";
+import { OccasionBanner } from "@/components/studio/OccasionBanner";
 import { FreeDesignForm } from "./FreeDesignForm";
 
 /** Same mitred-corner swatches as FrameUpsellCard's picker (frontend/scripts/frames/PROMPTS.md). */
@@ -47,6 +50,16 @@ export function StepReview({
   const lookId = activeLookId(templateId, vintageVariant);
   const lookLabel = lookId ? LOOKS_BY_ID[lookId].label : "Custom";
   const product = PRODUCTS_BY_ID[productId];
+
+  // Estimate only — no ETA data exists from Artelo or a carrier. Digital
+  // downloads deliver instantly by email, so there's nothing to estimate.
+  // Computed fresh on the client only, after hydration, so the server-rendered
+  // shell never disagrees with the visitor's own clock.
+  const mounted = useHydrated();
+  const etaLabel =
+    mounted && format !== "digital"
+      ? formatDeliveryWindow(estimateDeliveryWindow(new Date()))
+      : null;
 
   const sizeValue: ReactNode =
     format === "digital" ? (
@@ -99,12 +112,18 @@ export function StepReview({
         ))}
       </dl>
 
+      <OccasionBanner />
+
       <FreeDesignForm getSvg={getSvg} canSubmit={canSubmit} />
 
       <p className="text-[12px] leading-[1.5] text-muted">
         The free emailed design is screen resolution. Ordered prints are rendered
         on our servers at 300 DPI, so every hairline and label comes out sharp.
       </p>
+
+      {etaLabel && (
+        <p className="text-[12px] leading-[1.5] text-muted">{etaLabel}</p>
+      )}
 
       <p className="text-[12px] leading-[1.5] text-muted">
         Every print is covered by the{" "}

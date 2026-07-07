@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/Button";
 import { copy } from "@/components/landing/copy";
+import { useHydrated } from "@/hooks/useHydrated";
 import {
   formatUsd,
   selectionTotalCents,
@@ -17,6 +18,7 @@ import {
   FREE_SHIPPING,
   OPENING_LAUNCH_SALE_LABEL,
 } from "@/lib/commerce/pricing";
+import { estimateDeliveryWindow, formatDeliveryWindow } from "@/lib/commerce/deliveryEstimate";
 
 /**
  * The sticky commerce strip. Shows a live total for the current selection
@@ -56,6 +58,15 @@ export function BuyBar({
     : savedCents > 0
       ? `${OPENING_LAUNCH_SALE_LABEL} · save ${formatUsd(savedCents)} · ${shipNote}`
       : shipNote;
+  // Estimate only — no ETA data exists from Artelo or a carrier. Digital
+  // downloads deliver instantly by email, so there's nothing to estimate.
+  // Computed fresh on the client only, after hydration, so the server-rendered
+  // shell never disagrees with the visitor's own clock.
+  const mounted = useHydrated();
+  const etaLabel =
+    mounted && canBuy && format !== "digital"
+      ? formatDeliveryWindow(estimateDeliveryWindow(new Date()))
+      : null;
   const title = format === "digital" ? "Digital download" : product.label;
   const subtitle =
     format === "digital"
@@ -111,6 +122,9 @@ export function BuyBar({
                 hint
               )}
             </div>
+            {etaLabel && !justAdded && (
+              <div className="mt-0.5 text-[11px] text-muted">{etaLabel}</div>
+            )}
             {canBuy && (
               <Link
                 href="/guarantee"
