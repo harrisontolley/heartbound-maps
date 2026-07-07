@@ -254,17 +254,21 @@ export default function CartPage() {
                   for an instant digital download. */}
               {hasPhysicalItem && <OccasionBanner className="mt-1" />}
 
-              <p className="mt-3 text-[11px] text-muted">
-                Covered by the{" "}
-                <Link
-                  href="/guarantee"
-                  className="text-ink underline-offset-2 hover:underline"
-                >
-                  {copy.guarantee.name}
-                </Link>
-                : arrives damaged or flawed, and we&apos;ll replace it free or
-                refund you in full.
-              </p>
+              {/* Same gate as the ETA line and OccasionBanner above: nothing
+                  can arrive damaged when nothing ships (a digital-only cart). */}
+              {hasPhysicalItem && (
+                <p className="mt-3 text-[11px] text-muted">
+                  Covered by the{" "}
+                  <Link
+                    href="/guarantee"
+                    className="text-ink underline-offset-2 hover:underline"
+                  >
+                    {copy.guarantee.name}
+                  </Link>
+                  : arrives damaged or flawed, and we&apos;ll replace it free or
+                  refund you in full.
+                </p>
+              )}
 
               <SignedOut>
                 <label className="mt-5 flex flex-col gap-1">

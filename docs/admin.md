@@ -45,7 +45,7 @@ All require `Authorization: Bearer <jwt>` for an allowlisted user. Registered at
 | `POST /admin/orders/:id/refund` | Body `{amountCents?, reason?}`. Stripe refund (full when amount omitted). Idempotency-keyed; records `amount_refunded_cents`; advances to `refunded` when fully refunded. |
 | `POST /admin/orders/:id/cancel` | Body `{refund?, reason?}`. Cancels the Artelo order (if any), optionally refunds, marks `cancelled`. |
 | `POST /admin/orders/:id/retry-fulfillment` | Clears the prior (failed) Artelo id and re-submits. |
-| `POST /admin/orders/:id/sync` | Pulls `GET /orders/get-by-id` from Artelo and reconciles status/tracking. |
+| `POST /admin/orders/:id/sync` | Pulls `GET /orders/get-by-id` from Artelo and reconciles status/tracking. If the reconciled status is `shipped` or `delivered`, also fires the matching shipment notification email (same as the Artelo webhook would) — idempotent via the `shipped_email_sent_at`/`delivered_email_sent_at` claim columns, so a sync that races an already-processed webhook (or a repeat sync) never double-sends. |
 | `PATCH /admin/orders/:id/address` | Updates the **local** shipping address (Artelo has no edit endpoint — see below). |
 
 Every mutation writes an `admin_actions` audit row (`actor_email`, `action`, `detail`).

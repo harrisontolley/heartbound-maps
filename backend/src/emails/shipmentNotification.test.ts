@@ -30,9 +30,10 @@ describe("shipmentNotificationEmail", () => {
     expect(subject).toContain("PP-ABCD1234");
   });
 
-  it('frames "shipped" as on its way', () => {
+  it('frames "shipped" as on its way, with a grammatical "has shipped" subject', () => {
     const { subject, html, text } = shipmentNotificationEmail(baseInput({ kind: "shipped" }));
     expect(subject.toLowerCase()).toContain("shipped");
+    expect(subject).toContain("has shipped");
     for (const content of [html.toLowerCase(), text.toLowerCase()]) {
       expect(content).toContain("on its way");
     }
@@ -45,6 +46,12 @@ describe("shipmentNotificationEmail", () => {
     for (const content of [delivered.html.toLowerCase(), delivered.text.toLowerCase()]) {
       expect(content).toContain("arrived");
     }
+  });
+
+  it('subject reads "has been delivered", not the carrier-speak "has delivered"', () => {
+    const { subject } = shipmentNotificationEmail(baseInput({ kind: "delivered" }));
+    expect(subject).toContain("has been delivered");
+    expect(subject).not.toContain("has delivered");
   });
 
   it("renders the carrier, tracking number, and tracking url when present", () => {

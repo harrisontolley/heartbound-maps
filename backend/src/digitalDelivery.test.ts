@@ -263,6 +263,64 @@ describe("deliverDigitalFiles — content", () => {
   });
 });
 
+describe("deliverDigitalFiles — missing-bonus observability", () => {
+  it("records an order_event noting the missing bonus wallpapers when an item lacks both", async () => {
+    getOrderForDigitalDelivery.mockResolvedValue(baseOrder()); // baseOrder's item has no wallpaper URLs
+    await deliverDigitalFiles("ord-1");
+    expect(appendOrderEvent).toHaveBeenCalledWith(
+      "ord-1",
+      expect.objectContaining({
+        message: expect.stringContaining("missing promised bonus wallpaper"),
+        source: "system",
+      }),
+    );
+  });
+
+  it("names which bonus is missing when only one of the two is absent", async () => {
+    getOrderForDigitalDelivery.mockResolvedValue(
+      baseOrder({
+        items: [
+          {
+            productLabel: "16 × 24 in print",
+            posterConfig: { format: "print" },
+            assetUrl: "https://blob.example.com/posters/a.png",
+            svgAssetUrl: "https://blob.example.com/posters/a.svg",
+            phoneWallpaperAssetUrl: "https://blob.example.com/posters/a-phone.png",
+            desktopWallpaperAssetUrl: null,
+          },
+        ],
+      }),
+    );
+    await deliverDigitalFiles("ord-1");
+    const call = appendOrderEvent.mock.calls.find(([, event]) =>
+      (event as { message: string }).message.includes("missing promised bonus wallpaper"),
+    );
+    expect(call?.[1].message).toContain("desktop wallpaper");
+    expect(call?.[1].message).not.toContain("phone wallpaper");
+  });
+
+  it("does NOT record a missing-bonus event when both wallpapers are present", async () => {
+    getOrderForDigitalDelivery.mockResolvedValue(
+      baseOrder({
+        items: [
+          {
+            productLabel: "16 × 24 in print",
+            posterConfig: { format: "print" },
+            assetUrl: "https://blob.example.com/posters/a.png",
+            svgAssetUrl: "https://blob.example.com/posters/a.svg",
+            phoneWallpaperAssetUrl: "https://blob.example.com/posters/a-phone.png",
+            desktopWallpaperAssetUrl: "https://blob.example.com/posters/a-desktop.png",
+          },
+        ],
+      }),
+    );
+    await deliverDigitalFiles("ord-1");
+    for (const call of appendOrderEvent.mock.calls) {
+      expect((call[1] as { message: string }).message).not.toContain("missing promised bonus wallpaper");
+    }
+  });
+});
+
 describe("deliverDigitalFiles — no assets (pre-B2 legacy order)", () => {
   it("no email when no item has any asset; logs an order_event and returns no_assets", async () => {
     getOrderForDigitalDelivery.mockResolvedValue(

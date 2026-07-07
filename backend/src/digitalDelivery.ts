@@ -76,6 +76,27 @@ async function signItem(item: DigitalDeliveryOrder["items"][number]): Promise<Di
 }
 
 /**
+ * Deliverable items (at least one asset present) that are missing their
+ * promised phone and/or desktop wallpaper bonus. Wallpaper rendering is
+ * client-side best-effort at add-to-cart time (see cart/page.tsx), so a
+ * customer can pay for a print that never got one or both bonus renders
+ * with nothing on the server side ever noticing — until this check. Returns
+ * null when every deliverable item has both, so callers can skip the event
+ * entirely in the common case.
+ */
+function missingBonusNote(items: DigitalDeliveryOrder["items"]): string | null {
+  const notes = items
+    .filter((it) => it.assetUrl || it.svgAssetUrl)
+    .flatMap((it) => {
+      const missing: string[] = [];
+      if (!it.phoneWallpaperAssetUrl) missing.push("phone wallpaper");
+      if (!it.desktopWallpaperAssetUrl) missing.push("desktop wallpaper");
+      return missing.length ? [`${it.productLabel} (missing ${missing.join(", ")})`] : [];
+    });
+  return notes.length ? notes.join("; ") : null;
+}
+
+/**
  * Email a paid order's digital files (PNG + SVG) to the buyer. Called
  * fire-and-forget from the Stripe webhook once an order reaches "paid" —
  * callers must swallow any rejection themselves too, but this function is
@@ -139,6 +160,19 @@ export async function deliverDigitalFiles(orderId: string): Promise<DeliveryResu
       message: "Digital files emailed",
       source: "system",
     }).catch(() => {});
+
+    // Pricing promises phone + desktop wallpapers with every print, but
+    // generation is client-side best-effort, so log it when a bonus never
+    // made it onto the order — never blocks delivery, just gives support a
+    // signal to follow up proactively.
+    const bonusNote = missingBonusNote(order.items);
+    if (bonusNote) {
+      await appendOrderEvent(order.id, {
+        message: `Digital delivery missing promised bonus wallpaper(s): ${bonusNote}`,
+        source: "system",
+      }).catch(() => {});
+    }
+
     return { delivered: true };
   } catch {
     await releaseDigitalDeliveryClaim(order.id).catch(() => {});

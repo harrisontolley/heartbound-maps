@@ -39,6 +39,35 @@ describe("US_HOLIDAYS coverage", () => {
   });
 });
 
+describe("US_HOLIDAYS / OCCASIONS coverage (clock-based forcing function)", () => {
+  // Unlike the pinned test above (which documents today's maintenance
+  // contract and never moves), this one IS deliberately derived from the
+  // system clock: it exists to make CI fail loudly, not silently, once the
+  // tables run out. A lapsed table doesn't error, it just quietly stops
+  // skipping holidays / surfacing occasion cutoffs, which makes delivery
+  // estimates optimistic — the dishonest direction — with nothing to notice
+  // until a customer complains.
+  //
+  // The tables are hand-maintained through 2027 (see the file-level comments
+  // in deliveryEstimate.ts). This assertion passes today (2026) because 2027
+  // is already covered, and it will keep passing right up until the clock
+  // rolls over to 2027-01-01 — at which point `currentYear + 1` becomes 2028,
+  // which is NOT in either table, and this test starts failing. That failure
+  // is the point: extend US_HOLIDAYS/OCCASIONS (and the pinned test above)
+  // through the new year+1 before that date, not after.
+  const nextYear = String(new Date().getUTCFullYear() + 1);
+
+  it(`US_HOLIDAYS covers next year (${nextYear})`, () => {
+    const years = new Set(US_HOLIDAYS.map((d) => d.slice(0, 4)));
+    expect(years.has(nextYear)).toBe(true);
+  });
+
+  it(`OCCASIONS covers next year (${nextYear})`, () => {
+    const years = new Set(OCCASIONS.map((o) => o.date.slice(0, 4)));
+    expect(years.has(nextYear)).toBe(true);
+  });
+});
+
 describe("addBusinessDays", () => {
   it("skips a weekend (Fri + 1 business day lands on Monday)", () => {
     // 2026-01-02 is a Friday.

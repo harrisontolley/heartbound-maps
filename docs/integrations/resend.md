@@ -1,8 +1,11 @@
 # Resend
 
-Transactional email: today, the only sender is the free lead-magnet delivery
-(a screen-res poster design emailed to a captured address). No SDK — plain
-`fetch` against `https://api.resend.com/emails`, Bearer auth.
+Transactional email. Senders today: the free lead-magnet delivery (a
+screen-res poster design emailed to a captured address), the post-payment
+order confirmation (receipt), the shipped/delivered shipment notifications,
+and the post-payment digital-delivery email (full-resolution files plus the
+bonus wallpapers and coordinate story). No SDK — plain `fetch` against
+`https://api.resend.com/emails`, Bearer auth.
 
 ## Env vars
 
@@ -26,6 +29,26 @@ Both must be set for `isResendConfigured()` to return true; either missing and
   a pure function (no I/O) returning `{ subject, html, text }`. HTML is table-based
   with inline styles only (no `<style>` blocks, no react-email dependency) for
   email-client safety.
+- `backend/src/emails/orderConfirmation.ts` — `orderConfirmationEmail(...)`: the
+  receipt (line items, subtotal/shipping/total, shipping address, a `/track`
+  link). Sent by `backend/src/orderEmails.ts`'s `sendOrderConfirmationEmail()`,
+  fired fire-and-forget from the Stripe webhook's paid transition and retried
+  by the hourly `/jobs/fulfillment-sweep` cron for any paid order still
+  missing one after 15 minutes.
+- `backend/src/emails/shipmentNotification.ts` — `shipmentNotificationEmail({ kind: "shipped" | "delivered", ... })`:
+  one template parameterized on `kind`. Sent by `backend/src/orderEmails.ts`'s
+  `sendShipmentNotificationEmail()`, fired from `webhooks.ts`'s Artelo status
+  transition handling and from `admin.ts`'s manual "sync from Artelo" action
+  (`POST /admin/orders/:id/sync`). Signed-in buyers can opt out via
+  `order_updates_opt_in`; guests always get it.
+- `backend/src/emails/digitalDelivery.ts` — `digitalDeliveryEmail(...)`: signed
+  links to each item's full-resolution PNG and (when present) vector SVG, plus
+  two bonuses when present — the phone/desktop wallpaper renders ("Your
+  bonuses") and a coordinate story built server-side from the stored
+  `poster_config` — and a link to the static hanging/care guide. Framing flips
+  between "this is your purchase" (standalone digital format) and "this is
+  free with your print" (bundled with a physical order). Sent by
+  `backend/src/digitalDelivery.ts`'s `deliverDigitalFiles()`.
 - `backend/src/app.ts` → `registerRoutes()` — the `resend` field of
   `GET /health/integrations`.
 

@@ -28,16 +28,18 @@ export type EmailContent = {
   text: string;
 };
 
-function introFor(kind: ShipmentNotificationKind): { subject: string; heading: string; body: string } {
+function introFor(kind: ShipmentNotificationKind): { subjectPhrase: string; heading: string; body: string } {
   if (kind === "shipped") {
     return {
-      subject: "shipped",
+      subjectPhrase: "shipped",
       heading: "Your order is on its way",
       body: "Good news. Your print has shipped and is on its way to you.",
     };
   }
   return {
-    subject: "delivered",
+    // "has delivered" reads as carrier-speak; "has been delivered" is the
+    // grammatical passive voice a person would actually say.
+    subjectPhrase: "been delivered",
     heading: "Your order has arrived",
     body: "Your print has arrived. We hope you love it on the wall.",
   };
@@ -73,8 +75,8 @@ function trackingLinesText(tracking: ShipmentTracking | undefined): string[] {
 
 export function shipmentNotificationEmail(input: ShipmentNotificationEmailInput): EmailContent {
   const { kind, orderNumber, tracking, trackUrl } = input;
-  const { subject: subjectWord, heading, body } = introFor(kind);
-  const subject = `Your Pinprint order ${orderNumber} has ${subjectWord}`;
+  const { subjectPhrase, heading, body } = introFor(kind);
+  const subject = `Your Pinprint order ${orderNumber} has ${subjectPhrase}`;
 
   const html = `<!doctype html>
 <html lang="en">

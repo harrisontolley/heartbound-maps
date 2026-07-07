@@ -239,7 +239,7 @@ export const copy = {
       {
         id: "print",
         title: "The print itself",
-        body: "Hahnemühle German Etching, a heavily textured 310gsm archival paper, printed with archival pigment inks and checked by hand before it ships.",
+        body: "Loose prints on Hahnemühle German Etching, a heavily textured 310gsm archival paper. Framed prints on smooth 300gsm cotton rag behind glass. Both printed with archival pigment inks and checked by hand before they ship.",
         href: undefined,
       },
       {
