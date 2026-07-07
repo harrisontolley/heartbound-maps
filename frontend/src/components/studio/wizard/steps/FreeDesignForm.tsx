@@ -130,7 +130,7 @@ export function FreeDesignForm({
       <div className="flex flex-col gap-3 rounded-xl border border-hairline bg-surface-card p-4">
         <p className="font-display text-lg leading-none text-ink">Check your inbox ✉</p>
         <p className="text-sm text-muted">
-          Your free design is on its way to {sentEmail}. It&apos;s yours to keep, no
+          Your Design Proof is on its way to {sentEmail}. It&apos;s yours to keep, no
           purchase needed.
         </p>
         <p className="text-sm text-body">
@@ -156,13 +156,14 @@ export function FreeDesignForm({
             Free
           </span>
           <p className="font-display text-lg leading-none text-ink">
-            Download your design free
+            Get your Design Proof
           </p>
         </div>
         <p className="mt-1.5 text-sm text-muted">
-          We&apos;ll email you a screen-resolution copy of this exact design. Great
-          on screens, ideal as a phone wallpaper, yours to keep. Designing costs
-          nothing; you only pay if you want it printed.
+          We&apos;ll email you a Design Proof: a free, screen-resolution copy of
+          this exact design, so you can see the finished piece before you pay a
+          cent. Great on screens, ideal as a phone wallpaper, yours to keep
+          either way.
         </p>
       </div>
 

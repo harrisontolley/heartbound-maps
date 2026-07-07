@@ -125,6 +125,23 @@ describe("Pinprint facts stay in sync with the commerce catalogue", () => {
       formatUsd(OFFERED_PRODUCTS[OFFERED_PRODUCTS.length - 1].priceCents),
     );
   });
+
+  it("tracks the frame upcharge range across all offered sizes", () => {
+    const upcharges = OFFERED_PRODUCTS.map((p) => p.frameUpchargeCents);
+    expect(PINPRINT_FACTS.frameUpchargeRange).toBe(
+      `${formatUsd(Math.min(...upcharges))} to ${formatUsd(Math.max(...upcharges))}`,
+    );
+  });
+});
+
+describe("competitors never hardcode the frame upcharge", () => {
+  it("replaces every stale '$50 to $100' literal with the tracked range", () => {
+    const blob = JSON.stringify(COMPETITORS);
+    expect(blob).not.toContain("$50 to $100");
+    // The range must actually appear somewhere — otherwise this would pass
+    // vacuously if every mention were silently deleted instead of replaced.
+    expect(blob).toContain(PINPRINT_FACTS.frameUpchargeRange);
+  });
 });
 
 describe("footer Compare column", () => {

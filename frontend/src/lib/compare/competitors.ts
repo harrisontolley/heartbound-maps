@@ -77,7 +77,7 @@ export const COMPETITORS: readonly Competitor[] = [
       },
       {
         attribute: "Framing",
-        pinprint: "Ready-to-hang wood frame, wired, +$50 to $100",
+        pinprint: `Ready-to-hang wood frame, wired, +${PP.frameUpchargeRange}`,
         competitor: "Frames sold separately (~$49.99+); odd sizes add a surcharge",
         advantage: "pinprint",
       },
@@ -130,7 +130,7 @@ export const COMPETITORS: readonly Competitor[] = [
         id: "pricing",
         heading: "Pricing and what's included",
         body: [
-          `Pinprint's prints run ${PP.priceRange} across its three sizes (${PP.sizeRange}), with a ready-to-hang frame adding $50 to $100. Every print includes the digital files, and a standalone digital download is ${PP.digitalPrice}.`,
+          `Pinprint's prints run ${PP.priceRange} across its three sizes (${PP.sizeRange}), with a ready-to-hang frame adding ${PP.frameUpchargeRange}. Every print includes the digital files, and a standalone digital download is ${PP.digitalPrice}.`,
           "Mapiful's posters list at $44.99 to $79.99 and are frequently shown at around 25% off, so a single unframed poster can dip below Pinprint's entry price. Frames are sold separately (roughly $49.99 and up), and ordering a frame in a non-standard size adds a surcharge. There's no digital option, so every order is a physical print.",
           "Net of it: Mapiful can be cheaper for one unframed poster on sale. Pinprint's price bundles the digital files and a wired, ready-to-hang frame, and the value grows with how many places you put on one print.",
         ],
@@ -180,7 +180,7 @@ export const COMPETITORS: readonly Competitor[] = [
       },
       {
         q: "Is Pinprint cheaper than Mapiful?",
-        a: `Mapiful's posters list at $44.99 to $79.99 and are often shown around 25% off, so one unframed poster can come in under Pinprint's ${PP.prints[0].price} entry. Pinprint includes the digital files with every print and a ready-to-hang frame for $50 to $100, so the better value depends on whether you want framing and digital files.`,
+        a: `Mapiful's posters list at $44.99 to $79.99 and are often shown around 25% off, so one unframed poster can come in under Pinprint's ${PP.prints[0].price} entry. Pinprint includes the digital files with every print and a ready-to-hang frame for ${PP.frameUpchargeRange}, so the better value depends on whether you want framing and digital files.`,
       },
       {
         q: "Does Mapiful offer a digital download?",
@@ -255,7 +255,7 @@ export const COMPETITORS: readonly Competitor[] = [
       },
       {
         attribute: "Framing",
-        pinprint: "Ready-to-hang wood frame, +$50 to $100, digital included",
+        pinprint: `Ready-to-hang wood frame, +${PP.frameUpchargeRange}, digital included`,
         competitor: "Framed $52 to $118 (acrylic glass + wood backing)",
       },
       {
@@ -300,7 +300,7 @@ export const COMPETITORS: readonly Competitor[] = [
         heading: "Pricing and what's included",
         body: [
           "Grafomap is the cheaper entry point: its current live sizes run roughly $19 to $48 unframed and $52 to $118 framed, with free shipping over $75 and aggressive price-match guarantees. There's no digital download.",
-          `Pinprint's prints run ${PP.priceRange}, with a ready-to-hang frame adding $50 to $100. Every print includes the digital files, and a standalone download is ${PP.digitalPrice}. Shipping is free with no minimum.`,
+          `Pinprint's prints run ${PP.priceRange}, with a ready-to-hang frame adding ${PP.frameUpchargeRange}. Every print includes the digital files, and a standalone download is ${PP.digitalPrice}. Shipping is free with no minimum.`,
           "If the goal is the lowest possible price on a single map, Grafomap wins. If you want fine-art paper, the digital files, and many places on one print, Pinprint is the stronger value despite the higher sticker.",
         ],
         takeaway:
@@ -468,7 +468,7 @@ export const COMPETITORS: readonly Competitor[] = [
         heading: "Pricing and what's included",
         body: [
           `The two start in the same place: Craft & Oak's prints are “from $44” (12×18), larger pieces from $100, and a 300 DPI PDF download is $25. Pinprint's prints run ${PP.priceRange}, and its digital download is ${PP.digitalPrice}, included free with every print.`,
-          "Framing is an add-on for both; Craft & Oak's exact frame surcharge is set in its editor, while Pinprint's ready-to-hang frame adds $50 to $100.",
+          `Framing is an add-on for both; Craft & Oak's exact frame surcharge is set in its editor, while Pinprint's ready-to-hang frame adds ${PP.frameUpchargeRange}.`,
           "On price they're close. Pinprint's digital is a little cheaper and bundled with prints; Craft & Oak's headline floor is a dollar lower.",
         ],
         takeaway: "Pinprint's edge: digital files cheaper and included with every print.",
@@ -636,7 +636,7 @@ export const COMPETITORS: readonly Competitor[] = [
         heading: "Pricing and what's included",
         body: [
           "Positive Prints sets prices inside its product editor and varies them by region, so there isn't a single public price list to quote. It's worth pricing your exact piece on their site. It does offer a true digital download (an instant 300 dpi JPEG).",
-          `Pinprint's pricing is shown clearly on-site: prints run ${PP.priceRange}, a ready-to-hang frame adds $50 to $100, and every print includes the digital files (a standalone download is ${PP.digitalPrice}).`,
+          `Pinprint's pricing is shown clearly on-site: prints run ${PP.priceRange}, a ready-to-hang frame adds ${PP.frameUpchargeRange}, and every print includes the digital files (a standalone download is ${PP.digitalPrice}).`,
         ],
         takeaway: "Pinprint's edge: transparent, on-site pricing with digital included.",
       },
@@ -801,7 +801,7 @@ export const COMPETITORS: readonly Competitor[] = [
         heading: "Pricing and what's included",
         body: [
           "Posterhaste's entry unframed print is inexpensive (from $42.50 on its US store), but framing roughly doubles it (framed prints from about $97), and there's no digital download.",
-          `Pinprint's prints run ${PP.priceRange}, a ready-to-hang frame adds $50 to $100, and every print includes the digital files (standalone ${PP.digitalPrice}). Shipping is free with no minimum.`,
+          `Pinprint's prints run ${PP.priceRange}, a ready-to-hang frame adds ${PP.frameUpchargeRange}, and every print includes the digital files (standalone ${PP.digitalPrice}). Shipping is free with no minimum.`,
           "On a single unframed poster, Posterhaste's headline price is lower, but watch the conditions: free shipping requires buying two or more items, and framed orders cost and ship differently.",
         ],
         takeaway:

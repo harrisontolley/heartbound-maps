@@ -1,6 +1,6 @@
 "use client";
 
-import { formatUsd, discountPercent } from "@/lib/commerce/price";
+import { formatUsd } from "@/lib/commerce/price";
 import type { PrintProduct } from "@/lib/commerce/printProducts";
 
 /**
@@ -20,7 +20,6 @@ export function SizeCard({
   onSelect: () => void;
 }) {
   const badgeLabel = badge ?? (product.popular ? "Popular" : null);
-  const off = discountPercent(product.listPriceCents, product.priceCents);
 
   return (
     <button
@@ -40,24 +39,10 @@ export function SizeCard({
           </span>
         )}
       </span>
-      <span className="text-[15px] font-medium text-ink">{product.label}</span>
-      {/* Stacked so the anchored list price + sale + discount never overflow a
-          narrow card (the size grid is 3-up, ~110px per card on a phone). */}
-      <span className="flex flex-col gap-0.5">
-        {off > 0 && (
-          <span className="text-xs text-muted line-through">
-            {formatUsd(product.listPriceCents)}
-          </span>
-        )}
-        <span className="flex items-baseline gap-1 text-sm">
-          <span className="text-body-strong">{formatUsd(product.priceCents)}</span>
-          {off > 0 && (
-            <span className="text-[10px] font-semibold text-success">
-              −{off}%
-            </span>
-          )}
-        </span>
+      <span className="text-[15px] font-medium text-ink">
+        {product.tierName ? `${product.tierName} · ${product.label}` : product.label}
       </span>
+      <span className="text-sm text-body-strong">{formatUsd(product.priceCents)}</span>
     </button>
   );
 }

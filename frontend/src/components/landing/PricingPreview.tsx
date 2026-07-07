@@ -1,9 +1,10 @@
 import { Section } from "./Section";
 import { SectionLabel } from "./SectionLabel";
 import { TextLink } from "@/components/ui/TextLink";
+import { ValueStack } from "@/components/pricing/ValueStack";
 import { copy } from "./copy";
 import { OFFERED_PRODUCTS } from "@/lib/commerce/printProducts";
-import { discountPercent, FREE_SHIPPING } from "@/lib/commerce/pricing";
+import { FREE_SHIPPING, foundingPriceLine } from "@/lib/commerce/pricing";
 import { formatUsd } from "@/lib/commerce/price";
 
 /** Whole-dollar display for the calm ladder ("$90", not "$90.00"). */
@@ -13,31 +14,16 @@ const usd = (cents: number) =>
 const PRICE_GRID_CLASS =
   "grid grid-cols-[minmax(80px,1fr)_76px_76px] gap-x-2 sm:grid-cols-[minmax(96px,1fr)_92px_92px] sm:gap-x-6";
 
-function PriceCell({ listCents, priceCents }: { listCents: number; priceCents: number }) {
-  const pct = discountPercent(listCents, priceCents);
-  return (
-    <span className="flex flex-col items-end gap-0.5 tabular-nums">
-      <s className="text-[12px] text-muted-soft">{usd(listCents)}</s>
-      <span className="text-[16px] font-medium text-body-strong">
-        {usd(priceCents)}
-      </span>
-      {pct > 0 && (
-        <span className="text-[11px] font-semibold text-accent-deep">
-          Save {pct}%
-        </span>
-      )}
-    </span>
-  );
-}
-
 /**
- * Landing-page pricing teaser. It mirrors the authoritative catalogue and makes
- * the temporary opening-launch pricing explicit before a buyer enters the studio.
- * Header labels are block+text-right so they sit exactly over the right-aligned
- * price columns (an inline span ignores text-right, which skewed the header).
+ * Landing-page pricing teaser. It mirrors the authoritative catalogue: real
+ * charged prices, no anchors, plus the condensed value stack and the honest
+ * founding-price deadline (server-rendered here, so /'s `revalidate = 3600`
+ * keeps it from staying stale past the deadline).
  */
 export function PricingPreview() {
   const { pricingPreview } = copy;
+  const foundingLine = foundingPriceLine();
+
   return (
     <Section>
       <div className="grid gap-10 md:grid-cols-[0.9fr_1.1fr] md:gap-16">
@@ -51,6 +37,12 @@ export function PricingPreview() {
           <p className="max-w-[48ch] text-copy text-body">
             {pricingPreview.body}
           </p>
+          {foundingLine && (
+            <p className="max-w-[48ch] text-[13px] leading-[1.5] text-muted">
+              {foundingLine}
+            </p>
+          )}
+          <ValueStack variant="condensed" />
           <TextLink href={pricingPreview.link.href}>
             {pricingPreview.link.label} &rarr;
           </TextLink>
@@ -66,7 +58,6 @@ export function PricingPreview() {
             <ul className="flex flex-col">
               {OFFERED_PRODUCTS.map((p) => {
                 const framedPrice = p.priceCents + p.frameUpchargeCents;
-                const framedListPrice = p.listPriceCents + p.frameUpchargeCents;
                 return (
                   <li
                     key={p.id}
@@ -74,12 +65,16 @@ export function PricingPreview() {
                   >
                     <span className="flex flex-col items-start gap-1 sm:flex-row sm:items-baseline sm:gap-3">
                       <span className="font-display text-[20px] text-ink sm:text-[24px]">
-                        {p.label}
+                        {p.tierName ? `${p.tierName} · ${p.label}` : p.label}
                       </span>
                       {p.popular && <SectionLabel tone="accent">Popular</SectionLabel>}
                     </span>
-                    <PriceCell listCents={p.listPriceCents} priceCents={p.priceCents} />
-                    <PriceCell listCents={framedListPrice} priceCents={framedPrice} />
+                    <span className="text-right text-[16px] font-medium tabular-nums text-body-strong">
+                      {usd(p.priceCents)}
+                    </span>
+                    <span className="text-right text-[16px] font-medium tabular-nums text-body-strong">
+                      {usd(framedPrice)}
+                    </span>
                   </li>
                 );
               })}

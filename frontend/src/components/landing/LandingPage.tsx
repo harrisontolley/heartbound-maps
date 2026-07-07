@@ -25,9 +25,10 @@ import { MobileCtaBar } from "./MobileCtaBar";
  * (StyleGallery: pick a preset, make it yours) → mechanics (HowItWorks:
  * design free → download free → or printed and shipped free) → authority
  * (GlobeDemo: the accuracy story with the live globe) → materials (Craft) →
- * price (PricingPreview: the launch sale, after value is built) → gifting →
- * objections (FAQ) → close (FinalCTA). Emotional proof leads and the sale
- * lands late, once the object and the craft have justified the number.
+ * price (PricingPreview: the value stack and honest pricing, after value is
+ * built) → gifting → objections (FAQ) → close (FinalCTA). Emotional proof
+ * leads and the price lands late, once the object and the craft have
+ * justified the number.
  */
 export function LandingPage() {
   return (

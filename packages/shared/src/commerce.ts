@@ -34,17 +34,51 @@ export const PRINT_PRICE_CENTS: Record<string, number> = {
 };
 
 /**
- * Anchor ("regular") price by product id, shown struck-through next to the
- * opening-launch sale price above. These anchors remain display-only: the price
- * actually charged is always
- * PRINT_PRICE_CENTS — there is no Stripe coupon and the server re-derives the
- * sale price (see selectionTotalCents). A list ≤ charged ⇒ no badge.
+ * Anchor ("regular") price by product id — the price these sizes will charge
+ * once founding pricing ends (see FOUNDING_PRICES_END_ISO below). The UI does
+ * not render this as a strikethrough/discount anywhere (a "was/now" badge on a
+ * product that has never sold at the anchor price reads as a fake sale); it
+ * exists so `discountPercent` and the future standard-rate reprice have a
+ * number to work from. The price actually charged is always PRINT_PRICE_CENTS
+ * — there is no Stripe coupon, and the server never re-derives a sale price.
  */
 export const LIST_PRICE_CENTS: Record<string, number> = {
   "portrait-12x18": 8800, // 26% off $65 (true 26.1%, floored to 26)
   "portrait-16x24": 12900, // 26% off $95 (true 26.4%, floored to 26)
   "portrait-24x36": 23600, // 25% off $175 (true 25.8%, floored to 25)
 };
+
+/**
+ * Founding pricing: the current PRINT_PRICE_CENTS/DIGITAL_PRICE_CENTS are an
+ * honest, time-boxed introductory rate for early customers, not a fake
+ * "sale" — surfaced as a plain-language deadline (see
+ * frontend/src/lib/commerce/pricing.ts's `foundingPriceLine`), never a
+ * struck-through anchor.
+ *
+ * SCHEDULED REPRICE — on this date, in one commit:
+ *   - Set PRINT_PRICE_CENTS to today's LIST_PRICE_CENTS values:
+ *       "portrait-12x18": 8800, "portrait-16x24": 12900, "portrait-24x36": 23600
+ *   - Set DIGITAL_PRICE_CENTS to 2500 (today's DIGITAL_LIST_PRICE_CENTS)
+ * That makes list === charged everywhere, so discountPercent/Anchor logic
+ * self-suppresses with no further UI change needed. Do NOT flip this
+ * automatically by date: static pages (/pricing, the landing page) bake
+ * prices into their rendered HTML between revalidations, and the server must
+ * never charge more than a page displays — a runtime flip could charge a
+ * price higher than what a stale cached page showed. This is a scheduled,
+ * reviewed commit on the ops calendar, not code that watches the clock.
+ */
+export const FOUNDING_PRICES_END_ISO = "2026-10-01";
+
+/**
+ * Whether founding pricing is still in effect. `now` defaults to the caller's
+ * current time; pass an explicit Date for deterministic tests. Client
+ * components should read a freshly-constructed `new Date()` post-hydration
+ * (mirroring the existing useHydrated pattern for the delivery-ETA line) so
+ * the server-rendered shell never disagrees with the visitor's own clock.
+ */
+export function isFoundingPricingActive(now: Date = new Date()): boolean {
+  return now.getTime() < new Date(FOUNDING_PRICES_END_ISO).getTime();
+}
 
 /**
  * Ready-to-hang premium frame upcharge by product id (added on top of the print).
@@ -107,6 +141,12 @@ export type ProductBase = {
   popular?: boolean;
   /** Optional badge shown on the size card (e.g. "Premium"). */
   badge?: string;
+  /**
+   * Named tier for the offered ladder ("Studio", "Signature", "Gallery"),
+   * paired with the size everywhere it's shown (e.g. "Studio · 12 × 18 in").
+   * Undefined for sizes outside the curated ladder (square/landscape).
+   */
+  tierName?: string;
 };
 
 function product(
@@ -118,6 +158,7 @@ function product(
     listPriceCents?: number;
     popular?: boolean;
     badge?: string;
+    tierName?: string;
   } = {},
 ): ProductBase {
   const id = `${orientation}-${widthIn}x${heightIn}`;
@@ -129,11 +170,12 @@ function product(
     widthIn,
     heightIn,
     priceCents,
-    // Fall back to the sale price for sizes without an anchor ⇒ no discount shown.
+    // Fall back to the charged price for sizes without an anchor ⇒ no discount shown.
     listPriceCents: opts.listPriceCents ?? LIST_PRICE_CENTS[id] ?? priceCents,
     frameUpchargeCents: FRAME_UPCHARGE_CENTS[id] ?? DEFAULT_FRAME_UPCHARGE_CENTS,
     popular: opts.popular,
     badge: opts.badge,
+    tierName: opts.tierName,
   };
 }
 
@@ -151,9 +193,9 @@ export function discountPercent(listCents: number, priceCents: number): number {
 
 export const PRINT_PRODUCTS_BASE: ProductBase[] = [
   // Portrait — 2:3 (the offered ladder; prices + frame from the maps above)
-  product("portrait", 12, 18),
-  product("portrait", 16, 24, { popular: true }),
-  product("portrait", 24, 36, { badge: "Premium" }),
+  product("portrait", 12, 18, { tierName: "Studio" }),
+  product("portrait", 16, 24, { popular: true, tierName: "Signature" }),
+  product("portrait", 24, 36, { badge: "Premium", tierName: "Gallery" }),
   // Square — 1:1 (kept for data-model flexibility + tests; not surfaced)
   product("square", 12, 12, { priceCents: 2900 }),
   product("square", 20, 20, { priceCents: 4900 }),

@@ -6,7 +6,9 @@ import { Section } from "@/components/landing/Section";
 import { SectionLabel } from "@/components/landing/SectionLabel";
 import { LinkButton } from "@/components/landing/LinkButton";
 import { PricingLadder } from "@/components/pricing/PricingLadder";
+import { ValueStack } from "@/components/pricing/ValueStack";
 import { PRIMARY_CTA, STUDIO_HREF } from "@/components/landing/copy";
+import { foundingPriceLine } from "@/lib/commerce/pricing";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { buildProductJsonLd } from "@/lib/seo/jsonLd";
 import { OG_IMAGE } from "@/lib/seo/site";
@@ -14,6 +16,11 @@ import { OG_IMAGE } from "@/lib/seo/site";
 const TITLE = "Pricing | Pinprint";
 const DESCRIPTION =
   "Three sizes on Hahnemühle 310gsm fine art paper, framed or unframed, plus a digital download. Free US shipping, and every order includes the files.";
+
+// A static page whose prices are baked in at build/request time; revalidating
+// hourly keeps the honest founding-price deadline (and, eventually, the
+// scheduled reprice) from staying stale on a cached page past the real date.
+export const revalidate = 3600;
 
 export const metadata: Metadata = {
   title: TITLE,
@@ -36,6 +43,7 @@ export const metadata: Metadata = {
 
 /** Dedicated pricing page: the full ladder plus material and policy facts. */
 export default function PricingPage() {
+  const foundingLine = foundingPriceLine();
   return (
     <main className="bg-canvas text-body">
       <JsonLd data={buildProductJsonLd()} />
@@ -52,12 +60,17 @@ export default function PricingPage() {
               The same artwork at every size, on the same paper. Designing is
               free. You choose a size and whether it arrives framed.
             </p>
+            {foundingLine && (
+              <p className="text-[14px] leading-[1.5] text-muted">{foundingLine}</p>
+            )}
             <LinkButton href={STUDIO_HREF} variant="primary" size="md">
               {PRIMARY_CTA}
             </LinkButton>
           </header>
 
           <PricingLadder />
+
+          <ValueStack variant="full" />
         </div>
       </Section>
 

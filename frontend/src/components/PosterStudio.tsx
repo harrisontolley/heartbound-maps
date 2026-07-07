@@ -395,8 +395,8 @@ export function PosterStudio() {
             </div>
             {current.id === "style" && (
               <p className="-mt-2 mb-4 text-[13px] leading-[1.5] text-muted">
-                Free to design. Download your finished design free by email; you
-                only pay if you want it printed.
+                Free to design. See your finished design free by email before you
+                pay a cent; every printed order includes the full 300 DPI files too.
               </p>
             )}
             {renderStep()}

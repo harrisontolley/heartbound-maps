@@ -11,6 +11,7 @@ import { copy } from "@/components/landing/copy";
 import { useHydrated } from "@/hooks/useHydrated";
 import { estimateDeliveryWindow, formatDeliveryWindow } from "@/lib/commerce/deliveryEstimate";
 import { OccasionBanner } from "@/components/studio/OccasionBanner";
+import { ValueStack } from "@/components/pricing/ValueStack";
 import { FreeDesignForm } from "./FreeDesignForm";
 
 /** Same mitred-corner swatches as FrameUpsellCard's picker (frontend/scripts/frames/PROMPTS.md). */
@@ -122,6 +123,8 @@ export function StepReview({
         The free emailed design is screen resolution. Ordered prints are rendered
         on our servers at 300 DPI, so every hairline and label comes out sharp.
       </p>
+
+      {format !== "digital" && <ValueStack variant="condensed" />}
 
       {etaLabel && (
         <p className="text-[12px] leading-[1.5] text-muted">{etaLabel}</p>

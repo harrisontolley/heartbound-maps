@@ -45,7 +45,7 @@ export function escapeHtml(value: string): string {
 export function leadMagnetEmail(input: LeadMagnetEmailInput): EmailContent {
   const { downloadUrl, posterLabel } = input;
 
-  const subject = "Your free Pinprint design is ready";
+  const subject = "Your Pinprint Design Proof is ready";
 
   const safePosterLabel = escapeHtml(posterLabel);
   const safeDownloadUrl = escapeHtml(downloadUrl);

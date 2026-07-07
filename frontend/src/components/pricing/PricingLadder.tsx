@@ -2,12 +2,7 @@ import Link from "next/link";
 import { SectionLabel } from "@/components/landing/SectionLabel";
 import { copy } from "@/components/landing/copy";
 import { OFFERED_PRODUCTS } from "@/lib/commerce/printProducts";
-import {
-  DIGITAL_PRICE_CENTS,
-  DIGITAL_LIST_PRICE_CENTS,
-  OPENING_LAUNCH_SALE_LABEL,
-  discountPercent,
-} from "@/lib/commerce/pricing";
+import { DIGITAL_PRICE_CENTS } from "@/lib/commerce/pricing";
 import { formatUsd } from "@/lib/commerce/price";
 
 /** Quiet policy facts under the ladder. The last one links to /guarantee so
@@ -20,31 +15,15 @@ const POLICY_FACTS: readonly { label: string; href?: string }[] = [
 
 /**
  * The full price ladder, presented the fine-art way: price stated beside the
- * material spec as a fact of the object. Anchor prices stay (the data is the
- * pricing model's honest-floored framing) but typographically whisper.
+ * material spec as a fact of the object. No anchors or discount badges: this
+ * has never sold for more, so there's nothing honest to cross out (see
+ * ValueStack, rendered alongside this on /pricing, for what the price bundles
+ * and the one real dollar anchor it carries).
  */
 
 /** Whole-dollar display ("$90", not "$90.00"); falls back for odd cents. */
 const usd = (cents: number) =>
   cents % 100 === 0 ? `$${cents / 100}` : formatUsd(cents);
-
-function Anchor({ listCents, priceCents }: { listCents: number; priceCents: number }) {
-  if (listCents <= priceCents) return null;
-  return (
-    <s className="text-[13px] tabular-nums text-muted-soft">{usd(listCents)}</s>
-  );
-}
-
-/** Quiet launch-sale saving, floored so it never overstates (commerce.ts). */
-function Saving({ listCents, priceCents }: { listCents: number; priceCents: number }) {
-  const pct = discountPercent(listCents, priceCents);
-  if (pct <= 0) return null;
-  return (
-    <span className="text-[12px] font-semibold tabular-nums text-accent-deep">
-      Save {pct}%
-    </span>
-  );
-}
 
 export function PricingLadder() {
   return (
@@ -58,14 +37,9 @@ export function PricingLadder() {
           >
             Prints
           </h2>
-          <div className="flex items-baseline gap-4">
-            <SectionLabel tone="accent">
-              {OPENING_LAUNCH_SALE_LABEL}
-            </SectionLabel>
-            <SectionLabel className="hidden sm:block">
-              Hahnemühle German Etching · 310gsm · giclée
-            </SectionLabel>
-          </div>
+          <SectionLabel className="hidden sm:block">
+            Hahnemühle German Etching · 310gsm · giclée
+          </SectionLabel>
         </div>
 
         <ul className="flex flex-col">
@@ -78,7 +52,7 @@ export function PricingLadder() {
               >
                 <div className="flex items-baseline gap-3">
                   <span className="font-display text-[28px] leading-none text-ink">
-                    {p.label}
+                    {p.tierName ? `${p.tierName} · ${p.label}` : p.label}
                   </span>
                   {p.popular && (
                     <SectionLabel
@@ -91,26 +65,16 @@ export function PricingLadder() {
                   )}
                 </div>
                 <div className="flex items-baseline gap-2.5">
-                  <Anchor listCents={p.listPriceCents} priceCents={p.priceCents} />
                   <span className="text-[18px] font-medium tabular-nums text-ink">
                     {usd(p.priceCents)}
                   </span>
                   <span className="text-[14px] text-muted">print</span>
-                  <Saving listCents={p.listPriceCents} priceCents={p.priceCents} />
                 </div>
                 <div className="flex items-baseline gap-2.5">
-                  <Anchor
-                    listCents={p.listPriceCents + p.frameUpchargeCents}
-                    priceCents={framed}
-                  />
                   <span className="text-[18px] font-medium tabular-nums text-ink">
                     {usd(framed)}
                   </span>
                   <span className="text-[14px] text-muted">framed in oak</span>
-                  <Saving
-                    listCents={p.listPriceCents + p.frameUpchargeCents}
-                    priceCents={framed}
-                  />
                 </div>
               </li>
             );
@@ -139,10 +103,6 @@ export function PricingLadder() {
             <span className="text-[18px] font-medium tabular-nums text-ink">
               {usd(DIGITAL_PRICE_CENTS)}
             </span>
-            <Anchor
-              listCents={DIGITAL_LIST_PRICE_CENTS}
-              priceCents={DIGITAL_PRICE_CENTS}
-            />
           </div>
           <p className="max-w-[58ch] text-[15px] leading-[1.55] text-body">
             A print-ready PNG plus a scalable SVG you can print yourself, at any

@@ -54,6 +54,14 @@ describe("print products", () => {
     expect(OFFERED_PRODUCTS.map((p) => p.listPriceCents)).toEqual([8800, 12900, 23600]);
   });
 
+  it("names the offered ladder Studio / Signature / Gallery", () => {
+    expect(OFFERED_PRODUCTS.map((p) => p.tierName)).toEqual([
+      "Studio",
+      "Signature",
+      "Gallery",
+    ]);
+  });
+
   it("gives every product a frame upcharge", () => {
     for (const p of PRINT_PRODUCTS) {
       expect(p.frameUpchargeCents).toBeGreaterThan(0);
