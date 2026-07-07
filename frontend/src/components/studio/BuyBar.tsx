@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { Button } from "@/components/ui/Button";
+import { copy } from "@/components/landing/copy";
 import {
   formatUsd,
   selectionTotalCents,
@@ -110,6 +111,14 @@ export function BuyBar({
                 hint
               )}
             </div>
+            {canBuy && (
+              <Link
+                href="/guarantee"
+                className="mt-0.5 hidden text-[10px] text-muted underline-offset-2 hover:text-ink hover:underline sm:block"
+              >
+                {copy.guarantee.name}
+              </Link>
+            )}
           </div>
           <Button
             variant="primary"

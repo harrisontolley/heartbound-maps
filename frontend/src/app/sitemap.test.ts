@@ -12,6 +12,7 @@ describe("sitemap", () => {
     expect(urls).toContain(absoluteUrl("/studio"));
     expect(urls).toContain(absoluteUrl("/pricing"));
     expect(urls).toContain(absoluteUrl("/faq"));
+    expect(urls).toContain(absoluteUrl("/guarantee"));
     expect(urls).toContain(absoluteUrl("/compare"));
     expect(urls).toContain(absoluteUrl("/privacy"));
     expect(urls).toContain(absoluteUrl("/terms"));

@@ -2,10 +2,12 @@
 
 import type { ReactNode } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { usePosterStore } from "@/lib/store/posterStore";
 import { activeLookId, LOOKS_BY_ID } from "@/lib/looks/looks";
 import { PRODUCTS_BY_ID } from "@/lib/commerce/printProducts";
 import { FRAME_COLOR_LABELS, type FrameColor } from "@/lib/commerce/price";
+import { copy } from "@/components/landing/copy";
 import { FreeDesignForm } from "./FreeDesignForm";
 
 /** Same mitred-corner swatches as FrameUpsellCard's picker (frontend/scripts/frames/PROMPTS.md). */
@@ -102,6 +104,18 @@ export function StepReview({
       <p className="text-[12px] leading-[1.5] text-muted">
         The free emailed design is screen resolution. Ordered prints are rendered
         on our servers at 300 DPI, so every hairline and label comes out sharp.
+      </p>
+
+      <p className="text-[12px] leading-[1.5] text-muted">
+        Every print is covered by the{" "}
+        <Link
+          href="/guarantee"
+          className="text-ink underline-offset-2 hover:underline"
+        >
+          {copy.guarantee.name}
+        </Link>
+        : arrives damaged or flawed, and we&apos;ll replace it free or refund
+        you in full.
       </p>
     </div>
   );

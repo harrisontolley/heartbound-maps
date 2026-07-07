@@ -1,4 +1,6 @@
+import Link from "next/link";
 import { SectionLabel } from "@/components/landing/SectionLabel";
+import { copy } from "@/components/landing/copy";
 import { OFFERED_PRODUCTS } from "@/lib/commerce/printProducts";
 import {
   DIGITAL_PRICE_CENTS,
@@ -7,6 +9,14 @@ import {
   discountPercent,
 } from "@/lib/commerce/pricing";
 import { formatUsd } from "@/lib/commerce/price";
+
+/** Quiet policy facts under the ladder. The last one links to /guarantee so
+ * the named policy is one click away from the buy decision. */
+const POLICY_FACTS: readonly { label: string; href?: string }[] = [
+  { label: "Free US shipping on every order" },
+  { label: "Made to order, checked by hand" },
+  { label: copy.guarantee.name, href: "/guarantee" },
+];
 
 /**
  * The full price ladder, presented the fine-art way: price stated beside the
@@ -143,14 +153,16 @@ export function PricingLadder() {
 
       {/* Policies, as quiet facts */}
       <ul className="flex flex-wrap items-center gap-x-8 gap-y-2">
-        {[
-          "Free US shipping on every order",
-          "Made to order, checked by hand",
-          "Damaged prints replaced free",
-        ].map((item) => (
-          <li key={item} className="flex items-center gap-2">
+        {POLICY_FACTS.map((item) => (
+          <li key={item.label} className="flex items-center gap-2">
             <span aria-hidden className="h-1 w-1 rounded-full bg-accent" />
-            <SectionLabel>{item}</SectionLabel>
+            {item.href ? (
+              <Link href={item.href} className="underline-offset-2 hover:underline">
+                <SectionLabel>{item.label}</SectionLabel>
+              </Link>
+            ) : (
+              <SectionLabel>{item.label}</SectionLabel>
+            )}
           </li>
         ))}
       </ul>

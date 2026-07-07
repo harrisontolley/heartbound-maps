@@ -9,6 +9,7 @@ import { AccountNav } from "@/components/account/AccountNav";
 import { CartNav } from "@/components/cart/CartNav";
 import { Card } from "@/components/account/Card";
 import { Button } from "@/components/ui/Button";
+import { copy } from "@/components/landing/copy";
 import { formatUsd, FRAME_COLOR_LABELS } from "@/lib/commerce/price";
 import {
   FREE_SHIPPING,
@@ -266,6 +267,18 @@ export default function CartPage() {
                   <dd className="font-display text-xl text-ink">{formatUsd(subtotal)}</dd>
                 </div>
               </dl>
+
+              <p className="mt-3 text-[11px] text-muted">
+                Covered by the{" "}
+                <Link
+                  href="/guarantee"
+                  className="text-ink underline-offset-2 hover:underline"
+                >
+                  {copy.guarantee.name}
+                </Link>
+                : arrives damaged or flawed, and we&apos;ll replace it free or
+                refund you in full.
+              </p>
 
               <SignedOut>
                 <label className="mt-5 flex flex-col gap-1">

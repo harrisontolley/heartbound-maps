@@ -10,6 +10,15 @@
 
 export const STUDIO_HREF = "/studio";
 export const PRIMARY_CTA = "Create your print";
+/**
+ * Name for the existing damage/fault policy (FAQ "Returns & changes" +
+ * terms/page.tsx). Reused across buy-decision surfaces and by a later PR.
+ * Scope stays exactly what it already was: damaged or flawed prints only, a
+ * photo, a free replacement or full refund, nothing to send back.
+ * Change-of-mind returns are still excluded because every piece is made to
+ * order.
+ */
+export const GUARANTEE_NAME = "The Arrives Perfect Guarantee";
 
 /** A single FAQ entry. `featured` items are surfaced on the landing-page teaser. */
 export type FaqItem = {
@@ -72,7 +81,7 @@ export const copy = {
       "Hahnemühle 310gsm paper",
       "Archival giclée inks",
       "Natural oak frames",
-      "Damage replacement guarantee",
+      GUARANTEE_NAME,
     ],
   },
 
@@ -339,6 +348,28 @@ export const copy = {
     ],
   },
 
+  // The named guarantee page. Scope is exactly the existing damage/fault
+  // policy already promised in the FAQ "Returns & changes" group and
+  // terms/page.tsx: this only names it and gives it a dedicated place to
+  // link to. Invent no new promises here.
+  guarantee: {
+    name: GUARANTEE_NAME,
+    eyebrow: "Our promise",
+    headline: GUARANTEE_NAME,
+    subhead: "We'll always make it right.",
+    body: [
+      "If your print arrives damaged, or there's a fault, send us a quick photo and we'll ship a free replacement or refund you in full. No need to return the original.",
+      "Because every piece is made to order from your own design, we can't accept change-of-mind returns once it's gone into production. Preview your design as many times as you like before you buy, and if anything about the piece itself is wrong when it arrives, we'll always make it right.",
+    ],
+    exclusions:
+      "Change of mind isn't covered. Every piece is made to order from your own design, so once it's in production we can't accept a return for that reason alone.",
+    page: {
+      metaTitle: `${GUARANTEE_NAME} | Pinprint`,
+      metaDescription:
+        "If your Pinprint arrives damaged or with a fault, we'll ship a free replacement or refund you in full. No need to return the original.",
+    },
+  },
+
   finalCta: {
     headline: "Put your places on the wall.",
     subhead:
@@ -363,6 +394,7 @@ export const copy = {
         title: "Resources",
         links: [
           { label: "FAQ", href: "/faq" },
+          { label: "Guarantee", href: "/guarantee" },
           { label: "Track an order", href: "/track" },
           { label: "Contact", href: "mailto:hello@pinprint.com" },
         ],
