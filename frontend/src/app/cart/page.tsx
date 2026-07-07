@@ -85,7 +85,11 @@ export default function CartPage() {
     // Reuse the key while the cart is unchanged (retry of the same attempt);
     // regenerate it once the cart changes.
     const sig = items
-      .map((i) => `${i.id}:${i.quantity}:${i.assetUrl ?? ""}:${i.svgAssetUrl ?? ""}`)
+      .map(
+        (i) =>
+          `${i.id}:${i.quantity}:${i.assetUrl ?? ""}:${i.svgAssetUrl ?? ""}:` +
+          `${i.phoneWallpaperAssetUrl ?? ""}:${i.desktopWallpaperAssetUrl ?? ""}`,
+      )
       .join("|");
     const attemptKey =
       idempotency.current?.sig === sig ? idempotency.current.key : crypto.randomUUID();
@@ -100,6 +104,8 @@ export default function CartPage() {
           posterConfig: i.posterConfig,
           assetUrl: i.assetUrl,
           svgAssetUrl: i.svgAssetUrl,
+          phoneWallpaperAssetUrl: i.phoneWallpaperAssetUrl,
+          desktopWallpaperAssetUrl: i.desktopWallpaperAssetUrl,
         })),
         email: email.trim() || undefined,
       };

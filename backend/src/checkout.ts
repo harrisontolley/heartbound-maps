@@ -84,6 +84,15 @@ export function priceCheckout(items: CheckoutItemInput[]): PricedCheckout {
     if (it.svgAssetUrl && !isAllowedAssetUrl(it.svgAssetUrl)) {
       throw new CheckoutValidationError("invalid_asset_url");
     }
+    // Bonus wallpaper renders (phone 9:16, desktop 16:9) — same best-effort,
+    // same host allow-list. Absent when the browser's upload failed; never
+    // required for checkout to proceed.
+    if (it.phoneWallpaperAssetUrl && !isAllowedAssetUrl(it.phoneWallpaperAssetUrl)) {
+      throw new CheckoutValidationError("invalid_asset_url");
+    }
+    if (it.desktopWallpaperAssetUrl && !isAllowedAssetUrl(it.desktopWallpaperAssetUrl)) {
+      throw new CheckoutValidationError("invalid_asset_url");
+    }
     // A frame only ever applies to a print; digital ignores whatever was sent
     // (a valid one is already silently dropped below, so a malformed one gets
     // the same treatment). On a print, a present-but-malformed frame is a
@@ -115,6 +124,11 @@ export function priceCheckout(items: CheckoutItemInput[]): PricedCheckout {
       // Public URL of the vector SVG (browser-uploaded at add-to-cart). Carried
       // for any format — it's what the post-payment digital-delivery email links to.
       svgAssetUrl: it.svgAssetUrl,
+      // Bonus wallpaper renders (browser-uploaded at add-to-cart, best-effort —
+      // see PosterStudio.tsx's addToCart). Delivered post-payment alongside
+      // the other digital files, when present.
+      phoneWallpaperAssetUrl: it.phoneWallpaperAssetUrl,
+      desktopWallpaperAssetUrl: it.desktopWallpaperAssetUrl,
     });
 
     lineItems.push({

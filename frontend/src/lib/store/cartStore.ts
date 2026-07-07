@@ -28,6 +28,18 @@ export type CartItem = {
    * buyers.
    */
   svgAssetUrl?: string;
+  /**
+   * Public URL of the bonus phone wallpaper PNG (9:16, uploaded at
+   * add-to-cart, best-effort) — a render of the buyer's exact design at
+   * phone-wallpaper proportions, delivered post-payment alongside the other
+   * digital files.
+   */
+  phoneWallpaperAssetUrl?: string;
+  /**
+   * Public URL of the bonus desktop wallpaper PNG (16:9), the same bonus
+   * render at desktop-wallpaper proportions.
+   */
+  desktopWallpaperAssetUrl?: string;
   quantity: number;
   addedAt: number;
 };
@@ -39,6 +51,8 @@ type CartState = {
     posterConfig: PosterConfigSnapshot;
     assetUrl?: string;
     svgAssetUrl?: string;
+    phoneWallpaperAssetUrl?: string;
+    desktopWallpaperAssetUrl?: string;
     quantity?: number;
   }) => void;
   removeItem: (id: string) => void;
@@ -61,7 +75,15 @@ export const useCartStore = create<CartState>()(
   persist(
     (set) => ({
       items: [],
-      addItem: ({ selection, posterConfig, assetUrl, svgAssetUrl, quantity = 1 }) =>
+      addItem: ({
+        selection,
+        posterConfig,
+        assetUrl,
+        svgAssetUrl,
+        phoneWallpaperAssetUrl,
+        desktopWallpaperAssetUrl,
+        quantity = 1,
+      }) =>
         set((s) => ({
           items: [
             ...s.items,
@@ -71,6 +93,8 @@ export const useCartStore = create<CartState>()(
               posterConfig,
               assetUrl,
               svgAssetUrl,
+              phoneWallpaperAssetUrl,
+              desktopWallpaperAssetUrl,
               quantity: clampQty(quantity),
               addedAt: Date.now(),
             },

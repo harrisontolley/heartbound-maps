@@ -27,6 +27,7 @@ import type { StudioStepDirection } from "@/lib/analytics/events";
 import { StudioHeader } from "@/components/studio/StudioHeader";
 import { ConfirmDialog } from "@/components/ui/Dialog";
 import { PosterStage } from "@/components/studio/PosterStage";
+import { WallpaperCapture } from "@/components/studio/WallpaperCapture";
 import { BuyBar } from "@/components/studio/BuyBar";
 import { WizardProgress } from "@/components/studio/wizard/WizardProgress";
 import { WizardNav, type NavAction } from "@/components/studio/wizard/WizardNav";
@@ -36,6 +37,18 @@ import { StepPlaces } from "@/components/studio/wizard/steps/StepPlaces";
 import { StepSize } from "@/components/studio/wizard/steps/StepSize";
 import { StepCustomize } from "@/components/studio/wizard/steps/StepCustomize";
 import { StepReview } from "@/components/studio/wizard/steps/StepReview";
+
+/**
+ * Rasterize a hidden wallpaper `<svg>` (phone or desktop, from
+ * WallpaperCapture) and upload it under the same slug, best-effort. Rejects
+ * when the svg isn't ready (never should be, since WallpaperCapture is always
+ * mounted) so the caller's Promise.allSettled logs it exactly like a real
+ * upload failure rather than silently proceeding.
+ */
+function captureWallpaper(svg: SVGSVGElement | null, slug: string): Promise<string> {
+  if (!svg) return Promise.reject(new Error("wallpaper svg not ready"));
+  return rasterizePng(svg, 2).then((blob) => uploadPosterPng(blob, slug));
+}
 
 /**
  * Studio shell — a staged builder. A header + progress stepper sit above a fixed
@@ -79,6 +92,8 @@ export function PosterStudio() {
   const [justAdded, setJustAdded] = useState(false);
   const [addingToCart, setAddingToCart] = useState(false);
   const posterRef = useRef<HTMLDivElement>(null);
+  const phoneWallpaperRef = useRef<HTMLDivElement>(null);
+  const desktopWallpaperRef = useRef<HTMLDivElement>(null);
 
   // Step cursor. `furthest` is the highest step reached — it bounds which steps
   // the progress bar lets you jump back to.
@@ -162,6 +177,12 @@ export function PosterStudio() {
   function getSvg(): SVGSVGElement | null {
     return posterRef.current?.querySelector("svg") ?? null;
   }
+  function getPhoneWallpaperSvg(): SVGSVGElement | null {
+    return phoneWallpaperRef.current?.querySelector("svg") ?? null;
+  }
+  function getDesktopWallpaperSvg(): SVGSVGElement | null {
+    return desktopWallpaperRef.current?.querySelector("svg") ?? null;
+  }
 
   async function addToCart(selection: StudioSelection) {
     if (addingToCart) return;
@@ -172,20 +193,27 @@ export function PosterStudio() {
     // at a fixed 3x (screen-res is a different, lead-magnet-only path). Both run
     // in parallel and are each best-effort: a failed upload (e.g. blob storage
     // unconfigured) never blocks add-to-cart — the item just lacks that URL, and
-    // fulfilment/delivery can be retried server-side.
+    // fulfilment/delivery can be retried server-side. The two bonus wallpaper
+    // renders (WallpaperCapture, always mounted off-screen) join the same
+    // best-effort batch — a failed wallpaper upload never blocks add-to-cart
+    // either, the order just carries fewer bonus links.
     let assetUrl: string | undefined;
     let svgAssetUrl: string | undefined;
+    let phoneWallpaperAssetUrl: string | undefined;
+    let desktopWallpaperAssetUrl: string | undefined;
     const svg = getSvg();
     if (svg) {
       setAddingToCart(true);
       const slug = slugify(home?.label ?? "poster");
-      const [pngResult, svgResult] = await Promise.allSettled([
+      const [pngResult, svgResult, phoneResult, desktopResult] = await Promise.allSettled([
         selection.format === "print"
           ? exportPngBlob(svg, { widthIn: product.widthIn }).then((blob) =>
               uploadPosterPng(blob, slug),
             )
           : rasterizePng(svg, 3).then((blob) => uploadPosterPng(blob, slug)),
         serializePoster(svg).then((svgText) => uploadPosterSvg(svgText, slug)),
+        captureWallpaper(getPhoneWallpaperSvg(), `${slug}-phone`),
+        captureWallpaper(getDesktopWallpaperSvg(), `${slug}-desktop`),
       ]);
       if (pngResult.status === "fulfilled") {
         assetUrl = pngResult.value;
@@ -197,9 +225,26 @@ export function PosterStudio() {
       } else {
         console.error("[studio] poster svg upload failed", svgResult.reason);
       }
+      if (phoneResult.status === "fulfilled") {
+        phoneWallpaperAssetUrl = phoneResult.value;
+      } else {
+        console.error("[studio] phone wallpaper upload failed", phoneResult.reason);
+      }
+      if (desktopResult.status === "fulfilled") {
+        desktopWallpaperAssetUrl = desktopResult.value;
+      } else {
+        console.error("[studio] desktop wallpaper upload failed", desktopResult.reason);
+      }
       setAddingToCart(false);
     }
-    addItem({ selection, posterConfig, assetUrl, svgAssetUrl });
+    addItem({
+      selection,
+      posterConfig,
+      assetUrl,
+      svgAssetUrl,
+      phoneWallpaperAssetUrl,
+      desktopWallpaperAssetUrl,
+    });
     track(ANALYTICS_EVENTS.addToCart, {
       product_id: selection.productId,
       format: selection.format,
@@ -298,6 +343,22 @@ export function PosterStudio() {
           footer={text.footer}
           display={display}
           posterRef={posterRef}
+        />
+        <WallpaperCapture
+          home={previewHome}
+          places={previewPlaces}
+          units={units}
+          template={template}
+          bearingMode={bearingMode}
+          scaleByDistance={customization.scaleArrowsByDistance}
+          showDistances={display.distances}
+          fontsReady={fontsReady}
+          title={text.title}
+          subtitle={text.subtitle}
+          footer={text.footer}
+          display={display}
+          phoneRef={phoneWallpaperRef}
+          desktopRef={desktopWallpaperRef}
         />
 
         <section

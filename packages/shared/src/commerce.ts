@@ -499,6 +499,19 @@ export type CheckoutItemInput = {
    * PNG — the digital tier's actual asset, and a bonus for print buyers.
    */
   svgAssetUrl?: string;
+  /**
+   * Public URL of the phone wallpaper PNG (uploaded to blob storage by the
+   * browser at add-to-cart) — a bonus render of the buyer's exact design at
+   * phone-wallpaper proportions (POSTER_SIZES.phone, 9:16). Generation/upload
+   * is best-effort like assetUrl/svgAssetUrl, so it's absent when it failed;
+   * delivered post-payment alongside the other digital files.
+   */
+  phoneWallpaperAssetUrl?: string;
+  /**
+   * Public URL of the desktop wallpaper PNG (POSTER_SIZES.desktop, 16:9) — the
+   * same bonus render at desktop-wallpaper proportions.
+   */
+  desktopWallpaperAssetUrl?: string;
 };
 
 export type CreateCheckoutRequest = {

@@ -180,6 +180,77 @@ describe("deliverDigitalFiles — content", () => {
     expect(signAssetUrl).toHaveBeenCalledTimes(1);
   });
 
+  it("signs and includes bonus wallpaper URLs when present", async () => {
+    getOrderForDigitalDelivery.mockResolvedValue(
+      baseOrder({
+        items: [
+          {
+            productLabel: "16 × 24 in print",
+            posterConfig: { format: "print" },
+            assetUrl: "https://blob.example.com/posters/a.png",
+            svgAssetUrl: "https://blob.example.com/posters/a.svg",
+            phoneWallpaperAssetUrl: "https://blob.example.com/posters/a-phone.png",
+            desktopWallpaperAssetUrl: "https://blob.example.com/posters/a-desktop.png",
+          },
+        ],
+      }),
+    );
+    await deliverDigitalFiles("ord-1");
+    const arg = sendEmail.mock.calls[0][0];
+    expect(arg.html).toContain("https://blob.example.com/posters/a-phone.png?signed=1");
+    expect(arg.html).toContain("https://blob.example.com/posters/a-desktop.png?signed=1");
+    expect(arg.html.toLowerCase()).toContain("your bonuses");
+  });
+
+  it("omits the bonus section when neither wallpaper asset is present (no broken links)", async () => {
+    getOrderForDigitalDelivery.mockResolvedValue(baseOrder());
+    await deliverDigitalFiles("ord-1");
+    const arg = sendEmail.mock.calls[0][0];
+    expect(arg.html.toLowerCase()).not.toContain("wallpaper");
+  });
+
+  it("builds and includes the coordinate story when poster_config has a home and places", async () => {
+    getOrderForDigitalDelivery.mockResolvedValue(
+      baseOrder({
+        items: [
+          {
+            productLabel: "16 × 24 in print",
+            posterConfig: {
+              format: "print",
+              home: { lat: -37.8136, lng: 144.9631, label: "Melbourne" },
+              places: [{ label: "Sydney", affiliation: "born", lat: -33.8688, lng: 151.2093 }],
+              units: "km",
+            },
+            assetUrl: "https://blob.example.com/posters/a.png",
+            svgAssetUrl: null,
+          },
+        ],
+      }),
+    );
+    await deliverDigitalFiles("ord-1");
+    const arg = sendEmail.mock.calls[0][0];
+    expect(arg.html.toLowerCase()).toContain("the story behind your coordinates");
+    expect(arg.html).toContain("Born in Sydney");
+  });
+
+  it("omits the story section when poster_config has no home (legacy order)", async () => {
+    getOrderForDigitalDelivery.mockResolvedValue(baseOrder()); // baseOrder's posterConfig has no home
+    await deliverDigitalFiles("ord-1");
+    const arg = sendEmail.mock.calls[0][0];
+    expect(arg.html.toLowerCase()).not.toContain("story behind your coordinates");
+  });
+
+  it("includes a hanging-guide link built from the real (unmocked) URL helper", async () => {
+    // No PUBLIC_APP_URL/VERCEL set in this hermetic test process, so the
+    // helper falls back to the local dev origin — this still proves the link
+    // flows end to end from deliverDigitalFiles into the sent email, not just
+    // at the pure-template level (see emails/digitalDelivery.test.ts).
+    getOrderForDigitalDelivery.mockResolvedValue(baseOrder());
+    await deliverDigitalFiles("ord-1");
+    const arg = sendEmail.mock.calls[0][0];
+    expect(arg.html).toContain("/hanging-guide");
+  });
+
   it("marks delivered and appends an order_event on send success", async () => {
     getOrderForDigitalDelivery.mockResolvedValue(baseOrder());
     await deliverDigitalFiles("ord-1");

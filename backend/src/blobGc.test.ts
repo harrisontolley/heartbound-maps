@@ -99,6 +99,8 @@ describe("orderAssetRefsFromRows", () => {
         asset_url: "https://x.blob.vercel-storage.com/posters/a.png",
         svg_asset_url: "https://x.blob.vercel-storage.com/posters/a.svg",
         render_asset_url: null,
+        phone_wallpaper_asset_url: null,
+        desktop_wallpaper_asset_url: null,
         status: "paid",
         created_at: new Date(NOW - DAY).toISOString(),
       },
@@ -118,6 +120,8 @@ describe("orderAssetRefsFromRows", () => {
         asset_url: "https://x.blob.vercel-storage.com/posters/a.png",
         svg_asset_url: "https://x.blob.vercel-storage.com/posters/a.svg",
         render_asset_url: "https://x.blob.vercel-storage.com/posters/print-a.png",
+        phone_wallpaper_asset_url: null,
+        desktop_wallpaper_asset_url: null,
         status: "paid",
         created_at: new Date(NOW).toISOString(),
       },
@@ -128,12 +132,37 @@ describe("orderAssetRefsFromRows", () => {
     expect(refs).toHaveLength(3);
   });
 
+  // Regression: the bonus wallpaper renders (phone_wallpaper_asset_url,
+  // desktop_wallpaper_asset_url) must be tracked as live references too, or
+  // the GC would treat every order's wallpaper blobs as orphans and reap them
+  // while the order is still live.
+  it("tracks phone/desktop wallpaper asset urls as live refs alongside the others", () => {
+    const refs = orderAssetRefsFromRows([
+      {
+        asset_url: "https://x.blob.vercel-storage.com/posters/a.png",
+        svg_asset_url: null,
+        render_asset_url: null,
+        phone_wallpaper_asset_url: "https://x.blob.vercel-storage.com/posters/a-phone.png",
+        desktop_wallpaper_asset_url: "https://x.blob.vercel-storage.com/posters/a-desktop.png",
+        status: "paid",
+        created_at: new Date(NOW).toISOString(),
+      },
+    ]);
+    expect(refs.map((r) => r.assetUrl)).toEqual([
+      "https://x.blob.vercel-storage.com/posters/a.png",
+      "https://x.blob.vercel-storage.com/posters/a-phone.png",
+      "https://x.blob.vercel-storage.com/posters/a-desktop.png",
+    ]);
+  });
+
   it("emits one ref for a row with only asset_url (pre-digital-delivery order)", () => {
     const refs = orderAssetRefsFromRows([
       {
         asset_url: "https://x.blob.vercel-storage.com/posters/legacy.png",
         svg_asset_url: null,
         render_asset_url: null,
+        phone_wallpaper_asset_url: null,
+        desktop_wallpaper_asset_url: null,
         status: "shipped",
         created_at: new Date(NOW).toISOString(),
       },
@@ -149,6 +178,8 @@ describe("orderAssetRefsFromRows", () => {
         asset_url: null,
         svg_asset_url: "https://x.blob.vercel-storage.com/posters/only.svg",
         render_asset_url: null,
+        phone_wallpaper_asset_url: null,
+        desktop_wallpaper_asset_url: null,
         status: "paid",
         created_at: new Date(NOW).toISOString(),
       },
@@ -159,7 +190,15 @@ describe("orderAssetRefsFromRows", () => {
   it("emits nothing for a row with neither asset column set", () => {
     expect(
       orderAssetRefsFromRows([
-        { asset_url: null, svg_asset_url: null, render_asset_url: null, status: "paid", created_at: new Date(NOW).toISOString() },
+        {
+          asset_url: null,
+          svg_asset_url: null,
+          render_asset_url: null,
+          phone_wallpaper_asset_url: null,
+          desktop_wallpaper_asset_url: null,
+          status: "paid",
+          created_at: new Date(NOW).toISOString(),
+        },
       ]),
     ).toEqual([]);
   });

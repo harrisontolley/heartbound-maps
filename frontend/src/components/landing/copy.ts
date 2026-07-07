@@ -374,6 +374,40 @@ export const copy = {
     },
   },
 
+  // Static hanging/care guide, linked from the post-payment digital-delivery
+  // email and the footer. Practical, verifiable notes only: standard gallery
+  // hanging height, sensible wall placement, the two frame materials we
+  // actually offer, and basic archival paper care.
+  hangingGuide: {
+    eyebrow: "After it arrives",
+    headline: "Hanging and care guide",
+    subhead:
+      "A few notes on getting your print on the wall, and keeping it looking its best for years.",
+    sections: [
+      {
+        title: "Hanging height",
+        body: "Center your print about 57 inches from the floor to the middle of the piece. That's eye level for most standing viewers, and the height galleries use as a rule of thumb. Over a sofa or console, leave 6 to 8 inches between the furniture and the bottom edge of the frame.",
+      },
+      {
+        title: "Wall placement",
+        body: "Pick a wall you pass often, not just one you sit across from. A hallway, a stairwell, or the wall behind a desk keeps the piece part of daily life rather than background decoration. Keep it out of direct sun and away from heat vents, since both fade paper over time.",
+      },
+      {
+        title: "Oak vs metal frame styling",
+        body: "The oak frame is warmer and reads well in a room with wood furniture, wool, or linen. The metal frame is cooler and cleaner, and suits a room with more glass, stone, or black hardware. Both use the same fine art print and the same ready-to-hang hardware, so the choice is about the room, not the piece inside.",
+      },
+      {
+        title: "Caring for the paper",
+        body: "Keep your print out of direct sunlight and away from damp rooms such as bathrooms. Dust the glass, or the paper edge on a loose print, with a dry, soft cloth. Don't use glass cleaner directly on an unframed print, and handle it by the edges to keep finger oils off the surface.",
+      },
+    ],
+    page: {
+      metaTitle: "Hanging and Care Guide | Pinprint",
+      metaDescription:
+        "How to hang and care for your Pinprint fine art print: hanging height, wall placement, oak vs metal frame styling, and paper care.",
+    },
+  },
+
   finalCta: {
     headline: "Put your places on the wall.",
     subhead:
@@ -399,6 +433,7 @@ export const copy = {
         links: [
           { label: "FAQ", href: "/faq" },
           { label: "Guarantee", href: "/guarantee" },
+          { label: "Hanging and care guide", href: "/hanging-guide" },
           { label: "Track an order", href: "/track" },
           { label: "Contact", href: "mailto:hello@pinprint.com" },
         ],

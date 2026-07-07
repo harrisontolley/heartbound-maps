@@ -45,6 +45,25 @@ describe("cartStore", () => {
     expect(items[0].svgAssetUrl).toBe("https://blob.example/posters/london-1.svg");
   });
 
+  it("carries phoneWallpaperAssetUrl and desktopWallpaperAssetUrl through onto the item", () => {
+    useCartStore.getState().addItem({
+      selection: sel(5900),
+      posterConfig: cfg,
+      phoneWallpaperAssetUrl: "https://blob.example/posters/london-1-phone.png",
+      desktopWallpaperAssetUrl: "https://blob.example/posters/london-1-desktop.png",
+    });
+    const { items } = useCartStore.getState();
+    expect(items[0].phoneWallpaperAssetUrl).toBe("https://blob.example/posters/london-1-phone.png");
+    expect(items[0].desktopWallpaperAssetUrl).toBe("https://blob.example/posters/london-1-desktop.png");
+  });
+
+  it("leaves phoneWallpaperAssetUrl and desktopWallpaperAssetUrl undefined when omitted (best-effort upload can fail)", () => {
+    useCartStore.getState().addItem({ selection: sel(5900), posterConfig: cfg });
+    const { items } = useCartStore.getState();
+    expect(items[0].phoneWallpaperAssetUrl).toBeUndefined();
+    expect(items[0].desktopWallpaperAssetUrl).toBeUndefined();
+  });
+
   it("leaves assetUrl and svgAssetUrl undefined when omitted", () => {
     useCartStore.getState().addItem({ selection: sel(5900), posterConfig: cfg });
     const { items } = useCartStore.getState();

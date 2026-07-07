@@ -50,6 +50,12 @@ export { MAILING_LIST_REASONS } from "./mailingList.js";
 // Commerce: product catalogue, pricing, and checkout contracts (values + types).
 export * from "./commerce.js";
 
+// Pure geometry: haversine/rhumb distance + bearing, compass naming, distance
+// formatting — a backend-facing re-port of frontend/src/lib/geo (see geo.ts's
+// header). Used by emails/coordinateStory.ts to build the digital-delivery
+// email's "story behind your coordinates" section.
+export * from "./geo.js";
+
 // Admin dashboard contracts (operator-only; richer than the customer Order).
 export type {
   AdminOrderSummary,
