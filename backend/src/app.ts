@@ -219,7 +219,24 @@ function registerRoutes(r: Hono): Hono {
 initSentry();
 
 export const app = new Hono();
-app.use("*", cors());
+
+// CORS is only needed for the local cross-origin case (frontend :3000 → backend
+// :8787); in production the client is same-origin and sends no cross-origin
+// preflight. Scope Access-Control-Allow-Origin to a known allowlist rather than
+// reflecting every origin, so a third-party site can't read our JSON responses
+// from a browser. Requests with no Origin header (server-to-server, webhooks,
+// curl) are unaffected — CORS is browser-enforced only.
+const CORS_ALLOWED_ORIGINS = [process.env.PUBLIC_APP_URL, "http://localhost:3000"]
+  .filter((o): o is string => Boolean(o))
+  .map((o) => o.replace(/\/$/, ""));
+
+app.use(
+  "*",
+  cors({
+    origin: (origin) =>
+      CORS_ALLOWED_ORIGINS.includes(origin.replace(/\/$/, "")) ? origin : null,
+  }),
+);
 app.route("/", registerRoutes(new Hono()));
 app.route(SERVICE_PREFIX, registerRoutes(new Hono()));
 

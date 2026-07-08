@@ -1,12 +1,26 @@
 // Canonical site origin + URL helpers for SEO metadata (canonical links, OG/Twitter
 // images, sitemap, robots). Centralized here so every absolute URL is built one way.
 //
-// The origin comes from NEXT_PUBLIC_SITE_URL (set per environment in Vercel),
-// falling back to the production domain for local/preview builds — matching the
-// repo's `process.env.NEXT_PUBLIC_X ?? "fallback"` convention. NOTE: confirm the
-// real production domain and set NEXT_PUBLIC_SITE_URL before launch, or canonical
-// and sitemap URLs will point at this fallback.
-const RAW_SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://pinprint.com";
+// The origin comes from NEXT_PUBLIC_SITE_URL (set per environment in Vercel).
+// Until that var is set there is no owned production domain, so the site is
+// treated as NOT launched for SEO: robots.txt disallows everything and every
+// page carries a noindex meta (see robots.ts and app/layout.tsx). Setting
+// NEXT_PUBLIC_SITE_URL is the SEO go-live switch. Absolute URLs meanwhile fall
+// back to the deployment's own origin (Vercel injects the bare host in
+// VERCEL_PROJECT_PRODUCTION_URL) so they at least point somewhere we control,
+// never at a domain we do not own.
+const RAW_SITE_URL =
+  process.env.NEXT_PUBLIC_SITE_URL ??
+  (process.env.VERCEL_PROJECT_PRODUCTION_URL
+    ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+    : "http://localhost:3000");
+
+/**
+ * True once NEXT_PUBLIC_SITE_URL is set — the signal that a real production
+ * domain exists and search engines may index the site. Gates robots.txt and
+ * the root noindex meta.
+ */
+export const IS_LAUNCHED = Boolean(process.env.NEXT_PUBLIC_SITE_URL);
 
 /** Absolute site origin, no trailing slash (e.g. "https://pinprint.com"). */
 export const SITE_URL = RAW_SITE_URL.replace(/\/+$/, "");

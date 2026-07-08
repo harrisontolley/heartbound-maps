@@ -12,7 +12,7 @@ import { COMPETITORS } from "@/lib/compare/competitors";
 import type { Competitor } from "@/lib/compare/types";
 import { buildBreadcrumbJsonLd, buildFaqJsonLd } from "@/lib/seo/jsonLd";
 import { ComparisonTable } from "./ComparisonTable";
-import { JsonLd } from "./JsonLd";
+import { JsonLd } from "@/components/seo/JsonLd";
 
 const CARD =
   "flex flex-col gap-3 rounded-xl border border-hairline bg-surface-card p-6";

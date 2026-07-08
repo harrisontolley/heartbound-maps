@@ -43,13 +43,16 @@ export function getArteloWebhookSecret(): string | null {
  * `x-artelo-signature` header (their documented scheme re-stringifies the parsed
  * body, so we mirror that). Returns true when the signature matches.
  *
- * When ARTELO_WEBHOOK_SECRET is unset we can't verify — returns true (accept) so
- * the unconfigured/dev path still 204s, mirroring the rest of the integration's
- * "no-op when unconfigured" behaviour. Set the secret in any real deployment.
+ * When ARTELO_WEBHOOK_SECRET is unset we can't verify. Outside production we
+ * accept (return true) so the unconfigured/dev path still 204s, mirroring the
+ * rest of the integration's "no-op when unconfigured" behaviour. In production
+ * we fail CLOSED — the handler mutates order status, so an unsigned callback
+ * must never be trusted just because the secret wasn't configured (contrast the
+ * Stripe path, which already rejects). Set the secret in any real deployment.
  */
 export function verifyArteloWebhookSignature(rawBody: string, signature: string | undefined): boolean {
   const secret = getArteloWebhookSecret();
-  if (!secret) return true; // unconfigured → don't block (handler no-ops anyway)
+  if (!secret) return process.env.VERCEL_ENV !== "production"; // prod: fail closed
   if (!signature) return false;
   let canonical: string;
   try {

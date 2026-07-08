@@ -187,6 +187,11 @@ export function buildCheckoutRouter(): Hono<{ Variables: AuthVariables }> {
   });
 
   r.get("/session/:id", async (c) => {
+    // Unauthenticated (guest success page reads it), so throttle to blunt any
+    // scraping of order status by Stripe session id.
+    if (await enforce(c, "checkout-status", { max: 60, windowMs: 60_000 })) {
+      return c.json({ error: "rate_limited" }, 429);
+    }
     const status = await getOrderStatusByCheckoutSession(c.req.param("id"));
     if (!status) return c.json({ error: "not_found" }, 404);
     return c.json(status, 200);

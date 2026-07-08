@@ -18,6 +18,7 @@ import {
   updateOrderShipping,
 } from "../orders.js";
 import { refundPaymentIntent } from "../stripe.js";
+import { captureError } from "../sentry.js";
 import { cancelArteloOrder, fetchArteloOrder, submitOrderToArtelo } from "../fulfillment.js";
 import { getArteloConfig } from "../artelo.js";
 import { mapArteloStatus, trackingFromShipments } from "../webhooks.js";
@@ -148,7 +149,11 @@ export function buildAdminRouter(): Hono<{ Variables: AuthVariables }> {
       const out: AdminActionResult = { ok: true, message: "refunded", detail: { ...result } };
       return c.json(out);
     } catch (err) {
-      return c.json({ ok: false, error: "refund_failed", message: String(err) }, 502);
+      // Log the underlying Stripe/internal error server-side, but return a
+      // generic message — don't echo raw provider internals to the client.
+      captureError(err);
+      console.error("[admin] refund failed", orderId, err);
+      return c.json({ ok: false, error: "refund_failed" }, 502);
     }
   });
 

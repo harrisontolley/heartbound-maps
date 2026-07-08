@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { AuthView } from "@neondatabase/auth/react/ui";
 import { authViewPaths } from "@neondatabase/auth/react/ui/server";
@@ -5,6 +6,12 @@ import { authViewPaths } from "@neondatabase/auth/react/ui/server";
 // Neon Auth pages: /auth/sign-in, /auth/sign-up, /auth/forgot-password, /auth/callback,
 // etc. AuthView renders the form for the path segment; Google sign-in is enabled via
 // the provider's social prop. Prebuilt at the known view paths.
+
+// Auth forms are private chrome: never indexed.
+export const metadata: Metadata = {
+  title: "Sign in | Pinprint",
+  robots: { index: false, follow: false },
+};
 
 export const dynamicParams = false;
 

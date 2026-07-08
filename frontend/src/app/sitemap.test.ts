@@ -9,6 +9,7 @@ describe("sitemap", () => {
 
   it("includes the public static pages", () => {
     expect(urls).toContain(absoluteUrl("/"));
+    expect(urls).toContain(absoluteUrl("/studio"));
     expect(urls).toContain(absoluteUrl("/pricing"));
     expect(urls).toContain(absoluteUrl("/faq"));
     expect(urls).toContain(absoluteUrl("/compare"));

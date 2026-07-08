@@ -1,13 +1,18 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Analytics } from "@vercel/analytics/next";
+import { JsonLd } from "@/components/seo/JsonLd";
+import {
+  buildOrganizationJsonLd,
+  buildWebSiteJsonLd,
+} from "@/lib/seo/jsonLd";
+import { IS_LAUNCHED, SITE_URL, OG_IMAGE } from "@/lib/seo/site";
 import { fontVariables } from "@/lib/fonts";
-import { SITE_URL, OG_IMAGE } from "@/lib/seo/site";
 import { Providers } from "./providers";
 import "./globals.css";
 
-const TITLE = "Pinprint | Fine art maps of the places that matter";
+const TITLE = "Custom Map Prints of the Places That Matter | Pinprint";
 const DESCRIPTION =
-  "Turn the places that made you into a custom fine art print. An arrow points to each one in its true compass direction from home, with the real distance beside it. Designed by you, made to order.";
+  "Personalized map wall art, made to order as a custom fine art print. An arrow points to each place that made you, in its true compass direction from home, with the real distance beside it.";
 
 // metadataBase lets every page use relative canonical/OG URLs that resolve to
 // absolute against the site origin. `title` is a plain string (no template) so
@@ -17,6 +22,10 @@ export const metadata: Metadata = {
   title: TITLE,
   description: DESCRIPTION,
   alternates: { canonical: "/" },
+  // Pre-launch (no NEXT_PUBLIC_SITE_URL, so no owned domain) every page is
+  // noindexed so the temporary deployment origin never becomes the canonical
+  // home of this content in search results. Inherited by all routes.
+  robots: IS_LAUNCHED ? undefined : { index: false, follow: false },
   openGraph: {
     type: "website",
     siteName: "Pinprint",
@@ -32,6 +41,12 @@ export const metadata: Metadata = {
     images: [OG_IMAGE],
   },
   icons: { icon: "/favicon.ico" },
+};
+
+// Browser chrome color matching the warm-gallery canvas (globals.css
+// --color-canvas). Width/initial-scale come from Next's defaults.
+export const viewport: Viewport = {
+  themeColor: "#faf8f3",
 };
 
 export default function RootLayout({
@@ -52,6 +67,7 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <body className="min-h-full bg-canvas text-body">
+        <JsonLd data={[buildOrganizationJsonLd(), buildWebSiteJsonLd()]} />
         <Providers>{children}</Providers>
         <Analytics />
       </body>

@@ -1,4 +1,5 @@
 import { Hono } from "hono";
+import { timingSafeEqual } from "node:crypto";
 import { createOrder, type NewOrder, type NewOrderItem } from "../orders.js";
 import { arteloFetch, getArteloConfig } from "../artelo.js";
 
@@ -9,7 +10,10 @@ import { arteloFetch, getArteloConfig } from "../artelo.js";
 
 function authorized(token: string | undefined): boolean {
   const expected = process.env.DEV_SEED_TOKEN;
-  return Boolean(expected) && token === expected;
+  if (!expected || !token) return false;
+  const a = Buffer.from(token);
+  const b = Buffer.from(expected);
+  return a.length === b.length && timingSafeEqual(a, b);
 }
 
 function parseItems(raw: unknown): NewOrderItem[] {

@@ -33,4 +33,18 @@ describe("pinprint-api", () => {
     expect(res.status).toBe(200);
     expect(await res.json()).toEqual({ ok: true });
   });
+
+  it("reflects CORS for an allowed origin (localhost dev)", async () => {
+    const res = await app.request("/health", {
+      headers: { Origin: "http://localhost:3000" },
+    });
+    expect(res.headers.get("access-control-allow-origin")).toBe("http://localhost:3000");
+  });
+
+  it("does NOT reflect CORS for an unknown origin", async () => {
+    const res = await app.request("/health", {
+      headers: { Origin: "https://evil.example.com" },
+    });
+    expect(res.headers.get("access-control-allow-origin")).toBeNull();
+  });
 });

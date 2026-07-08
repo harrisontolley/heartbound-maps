@@ -7,6 +7,8 @@ import { SectionLabel } from "@/components/landing/SectionLabel";
 import { LinkButton } from "@/components/landing/LinkButton";
 import { PricingLadder } from "@/components/pricing/PricingLadder";
 import { PRIMARY_CTA, STUDIO_HREF } from "@/components/landing/copy";
+import { JsonLd } from "@/components/seo/JsonLd";
+import { buildProductJsonLd } from "@/lib/seo/jsonLd";
 import { OG_IMAGE } from "@/lib/seo/site";
 
 const TITLE = "Pricing | Pinprint";
@@ -36,6 +38,7 @@ export const metadata: Metadata = {
 export default function PricingPage() {
   return (
     <main className="bg-canvas text-body">
+      <JsonLd data={buildProductJsonLd()} />
       <SiteHeader />
 
       <Section>

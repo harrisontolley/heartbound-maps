@@ -14,6 +14,7 @@ afterEach(() => {
   delete process.env.ARTELO_API_BASE;
   delete process.env.ARTELO_TEST_ORDERS;
   delete process.env.ARTELO_WEBHOOK_SECRET;
+  delete process.env.VERCEL_ENV;
 });
 
 describe("artelo config", () => {
@@ -45,8 +46,16 @@ describe("verifyArteloWebhookSignature", () => {
   const body = JSON.stringify({ id: "ord_1", status: "Shipped" });
   const canonical = JSON.stringify(JSON.parse(body));
 
-  it("accepts when no secret is configured (unconfigured path)", () => {
+  it("accepts when no secret is configured OUTSIDE production (dev no-op path)", () => {
     expect(verifyArteloWebhookSignature(body, undefined)).toBe(true);
+  });
+
+  it("fails closed in production when no secret is configured", () => {
+    process.env.VERCEL_ENV = "production";
+    // An unsigned (or any) callback must not be trusted just because the secret
+    // wasn't set — the handler mutates order status.
+    expect(verifyArteloWebhookSignature(body, undefined)).toBe(false);
+    expect(verifyArteloWebhookSignature(body, "deadbeef")).toBe(false);
   });
 
   it("verifies a correct HMAC against the configured secret", () => {

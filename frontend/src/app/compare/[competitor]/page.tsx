@@ -25,7 +25,7 @@ export async function generateMetadata({
     description: c.meta.description,
     alternates: { canonical: path },
     openGraph: {
-      type: "article",
+      type: "website",
       url: path,
       title: c.meta.title,
       description: c.meta.description,
