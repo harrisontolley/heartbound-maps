@@ -67,18 +67,19 @@ Everything above is built and verified in **test mode**. These are the
 remaining steps — all user-executed, none of them a code change — before
 real checkout can accept a real card. Do them in this order:
 
-1. **Register the live webhook endpoint.** Stripe dashboard → Developers →
-   Webhooks → Add endpoint → `https://<your-domain>/webhooks/stripe` (or the
-   Vercel-issued domain if a custom one isn't set up yet — see CLAUDE.md's
-   `NEXT_PUBLIC_SITE_URL` TODO). Subscribe at least to
+1. ~~Register the live webhook endpoint.~~ **DONE 2026-07-08**: endpoint
+   `we_1TqurIR7frRQ6vdr4kmYljTu` (live mode) at
+   `https://heartboundmaps.com/_/backend/webhooks/stripe`, subscribed to
    `checkout.session.completed`, `checkout.session.async_payment_succeeded`,
    `payment_intent.succeeded`, `charge.refunded`, `checkout.session.expired`,
    and `charge.dispute.created` (the events `backend/src/webhooks.ts::
-   handleStripeEvent` switches on). Copy the endpoint's signing secret.
-2. **Add the live keys to Vercel Production**: `STRIPE_SECRET_KEY` (`sk_live_…`),
-   `STRIPE_WEBHOOK_SECRET` (the `whsec_…` from step 1). **This is currently
-   missing** — verified 2026-07-03 via `vercel env ls production`; every
-   webhook delivery 400s until it's set (see CLAUDE.md's Pre-launch TODO).
+   handleStripeEvent` switches on). NOTE the webhook URL needs the
+   `/_/backend` service prefix — Vercel routes the bare `/webhooks/stripe`
+   path to the frontend, which 404s.
+2. ~~Add the live keys to Vercel Production~~ **DONE 2026-07-08**:
+   `STRIPE_SECRET_KEY` (`sk_live_…`) and `STRIPE_WEBHOOK_SECRET` (the
+   endpoint's `whsec_…`) are both set in Vercel Production; they activate on
+   the next production deploy.
    `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` isn't actually used yet (Checkout is
    server-redirected, not Stripe.js-embedded) — skip it unless that changes.
 3. **No product/price migration needed.** Since pricing is dynamic
