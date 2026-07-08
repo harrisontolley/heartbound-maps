@@ -14,10 +14,7 @@ import {
   type FrameSelection,
 } from "@/lib/commerce/price";
 import type { PrintProduct } from "@/lib/commerce/printProducts";
-import {
-  FREE_SHIPPING,
-  OPENING_LAUNCH_SALE_LABEL,
-} from "@/lib/commerce/pricing";
+import { FREE_SHIPPING, foundingPriceLine } from "@/lib/commerce/pricing";
 import { estimateDeliveryWindow, formatDeliveryWindow } from "@/lib/commerce/deliveryEstimate";
 
 /**
@@ -48,25 +45,19 @@ export function BuyBar({
 }) {
   const total = selectionTotalCents({ format, product, frame });
   const items = selectionLineItems({ format, product, frame });
-  const savedCents = items.reduce(
-    (sum, it) => sum + Math.max(0, (it.listCents ?? it.cents) - it.cents),
-    0,
-  );
   const shipNote = FREE_SHIPPING ? "Free shipping" : "Shipping calculated at checkout";
-  const hint = !canBuy
-    ? "Add a place to start"
-    : savedCents > 0
-      ? `${OPENING_LAUNCH_SALE_LABEL} · save ${formatUsd(savedCents)} · ${shipNote}`
-      : shipNote;
+  const hint = !canBuy ? "Add a place to start" : shipNote;
   // Estimate only — no ETA data exists from Artelo or a carrier. Digital
   // downloads deliver instantly by email, so there's nothing to estimate.
   // Computed fresh on the client only, after hydration, so the server-rendered
-  // shell never disagrees with the visitor's own clock.
+  // shell never disagrees with the visitor's own clock. The founding-price
+  // line reads the same freshly-mounted clock for the same reason.
   const mounted = useHydrated();
   const etaLabel =
     mounted && canBuy && format !== "digital"
       ? formatDeliveryWindow(estimateDeliveryWindow(new Date()))
       : null;
+  const foundingLine = mounted && canBuy ? foundingPriceLine(new Date()) : null;
   const title = format === "digital" ? "Digital download" : product.label;
   const subtitle =
     format === "digital"
@@ -92,11 +83,6 @@ export function BuyBar({
               {items.map((it) => (
                 <li key={it.label}>
                   {it.label}{" "}
-                  {it.listCents != null && it.listCents > it.cents && (
-                    <span className="text-muted line-through">
-                      {formatUsd(it.listCents)}
-                    </span>
-                  )}{" "}
                   <span className="text-body-strong">
                     {it.cents === 0 ? "Free" : formatUsd(it.cents)}
                   </span>
@@ -122,6 +108,9 @@ export function BuyBar({
                 hint
               )}
             </div>
+            {foundingLine && !justAdded && (
+              <div className="mt-0.5 text-[11px] text-muted">{foundingLine}</div>
+            )}
             {etaLabel && !justAdded && (
               <div className="mt-0.5 text-[11px] text-muted">{etaLabel}</div>
             )}

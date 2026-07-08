@@ -11,10 +11,7 @@ import { Card } from "@/components/account/Card";
 import { Button } from "@/components/ui/Button";
 import { copy } from "@/components/landing/copy";
 import { formatUsd, FRAME_COLOR_LABELS } from "@/lib/commerce/price";
-import {
-  FREE_SHIPPING,
-  OPENING_LAUNCH_SALE_LABEL,
-} from "@/lib/commerce/pricing";
+import { FREE_SHIPPING } from "@/lib/commerce/pricing";
 import {
   cartSubtotalCents,
   useCartStore,
@@ -40,14 +37,6 @@ function lineDescriptor(item: CartItem): string {
   return `Framed print (${FRAME_COLOR_LABELS[selection.frame.color]}) + digital file`;
 }
 
-/** Anchor ("regular") total for one unit, summing each line's list price. */
-function selectionListCents(item: CartItem): number {
-  return item.selection.lineItems.reduce(
-    (sum, li) => sum + (li.listCents ?? li.cents),
-    0,
-  );
-}
-
 export default function CartPage() {
   const hydrated = useCartHydrated();
   const mounted = useHydrated();
@@ -70,11 +59,6 @@ export default function CartPage() {
     mounted && new URLSearchParams(window.location.search).get("canceled") === "1";
 
   const subtotal = cartSubtotalCents(items);
-  const listSubtotal = items.reduce(
-    (sum, i) => sum + selectionListCents(i) * i.quantity,
-    0,
-  );
-  const saved = Math.max(0, listSubtotal - subtotal);
 
   // Estimate only — no ETA data exists from Artelo or a carrier. Digital
   // downloads deliver instantly by email, so skip the line when the cart is
@@ -189,9 +173,6 @@ export default function CartPage() {
             <ul className="flex flex-col gap-3">
               {items.map((item) => {
                 const lineTotal = item.selection.totalCents * item.quantity;
-                const listEach = selectionListCents(item);
-                const eachDiscounted = listEach > item.selection.totalCents;
-                const listLineTotal = listEach * item.quantity;
                 return (
                   <li key={item.id}>
                     <Card className="flex items-start justify-between gap-4 p-5">
@@ -201,18 +182,8 @@ export default function CartPage() {
                         </p>
                         <p className="mt-0.5 text-sm text-muted">{lineDescriptor(item)}</p>
                         <p className="mt-0.5 text-xs text-muted">
-                          {eachDiscounted && (
-                            <span className="line-through">
-                              {formatUsd(listEach)}
-                            </span>
-                          )}{" "}
                           {formatUsd(item.selection.totalCents)} each
                         </p>
-                        {eachDiscounted ? (
-                          <p className="mt-1 text-[10px] font-semibold uppercase tracking-[0.08em] text-success">
-                            {OPENING_LAUNCH_SALE_LABEL}
-                          </p>
-                        ) : null}
                         <div className="mt-3 flex items-center gap-3">
                           <div className="flex items-center rounded-pill border border-hairline-strong">
                             <button
@@ -246,11 +217,6 @@ export default function CartPage() {
                         </div>
                       </div>
                       <div className="shrink-0 text-right">
-                        {eachDiscounted && (
-                          <div className="text-xs text-muted line-through">
-                            {formatUsd(listLineTotal)}
-                          </div>
-                        )}
                         <div className="font-display text-lg text-ink">
                           {formatUsd(lineTotal)}
                         </div>
@@ -269,12 +235,6 @@ export default function CartPage() {
                   <dt className="text-muted">Subtotal</dt>
                   <dd className="text-ink">{formatUsd(subtotal)}</dd>
                 </div>
-                {saved > 0 && (
-                  <div className="flex justify-between">
-                    <dt className="text-muted">Opening launch savings</dt>
-                    <dd className="text-success">−{formatUsd(saved)}</dd>
-                  </div>
-                )}
                 <div className="flex justify-between">
                   <dt className="text-muted">Shipping</dt>
                   <dd className="text-ink">

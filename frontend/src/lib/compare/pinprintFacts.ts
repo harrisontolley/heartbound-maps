@@ -40,4 +40,8 @@ export const PINPRINT_FACTS = {
   digitalPrice: formatUsd(DIGITAL_PRICE_CENTS),
   /** e.g. "12 × 18 in to 24 × 36 in". */
   sizeRange: `${small.label} to ${large.label}`,
+  /** Ready-to-hang frame upcharge range across all sizes, e.g. "$59.00 to $114.00". */
+  frameUpchargeRange: `${formatUsd(small.frameUpchargeCents)} to ${formatUsd(
+    large.frameUpchargeCents,
+  )}`,
 } as const;

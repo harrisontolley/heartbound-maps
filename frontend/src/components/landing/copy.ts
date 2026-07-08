@@ -62,7 +62,7 @@ export const copy = {
     // Quiet materials line under the CTAs: the upmarket signal is the spec.
     specLine: "Hahnemühle 310gsm · archival giclée · solid oak frames",
     reassurance:
-      "Free to design and download. Pay only for the print, shipped free to your door.",
+      "See your finished design free, before you pay a cent. Pay only when you're ready for the print, shipped free to your door.",
     media: {
       label: "A warm living room wall above a long oak sideboard",
       aspect: "33 / 14",
@@ -81,7 +81,7 @@ export const copy = {
   trustLine: {
     items: [
       "Free US shipping",
-      "Free to design and download",
+      "See your design before you buy",
       "Hahnemühle 310gsm paper",
       "Archival giclée inks",
       "Natural oak frames",
@@ -102,8 +102,8 @@ export const copy = {
         body: "The town you were born in. The city where you met. The coast your family still lives on. Tag each one with what it means: born, lived, studied, met, married, family, visited, adventure.",
       },
       {
-        title: "Download it free, or have it printed",
-        body: "We email you a free screen-size copy of your design to keep. When you want the real thing, we print it on fine art paper and ship it to your door, shipping on us.",
+        title: "See it before you buy",
+        body: "We email you a free copy of your exact design at screen resolution, no purchase needed. Ready to make it real? We print it on fine art paper and ship it to your door, shipping on us. Every print includes the full 300 DPI files too.",
       },
     ],
   },
@@ -222,10 +222,63 @@ export const copy = {
   },
 
   pricingPreview: {
-    eyebrow: "Opening launch sale",
-    headline: "Opening prices, before they go up.",
-    body: "To mark our opening launch, all three print sizes are on sale. Shipping in the United States is free, and every order includes the digital files.",
+    eyebrow: "Founding prices",
+    headline: "One price. Everything is already included.",
+    body: `Every print bundles the digital files and a few keepsake extras, with free US shipping and the ${GUARANTEE_NAME}, so the price you see is the whole story.`,
     link: { label: "See pricing and sizes", href: "/pricing" },
+  },
+
+  // The itemized "everything included" stack that replaced the struck-through
+  // sale price: every real, already-shipping bonus named plainly instead of a
+  // fake discount. `id: "digital"` is the one line ValueStack.tsx appends a
+  // dollar figure to (sourced from DIGITAL_PRICE_CENTS, never hardcoded here)
+  // because it's the only bonus genuinely sold on its own. No Reveal Card.
+  valueStack: {
+    eyebrow: "Every print includes",
+    items: [
+      {
+        id: "print",
+        title: "The print itself",
+        body: "Hahnemühle German Etching, a heavily textured 310gsm archival paper, printed with archival pigment inks and checked by hand before it ships.",
+        href: undefined,
+      },
+      {
+        id: "digital",
+        title: "The 300 DPI print files",
+        body: "A print-ready PNG at full 300 DPI resolution, plus a scalable SVG you can print yourself at any size.",
+        href: undefined,
+      },
+      {
+        id: "wallpapers",
+        title: "Phone and desktop wallpapers",
+        body: "Your exact design, rendered again to fit a phone lock screen and a desktop background.",
+        href: undefined,
+      },
+      {
+        id: "story",
+        title: "The Story Behind Your Coordinates",
+        body: "A short written keepsake covering the places, bearings, and distances in your design, emailed with your order.",
+        href: undefined,
+      },
+      {
+        id: "hanging-guide",
+        title: "The hanging and styling guide",
+        body: "Notes on hanging height, wall placement, and choosing between an oak or metal frame.",
+        href: "/hanging-guide",
+      },
+      {
+        id: "shipping",
+        title: "Free US shipping",
+        body: "No minimum order and no surprise fee at checkout.",
+        href: undefined,
+      },
+      {
+        id: "guarantee",
+        title: GUARANTEE_NAME,
+        body: "Arrives damaged or flawed, and we'll replace it free or refund you in full.",
+        href: "/guarantee",
+      },
+    ],
   },
 
   faq: {
