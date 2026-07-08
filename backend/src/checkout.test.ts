@@ -257,6 +257,61 @@ describe("priceCheckout — server price authority", () => {
       ]),
     ).toThrow(CheckoutValidationError);
   });
+
+  it("persists valid phoneWallpaperAssetUrl and desktopWallpaperAssetUrl onto the order item", () => {
+    const { orderItems } = priceCheckout([
+      {
+        productId: "portrait-16x24",
+        format: "print",
+        frame: null,
+        quantity: 1,
+        phoneWallpaperAssetUrl: "https://abc123.public.blob.vercel-storage.com/posters/x-phone.png",
+        desktopWallpaperAssetUrl: "https://abc123.public.blob.vercel-storage.com/posters/x-desktop.png",
+      },
+    ]);
+    expect(orderItems[0].phoneWallpaperAssetUrl).toBe(
+      "https://abc123.public.blob.vercel-storage.com/posters/x-phone.png",
+    );
+    expect(orderItems[0].desktopWallpaperAssetUrl).toBe(
+      "https://abc123.public.blob.vercel-storage.com/posters/x-desktop.png",
+    );
+  });
+
+  it("leaves phoneWallpaperAssetUrl and desktopWallpaperAssetUrl undefined when absent (best-effort upload can fail)", () => {
+    const { orderItems } = priceCheckout([
+      { productId: "portrait-16x24", format: "print", frame: null, quantity: 1 },
+    ]);
+    expect(orderItems[0].phoneWallpaperAssetUrl).toBeUndefined();
+    expect(orderItems[0].desktopWallpaperAssetUrl).toBeUndefined();
+  });
+
+  it("rejects a phoneWallpaperAssetUrl on a disallowed host (anti-SSRF)", () => {
+    expect(() =>
+      priceCheckout([
+        {
+          productId: "portrait-16x24",
+          format: "print",
+          frame: null,
+          quantity: 1,
+          phoneWallpaperAssetUrl: "https://evil.example.com/x-phone.png",
+        },
+      ]),
+    ).toThrow(CheckoutValidationError);
+  });
+
+  it("rejects a desktopWallpaperAssetUrl on a disallowed host (anti-SSRF)", () => {
+    expect(() =>
+      priceCheckout([
+        {
+          productId: "portrait-16x24",
+          format: "print",
+          frame: null,
+          quantity: 1,
+          desktopWallpaperAssetUrl: "https://evil.example.com/x-desktop.png",
+        },
+      ]),
+    ).toThrow(CheckoutValidationError);
+  });
 });
 
 describe("isAllowedAssetUrl", () => {

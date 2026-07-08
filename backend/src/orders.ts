@@ -220,6 +220,10 @@ export type NewOrderItem = {
   assetUrl?: string;
   /** Vector SVG asset URL — see CheckoutItemInput.svgAssetUrl. */
   svgAssetUrl?: string;
+  /** Bonus phone wallpaper PNG (9:16) — see CheckoutItemInput.phoneWallpaperAssetUrl. */
+  phoneWallpaperAssetUrl?: string;
+  /** Bonus desktop wallpaper PNG (16:9) — see CheckoutItemInput.desktopWallpaperAssetUrl. */
+  desktopWallpaperAssetUrl?: string;
 };
 
 export type NewOrder = {
@@ -282,11 +286,13 @@ export async function createOrder(input: NewOrder): Promise<{ id: string; orderN
     await sql`
       insert into order_items (
         order_id, product_id, product_label, quantity, unit_price_cents,
-        poster_config, artelo_sku, asset_url, svg_asset_url, created_at
+        poster_config, artelo_sku, asset_url, svg_asset_url,
+        phone_wallpaper_asset_url, desktop_wallpaper_asset_url, created_at
       ) values (
         ${id}, ${it.productId}, ${it.productLabel}, ${it.quantity}, ${it.unitPriceCents},
         ${JSON.stringify(it.posterConfig ?? {})}::jsonb, ${it.arteloSku ?? null}, ${it.assetUrl ?? null},
-        ${it.svgAssetUrl ?? null}, ${createdAt}
+        ${it.svgAssetUrl ?? null}, ${it.phoneWallpaperAssetUrl ?? null},
+        ${it.desktopWallpaperAssetUrl ?? null}, ${createdAt}
       )
     `;
   }
@@ -676,6 +682,8 @@ export type DigitalDeliveryOrder = {
     posterConfig: Record<string, unknown>;
     assetUrl: string | null;
     svgAssetUrl: string | null;
+    phoneWallpaperAssetUrl: string | null;
+    desktopWallpaperAssetUrl: string | null;
   }[];
 };
 
@@ -695,13 +703,16 @@ export async function getOrderForDigitalDelivery(orderId: string): Promise<Digit
   const row = rows[0];
   if (!row) return null;
   const items = (await sql`
-    select product_label, poster_config, asset_url, svg_asset_url
+    select product_label, poster_config, asset_url, svg_asset_url,
+           phone_wallpaper_asset_url, desktop_wallpaper_asset_url
     from order_items where order_id = ${orderId} order by created_at asc
   `) as unknown as {
     product_label: string;
     poster_config: Record<string, unknown>;
     asset_url: string | null;
     svg_asset_url: string | null;
+    phone_wallpaper_asset_url: string | null;
+    desktop_wallpaper_asset_url: string | null;
   }[];
   return {
     id: row.id,
@@ -712,6 +723,8 @@ export async function getOrderForDigitalDelivery(orderId: string): Promise<Digit
       productLabel: it.product_label,
       posterConfig: it.poster_config ?? {},
       assetUrl: it.asset_url ?? null,
+      phoneWallpaperAssetUrl: it.phone_wallpaper_asset_url ?? null,
+      desktopWallpaperAssetUrl: it.desktop_wallpaper_asset_url ?? null,
       svgAssetUrl: it.svg_asset_url ?? null,
     })),
   };

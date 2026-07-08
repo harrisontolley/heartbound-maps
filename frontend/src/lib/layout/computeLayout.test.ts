@@ -496,6 +496,7 @@ describe("computeLayout", () => {
       [1200, 1200, 100],
       [1500, 1000, 100],
       [1080, 1920, 100],
+      [1920, 1080, 100], // desktop wallpaper (16:9) — see templates/sizes.ts
     ];
 
     for (const [W, H, SEEDS] of SIZES) {

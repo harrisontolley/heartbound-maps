@@ -1,4 +1,5 @@
 import { signAssetUrl } from "./blob.js";
+import { buildCoordinateStory } from "./emails/coordinateStory.js";
 import { getSql } from "./db.js";
 import { isResendConfigured, sendEmail } from "./email.js";
 import { digitalDeliveryEmail, type DigitalDeliveryItem } from "./emails/digitalDelivery.js";
@@ -11,15 +12,18 @@ import {
 } from "./orders.js";
 
 // Post-payment digital delivery: emails signed links to every order item's PNG
-// (and SVG, when present) once an order is paid. Mirrors fulfillment.ts's
-// shape — never throws, idempotent, env-guarded, logs to order_events — but
-// the idempotency guard here is a claim/release pair on
-// `orders.digital_delivered_at` rather than a single "already submitted"
-// check, because unlike an Artelo submission there's no external record to
-// query: the atomic conditional UPDATE (claimDigitalDelivery) *is* the
-// idempotency check, closing the race where two overlapping paid-transition
-// webhooks would otherwise both pass a plain read and double-send the email.
-// See docs (task B-3) for the full flow diagram.
+// (and SVG, when present) once an order is paid, plus the bonus phone/desktop
+// wallpaper renders (when uploaded) and a coordinate story built from the
+// stored poster_config. Mirrors fulfillment.ts's shape — never throws,
+// idempotent, env-guarded, logs to order_events — but the idempotency guard
+// here is a claim/release pair on `orders.digital_delivered_at` rather than a
+// single "already submitted" check, because unlike an Artelo submission
+// there's no external record to query: the atomic conditional UPDATE
+// (claimDigitalDelivery) *is* the idempotency check, closing the race where
+// two overlapping paid-transition webhooks would otherwise both pass a plain
+// read and double-send the email. See docs (task B-3) for the full flow
+// diagram — the bonus stack (phone/desktop wallpapers + coordinate story) is
+// additive on top of that and doesn't change the delivery/idempotency shape.
 
 export type DeliveryResult = { delivered: boolean; reason?: string };
 
@@ -28,13 +32,47 @@ function isDigitalOrder(order: DigitalDeliveryOrder): boolean {
   return order.items.some((it) => it.posterConfig?.format === "digital");
 }
 
-/** Sign an order item's PNG/SVG (default 30-day TTL), skipping nulls. */
+/**
+ * Absolute URL for the static hanging/care guide, linked from the delivery
+ * email. Mirrors orderEmails.ts's frontendBaseUrl/trackUrl helpers (a small
+ * bespoke duplicate rather than a shared one, matching this codebase's
+ * existing convention of per-module link helpers — see that file's doc
+ * comment for the fuller rationale). No request-Origin fallback since this
+ * runs from a deferred webhook task; returns null when unconfigured on
+ * Vercel so the email omits the link rather than shipping a broken one.
+ */
+function hangingGuideUrl(): string | null {
+  const publicAppUrl = process.env.PUBLIC_APP_URL;
+  const base = publicAppUrl
+    ? publicAppUrl.replace(/\/$/, "")
+    : process.env.VERCEL
+      ? null
+      : "http://localhost:3000";
+  return base ? `${base}/hanging-guide` : null;
+}
+
+/**
+ * Sign an order item's PNG/SVG/bonus-wallpaper URLs (default 30-day TTL,
+ * skipping nulls) and build its coordinate story from the stored
+ * poster_config snapshot. Mixes I/O (signing) with a pure step (the story)
+ * because both are per-item and this is the one place that already maps
+ * over `order.items`.
+ */
 async function signItem(item: DigitalDeliveryOrder["items"][number]): Promise<DigitalDeliveryItem> {
-  const [pngUrl, svgUrl] = await Promise.all([
+  const [pngUrl, svgUrl, phoneWallpaperUrl, desktopWallpaperUrl] = await Promise.all([
     item.assetUrl ? signAssetUrl(item.assetUrl) : Promise.resolve(null),
     item.svgAssetUrl ? signAssetUrl(item.svgAssetUrl) : Promise.resolve(null),
+    item.phoneWallpaperAssetUrl ? signAssetUrl(item.phoneWallpaperAssetUrl) : Promise.resolve(null),
+    item.desktopWallpaperAssetUrl ? signAssetUrl(item.desktopWallpaperAssetUrl) : Promise.resolve(null),
   ]);
-  return { label: item.productLabel, pngUrl, svgUrl };
+  return {
+    label: item.productLabel,
+    pngUrl,
+    svgUrl,
+    phoneWallpaperUrl,
+    desktopWallpaperUrl,
+    story: buildCoordinateStory(item.posterConfig),
+  };
 }
 
 /**
@@ -81,7 +119,11 @@ export async function deliverDigitalFiles(orderId: string): Promise<DeliveryResu
 
   try {
     const items = await Promise.all(order.items.map(signItem));
-    const email = digitalDeliveryEmail({ items, isDigitalOrder: isDigitalOrder(order) });
+    const email = digitalDeliveryEmail({
+      items,
+      isDigitalOrder: isDigitalOrder(order),
+      hangingGuideUrl: hangingGuideUrl(),
+    });
     const sent = await sendEmail({ to: order.email, subject: email.subject, html: email.html, text: email.text });
 
     if (!sent) {

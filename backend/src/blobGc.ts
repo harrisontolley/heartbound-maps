@@ -39,17 +39,21 @@ export type OrderAssetRow = {
   asset_url: string | null;
   svg_asset_url: string | null;
   render_asset_url: string | null;
+  phone_wallpaper_asset_url: string | null;
+  desktop_wallpaper_asset_url: string | null;
   status: string;
   created_at: string | Date;
 };
 
 /**
  * Expand an `order_items` row into one `OrderAssetRef` per non-null asset
- * column (PNG `asset_url`, vector `svg_asset_url`, and the exact-DPI server
- * `render_asset_url`). All three must count as live references — selectBlobsToDelete
- * matches by pathname, so a column missing from this expansion would make that
- * column's blobs look orphaned (or unprotected past retention) even while the
- * order is live. The server render lives under posters/ like the client PNG.
+ * column (PNG `asset_url`, vector `svg_asset_url`, the exact-DPI server
+ * `render_asset_url`, and the bonus `phone_wallpaper_asset_url` /
+ * `desktop_wallpaper_asset_url`). All five must count as live references —
+ * selectBlobsToDelete matches by pathname, so a column missing from this
+ * expansion would make that column's blobs look orphaned (or unprotected past
+ * retention) even while the order is live. Every one of these lives under
+ * posters/ like the client PNG.
  */
 export function orderAssetRefsFromRows(rows: OrderAssetRow[]): OrderAssetRef[] {
   const refs: OrderAssetRef[] = [];
@@ -58,6 +62,12 @@ export function orderAssetRefsFromRows(rows: OrderAssetRow[]): OrderAssetRef[] {
     if (r.asset_url) refs.push({ assetUrl: r.asset_url, status: r.status, createdAt });
     if (r.svg_asset_url) refs.push({ assetUrl: r.svg_asset_url, status: r.status, createdAt });
     if (r.render_asset_url) refs.push({ assetUrl: r.render_asset_url, status: r.status, createdAt });
+    if (r.phone_wallpaper_asset_url) {
+      refs.push({ assetUrl: r.phone_wallpaper_asset_url, status: r.status, createdAt });
+    }
+    if (r.desktop_wallpaper_asset_url) {
+      refs.push({ assetUrl: r.desktop_wallpaper_asset_url, status: r.status, createdAt });
+    }
   }
   return refs;
 }
@@ -198,11 +208,14 @@ export async function runBlobGc(input: { dryRun?: boolean } = {}): Promise<GcRes
     const [orderRows, leadRows] = await Promise.all([
       sql`
         select oi.asset_url, oi.svg_asset_url, oi.render_asset_url,
+               oi.phone_wallpaper_asset_url, oi.desktop_wallpaper_asset_url,
                o.status::text as status, o.created_at
         from order_items oi
         join orders o on o.id = oi.order_id
         where oi.asset_url is not null or oi.svg_asset_url is not null
            or oi.render_asset_url is not null
+           or oi.phone_wallpaper_asset_url is not null
+           or oi.desktop_wallpaper_asset_url is not null
       ` as unknown as Promise<OrderAssetRow[]>,
       sql`
         select asset_pathname, created_at from leads where asset_pathname is not null
