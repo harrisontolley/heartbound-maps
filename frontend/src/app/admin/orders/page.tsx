@@ -3,7 +3,7 @@
 import { Suspense, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import type { AdminOrderListResponse, OrderStatus } from "@pinprint/shared";
+import type { AdminOrderListResponse, OrderStatus } from "@heartbound/shared";
 import { useResource } from "@/lib/account/useResource";
 import { Card, SectionHeading } from "@/components/account/Card";
 import { OrderStatusBadge } from "@/components/account/OrderStatusBadge";

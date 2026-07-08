@@ -1,4 +1,4 @@
-// Base URL for the Pinprint backend service.
+// Base URL for the Heartbound Maps backend service.
 //
 // - Production (Vercel "Services"): Vercel auto-injects NEXT_PUBLIC_BACKEND_URL
 //   as the relative route prefix "/_/backend" — same origin, so no CORS and it

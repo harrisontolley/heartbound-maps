@@ -9,7 +9,7 @@ import { authViewPaths } from "@neondatabase/auth/react/ui/server";
 
 // Auth forms are private chrome: never indexed.
 export const metadata: Metadata = {
-  title: "Sign in | Pinprint",
+  title: "Sign in | Heartbound Maps",
   robots: { index: false, follow: false },
 };
 
@@ -28,7 +28,7 @@ export default async function AuthPage({
   return (
     <main className="flex min-h-screen flex-col items-center justify-center gap-8 bg-canvas px-6 py-16">
       <Link href="/" className="font-display text-3xl tracking-[-0.32px] text-ink">
-        Pinprint
+        Heartbound Maps
       </Link>
       <div className="w-full max-w-md">
         <AuthView path={path} />

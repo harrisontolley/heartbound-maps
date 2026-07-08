@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { PosterStudio } from "@/components/PosterStudio";
 import { OG_IMAGE } from "@/lib/seo/site";
 
-const TITLE = "Design a Custom Map Print | Pinprint";
+const TITLE = "Design a Custom Map Print | Heartbound Maps";
 const DESCRIPTION =
   "Design your own map print in about five minutes. Pin the places that matter, pick a style, and preview your personalized fine art print free before you buy.";
 

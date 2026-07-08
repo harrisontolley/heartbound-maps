@@ -10,7 +10,7 @@ import { fontVariables } from "@/lib/fonts";
 import { Providers } from "./providers";
 import "./globals.css";
 
-const TITLE = "Custom Map Prints of the Places That Matter | Pinprint";
+const TITLE = "Custom Map Prints of the Places That Matter | Heartbound Maps";
 const DESCRIPTION =
   "Personalized map wall art, made to order as a custom fine art print. An arrow points to each place that made you, in its true compass direction from home, with the real distance beside it.";
 
@@ -28,7 +28,7 @@ export const metadata: Metadata = {
   robots: IS_LAUNCHED ? undefined : { index: false, follow: false },
   openGraph: {
     type: "website",
-    siteName: "Pinprint",
+    siteName: "Heartbound Maps",
     url: "/",
     title: TITLE,
     description: DESCRIPTION,

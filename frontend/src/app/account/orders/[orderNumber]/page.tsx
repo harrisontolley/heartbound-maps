@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import type { Order } from "@pinprint/shared";
+import type { Order } from "@heartbound/shared";
 import { useResource } from "@/lib/account/useResource";
 import { Card } from "@/components/account/Card";
 import { OrderStatusBadge } from "@/components/account/OrderStatusBadge";

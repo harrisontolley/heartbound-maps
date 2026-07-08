@@ -14,15 +14,15 @@ importers:
 
   backend:
     dependencies:
+      '@heartbound/shared':
+        specifier: workspace:*
+        version: link:../packages/shared
       '@hono/node-server':
         specifier: ^1.13.7
         version: 1.19.14(hono@4.12.27)
       '@neondatabase/serverless':
         specifier: ^0.10.4
         version: 0.10.4
-      '@pinprint/shared':
-        specifier: workspace:*
-        version: link:../packages/shared
       '@resvg/resvg-js':
         specifier: ^2.6.2
         version: 2.6.2
@@ -63,12 +63,12 @@ importers:
 
   frontend:
     dependencies:
+      '@heartbound/shared':
+        specifier: workspace:*
+        version: link:../packages/shared
       '@neondatabase/auth':
         specifier: 0.4.2-beta
         version: 0.4.2-beta(7af094187f36e48642ab2a5ee90b98a8)
-      '@pinprint/shared':
-        specifier: workspace:*
-        version: link:../packages/shared
       '@sentry/nextjs':
         specifier: ^10.62.0
         version: 10.62.0(@opentelemetry/core@2.8.0(@opentelemetry/api@1.9.1))(@opentelemetry/sdk-trace-base@2.8.0(@opentelemetry/api@1.9.1))(next@16.2.9(@babel/core@7.29.7)(@opentelemetry/api@1.9.1)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(react@19.2.4)(webpack@5.108.1(esbuild@0.28.1))

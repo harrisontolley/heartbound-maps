@@ -3,7 +3,7 @@ import type {
   AdminActionResult,
   OrderShippingAddress,
   OrderStatus,
-} from "@pinprint/shared";
+} from "@heartbound/shared";
 import { type AuthVariables, requireAdmin } from "../auth.js";
 import { adminGetMetrics, adminGetOrderDetail, adminListOrders } from "../adminStore.js";
 import {
@@ -29,7 +29,7 @@ import { recordAdminAction } from "../observability.js";
 // session whose email is on the ADMIN_EMAILS allowlist), and every mutation
 // writes an admin_actions audit row. Returns a fresh router per mount, like the
 // other routers (registerRoutes runs twice). Order ids here are the INTERNAL uuid
-// (not the public PP-… number) so they can't be guessed from a tracking page.
+// (not the public HB-… number) so they can't be guessed from a tracking page.
 
 const VALID_STATUSES: OrderStatus[] = [
   "pending_payment",

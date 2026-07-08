@@ -10,5 +10,5 @@ const port = Number(process.env.PORT ?? 8787);
 
 serve({ fetch: app.fetch, port }, (info) => {
   // eslint-disable-next-line no-console
-  console.log(`pinprint-api listening on http://localhost:${info.port}`);
+  console.log(`heartbound-api listening on http://localhost:${info.port}`);
 });

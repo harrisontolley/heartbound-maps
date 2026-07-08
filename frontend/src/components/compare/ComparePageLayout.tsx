@@ -31,7 +31,7 @@ function formatReviewed(iso: string): string {
 }
 
 /**
- * Renders one full "Pinprint vs {competitor}" comparison page from its data:
+ * Renders one full "Heartbound Maps vs {competitor}" comparison page from its data:
  * hero → TL;DR → at-a-glance table → in-depth sections → who-it's-for → verdict →
  * FAQ → sibling links, wrapped in the shared marketing chrome and BreadcrumbList +
  * FAQPage JSON-LD. Server component.
@@ -60,7 +60,7 @@ export function ComparePageLayout({ competitor: c }: { competitor: Competitor })
             <span aria-hidden className="px-2">
               /
             </span>
-            <span className="text-body">Pinprint vs {c.name}</span>
+            <span className="text-body">Heartbound Maps vs {c.name}</span>
           </nav>
 
           <div className="flex max-w-[760px] flex-col gap-5">
@@ -86,7 +86,7 @@ export function ComparePageLayout({ competitor: c }: { competitor: Competitor })
       <Section tone="soft">
         <div className="flex max-w-[760px] flex-col gap-6">
           <SectionLabel>The short version</SectionLabel>
-          <h2 className={H2}>Pinprint vs {c.name}, in brief</h2>
+          <h2 className={H2}>Heartbound Maps vs {c.name}, in brief</h2>
           <ul className="flex flex-col gap-3">
             {c.tldr.map((point) => (
               <li key={point} className="flex gap-3 text-copy text-body">
@@ -161,10 +161,10 @@ export function ComparePageLayout({ competitor: c }: { competitor: Competitor })
           <div className="grid gap-6 md:grid-cols-2">
             <div className={CARD}>
               <h3 className="text-[18px] font-medium text-ink">
-                Choose Pinprint if…
+                Choose Heartbound Maps if…
               </h3>
               <ul className="flex flex-col gap-2.5">
-                {c.whoFits.pinprint.map((item) => (
+                {c.whoFits.heartbound.map((item) => (
                   <li
                     key={item}
                     className="flex gap-2.5 text-[16px] leading-[1.5] text-body"
@@ -243,7 +243,7 @@ export function ComparePageLayout({ competitor: c }: { competitor: Competitor })
                 className="rounded-xl border border-hairline bg-surface-card p-5 transition-shadow hover:shadow-card"
               >
                 <span className="text-[16px] font-medium text-ink">
-                  Pinprint vs {other.name}
+                  Heartbound Maps vs {other.name}
                 </span>
               </Link>
             ))}

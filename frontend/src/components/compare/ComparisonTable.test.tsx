@@ -10,13 +10,13 @@ afterEach(cleanup);
 const ROWS: ComparisonRow[] = [
   {
     attribute: "Bearings & distances",
-    pinprint: "True bearing + distance",
+    heartbound: "True bearing + distance",
     competitor: "No measurements",
-    advantage: "pinprint",
+    advantage: "heartbound",
   },
   {
     attribute: "Shipping",
-    pinprint: "Free (US only)",
+    heartbound: "Free (US only)",
     competitor: "Worldwide",
     advantage: "competitor",
   },
@@ -28,18 +28,18 @@ describe("ComparisonTable", () => {
   // on both copies.
   it("renders the competitor column header and every row", () => {
     render(<ComparisonTable rows={ROWS} competitorName="Mapiful" />);
-    expect(screen.getAllByText("Pinprint").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Heartbound Maps").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Mapiful").length).toBeGreaterThan(0);
     for (const row of ROWS) {
       expect(screen.getAllByText(row.attribute)).toHaveLength(2);
-      expect(screen.getAllByText(row.pinprint)).toHaveLength(2);
+      expect(screen.getAllByText(row.heartbound)).toHaveLength(2);
       expect(screen.getAllByText(row.competitor)).toHaveLength(2);
     }
   });
 
-  it("flags rows where Pinprint has the edge", () => {
+  it("flags rows where Heartbound Maps has the edge", () => {
     render(<ComparisonTable rows={ROWS} competitorName="Mapiful" />);
-    // One row is advantage: "pinprint" → one ✓ per rendering (table + cards).
+    // One row is advantage: "heartbound" → one ✓ per rendering (table + cards).
     expect(screen.getAllByText("✓")).toHaveLength(2);
   });
 });

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import type { OrderSummary, Rewards } from "@pinprint/shared";
+import type { OrderSummary, Rewards } from "@heartbound/shared";
 import { authClient } from "@/lib/auth/client";
 import { useResource } from "@/lib/account/useResource";
 import { Card, SectionHeading } from "@/components/account/Card";

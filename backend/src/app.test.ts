@@ -4,7 +4,7 @@ import { app } from "./app.js";
 // These exercise routing and validation only — no network/DB. The Nominatim
 // proxy itself is covered by short-circuit cases (empty/short queries).
 
-describe("pinprint-api", () => {
+describe("heartbound-api", () => {
   it("GET /health → ok", async () => {
     const res = await app.request("/health");
     expect(res.status).toBe(200);

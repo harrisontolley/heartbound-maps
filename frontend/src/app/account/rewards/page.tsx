@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import type { Rewards } from "@pinprint/shared";
+import type { Rewards } from "@heartbound/shared";
 import { useResource } from "@/lib/account/useResource";
 import { Card, SectionHeading } from "@/components/account/Card";
 import { Loading, ErrorState } from "@/components/account/States";

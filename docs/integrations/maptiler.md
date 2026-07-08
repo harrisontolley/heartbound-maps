@@ -37,4 +37,4 @@ into the same `GeoResult` contract (`packages/shared`).
 `GET /health/integrations` → `"maptiler": true` once the key is set. Then in the studio
 (Step 2 / Step 3) search a city (autocomplete) and click the map (reverse geocode);
 results should be identical in shape to the Nominatim path. Unit tests:
-`pnpm --filter @pinprint/backend exec vitest run src/nominatim.test.ts`.
+`pnpm --filter @heartbound/backend exec vitest run src/nominatim.test.ts`.

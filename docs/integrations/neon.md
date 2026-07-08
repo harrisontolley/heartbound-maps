@@ -19,9 +19,9 @@ our app tables live in `public`.
 - `backend/src/app.ts` — `GET /health/db` and the `db` field of `/health/integrations`.
 - `backend/migrations/*.sql` + `backend/src/migrate.ts` — a tiny SQL migration runner
   (numbered files, tracked in `_migrations`, applied in one transaction each; no-ops
-  without `DATABASE_URL`). Run: `pnpm --filter @pinprint/backend migrate`.
+  without `DATABASE_URL`). Run: `pnpm --filter @heartbound/backend migrate`.
 - `backend/src/orders.ts`, `backend/src/accountStore.ts` — query modules (raw `sql\`…\``).
-- `backend/src/seed.ts` — demo data: `pnpm --filter @pinprint/backend seed [authUserId]`.
+- `backend/src/seed.ts` — demo data: `pnpm --filter @heartbound/backend seed [authUserId]`.
 
 ## Gotchas
 

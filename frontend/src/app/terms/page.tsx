@@ -5,9 +5,9 @@ import { Section } from "@/components/landing/Section";
 import { SectionLabel } from "@/components/landing/SectionLabel";
 
 export const metadata: Metadata = {
-  title: "Terms | Pinprint",
+  title: "Terms | Heartbound Maps",
   description:
-    "The terms for designing, ordering, and receiving a Pinprint: made to order, damage replaced free, no change-of-mind returns.",
+    "The terms for designing, ordering, and receiving a Heartbound Maps: made to order, damage replaced free, no change-of-mind returns.",
   alternates: { canonical: "/terms" },
 };
 
@@ -32,7 +32,7 @@ export default function TermsPage() {
 
           <Block title="The service">
             <p>
-              Pinprint lets you design a custom map print and order it as a
+              Heartbound Maps lets you design a custom map print and order it as a
               physical print, a framed print, or a digital download. Designing
               and previewing are free. You pay only when you order.
             </p>
@@ -52,7 +52,7 @@ export default function TermsPage() {
             <p>
               Because each piece is printed from your own design, we cannot
               accept change-of-mind returns. If your print arrives damaged or
-              has a production fault, email a photo to hello@pinprint.com and we
+              has a production fault, email a photo to hello@heartboundmaps.com and we
               will send a free replacement or refund you in full. You do not
               need to return the original.
             </p>
@@ -85,7 +85,7 @@ export default function TermsPage() {
           </Block>
 
           <Block title="Contact">
-            <p>Questions about these terms: hello@pinprint.com.</p>
+            <p>Questions about these terms: hello@heartboundmaps.com.</p>
           </Block>
         </article>
       </Section>

@@ -2,7 +2,7 @@ import { readdirSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
 import { Resvg } from "@resvg/resvg-js";
-import { PRODUCTS_BASE_BY_ID, type Orientation } from "@pinprint/shared";
+import { PRODUCTS_BASE_BY_ID, type Orientation } from "@heartbound/shared";
 import { putPrivatePng, signAssetUrl } from "./blob.js";
 import { setRenderAssetUrl } from "./orders.js";
 

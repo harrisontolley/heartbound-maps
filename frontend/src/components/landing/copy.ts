@@ -8,7 +8,7 @@
  * policy. Nothing invented, no fabricated testimonials or press logos.
  */
 
-import { GUARANTEE_NAME } from "@pinprint/shared";
+import { GUARANTEE_NAME } from "@heartbound/shared";
 
 export const STUDIO_HREF = "/studio";
 export const PRIMARY_CTA = "Create your print";
@@ -18,7 +18,7 @@ export const PRIMARY_CTA = "Create your print";
  * Scope stays exactly what it already was: damaged or flawed prints only, a
  * photo, a free replacement or full refund, nothing to send back.
  * Change-of-mind returns are still excluded because every piece is made to
- * order. Defined in @pinprint/shared (not here) so the backend's order-
+ * order. Defined in @heartbound/shared (not here) so the backend's order-
  * confirmation email can use the identical name without importing frontend
  * code — re-exported so existing imports of it from this module keep working.
  */
@@ -37,7 +37,7 @@ export type FaqGroup = { title: string; items: readonly FaqItem[] };
 
 export const copy = {
   brand: {
-    name: "Pinprint",
+    name: "Heartbound Maps",
   },
 
   nav: {
@@ -56,7 +56,7 @@ export const copy = {
     eyebrow: "Custom fine art map print",
     headline: "A map of everywhere that made you you.",
     subhead:
-      "Set where home is, then add the places you were born, lived, visited, or have family. Pinprint draws an arrow to each one, pointing exactly where it really is, with the true distance beside it. Then we print it on gallery paper and send it to your door.",
+      "Set where home is, then add the places you were born, lived, visited, or have family. Heartbound Maps draws an arrow to each one, pointing exactly where it really is, with the true distance beside it. Then we print it on gallery paper and send it to your door.",
     primaryCta: PRIMARY_CTA,
     secondaryCta: "See how it works",
     // Quiet materials line under the CTAs: the upmarket signal is the spec.
@@ -72,7 +72,7 @@ export const copy = {
     framed: {
       label: "The hero print in its oak frame",
       src: "/showcase/framed-hero.png",
-      alt: "A warm-minimal Pinprint of San Francisco in a natural oak frame",
+      alt: "A warm-minimal Heartbound Maps of San Francisco in a natural oak frame",
     },
   },
 
@@ -114,7 +114,7 @@ export const copy = {
     eyebrow: "The cartography",
     headline: "Accurate enough to navigate by.",
     body: [
-      "A Pinprint is not decorated with random arrows. It is drawn from real coordinates. Each arrow points along the true compass bearing from your home to that place, and the number beside it is the great-circle distance, the actual shortest path over the curve of the earth.",
+      "A Heartbound Maps is not decorated with random arrows. It is drawn from real coordinates. Each arrow points along the true compass bearing from your home to that place, and the number beside it is the great-circle distance, the actual shortest path over the curve of the earth.",
       "When forty labels crowd the page, our layout engine nudges each name into clear space. It never moves an arrow. The direction is the whole point, so the direction stays true no matter what.",
     ],
     annotations: [
@@ -155,44 +155,44 @@ export const copy = {
   },
 
   stories: {
-    eyebrow: "Made with Pinprint",
+    eyebrow: "Made with Heartbound Maps",
     headline: "Every one tells a different story.",
     items: [
       {
         title: "Where it started",
         caption: "Born in Memphis, met in Chicago, still measuring everything from Kansas City.",
         src: "/showcase/story-where-it-started.png",
-        alt: "Mid-Century-style Pinprint centered on Kansas City",
+        alt: "Mid-Century-style Heartbound Maps centered on Kansas City",
       },
       {
         title: "The honeymoon",
         caption: "Married on Rarotonga, home in Auckland before the tan faded.",
         src: "/showcase/story-the-honeymoon.png",
-        alt: "Celestial Pinprint centered on Auckland",
+        alt: "Celestial Heartbound Maps centered on Auckland",
       },
       {
         title: "First home",
         caption: "Four cities of rented rooms, then keys of their own in Denver.",
         src: "/showcase/story-first-home.png",
-        alt: "Minimal Pinprint centered on Denver",
+        alt: "Minimal Heartbound Maps centered on Denver",
       },
       {
         title: "Family across oceans",
         caption: "One family, five continents, every arrow pointing to someone loved.",
         src: "/showcase/story-family-across-oceans.png",
-        alt: "Atlas-style Pinprint centered on London",
+        alt: "Atlas-style Heartbound Maps centered on London",
       },
       {
         title: "The year abroad",
         caption: "Twelve months from a flat in Prague, and every arrow is still a story they tell.",
         src: "/showcase/story-the-year-abroad.png",
-        alt: "Swiss editorial Pinprint centered on Prague",
+        alt: "Swiss editorial Heartbound Maps centered on Prague",
       },
       {
         title: "Every house so far",
         caption: "Every front door they have ever called home, measured from Melbourne.",
         src: "/showcase/story-every-house-so-far.png",
-        alt: "Topographic Pinprint centered on Melbourne",
+        alt: "Topographic Heartbound Maps centered on Melbourne",
       },
     ],
   },
@@ -202,7 +202,7 @@ export const copy = {
     eyebrow: "The gift",
     headline: "Made to be given.",
     body: [
-      "The hardest people to buy for already own everything except this. A Pinprint is their story, drawn from real coordinates: where they started, where they went, where home is now.",
+      "The hardest people to buy for already own everything except this. A Heartbound Maps is their story, drawn from real coordinates: where they started, where they went, where home is now.",
       "It arrives ready to give. A solid oak frame, wired for the wall, in protective packaging that opens well.",
     ],
     occasions: [
@@ -214,10 +214,10 @@ export const copy = {
     ],
     cta: "Make one for someone",
     media: {
-      label: "A framed Pinprint leaning on a wall beside wrapping paper",
+      label: "A framed Heartbound Maps leaning on a wall beside wrapping paper",
       aspect: "3 / 2",
       src: "/showcase/scene-gift.png",
-      alt: "Framed celestial Pinprint of Auckland leaning against an ivory wall next to kraft wrapping paper and twine",
+      alt: "Framed celestial Heartbound Maps of Auckland leaning against an ivory wall next to kraft wrapping paper and twine",
     },
   },
 
@@ -290,9 +290,9 @@ export const copy = {
       headline: "Everything you might want to know.",
       intro:
         "Designing your print, sizes and framing, shipping, and what happens if something isn't right. It's all here. Still stuck? Write to us and we'll help.",
-      metaTitle: "FAQ | Pinprint",
+      metaTitle: "FAQ | Heartbound Maps",
       metaDescription:
-        "Answers about designing your Pinprint, sizes and framing, shipping and delivery, returns, and your account.",
+        "Answers about designing your Heartbound Maps, sizes and framing, shipping and delivery, returns, and your account.",
     },
     groups: [
       {
@@ -426,9 +426,9 @@ export const copy = {
     exclusions:
       "Change of mind isn't covered. Every piece is made to order from your own design, so once it's in production we can't accept a return for that reason alone.",
     page: {
-      metaTitle: `${GUARANTEE_NAME} | Pinprint`,
+      metaTitle: `${GUARANTEE_NAME} | Heartbound Maps`,
       metaDescription:
-        "If your Pinprint arrives damaged or with a fault, we'll ship a free replacement or refund you in full. No need to return the original.",
+        "If your Heartbound Maps arrives damaged or with a fault, we'll ship a free replacement or refund you in full. No need to return the original.",
     },
   },
 
@@ -460,9 +460,9 @@ export const copy = {
       },
     ],
     page: {
-      metaTitle: "Hanging and Care Guide | Pinprint",
+      metaTitle: "Hanging and Care Guide | Heartbound Maps",
       metaDescription:
-        "How to hang and care for your Pinprint fine art print: hanging height, wall placement, oak vs metal frame styling, and paper care.",
+        "How to hang and care for your Heartbound Maps fine art print: hanging height, wall placement, oak vs metal frame styling, and paper care.",
     },
   },
 
@@ -493,7 +493,7 @@ export const copy = {
           { label: "Guarantee", href: "/guarantee" },
           { label: "Hanging and care guide", href: "/hanging-guide" },
           { label: "Track an order", href: "/track" },
-          { label: "Contact", href: "mailto:hello@pinprint.com" },
+          { label: "Contact", href: "mailto:hello@heartboundmaps.com" },
         ],
       },
       {
@@ -502,11 +502,11 @@ export const copy = {
         title: "Compare",
         links: [
           { label: "All comparisons", href: "/compare" },
-          { label: "vs Mapiful", href: "/compare/pinprint-vs-mapiful" },
-          { label: "vs Grafomap", href: "/compare/pinprint-vs-grafomap" },
-          { label: "vs Craft & Oak", href: "/compare/pinprint-vs-craft-and-oak" },
-          { label: "vs Positive Prints", href: "/compare/pinprint-vs-positive-prints" },
-          { label: "vs Posterhaste", href: "/compare/pinprint-vs-posterhaste" },
+          { label: "vs Mapiful", href: "/compare/heartbound-maps-vs-mapiful" },
+          { label: "vs Grafomap", href: "/compare/heartbound-maps-vs-grafomap" },
+          { label: "vs Craft & Oak", href: "/compare/heartbound-maps-vs-craft-and-oak" },
+          { label: "vs Positive Prints", href: "/compare/heartbound-maps-vs-positive-prints" },
+          { label: "vs Posterhaste", href: "/compare/heartbound-maps-vs-posterhaste" },
         ],
       },
       {
@@ -517,6 +517,6 @@ export const copy = {
         ],
       },
     ],
-    copyright: "© Pinprint. Every print made to order.",
+    copyright: "© Heartbound Maps. Every print made to order.",
   },
 } as const;

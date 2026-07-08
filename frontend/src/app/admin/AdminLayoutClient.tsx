@@ -37,7 +37,7 @@ function AdminGate({ children }: { children: ReactNode }) {
           add your email to the allowlist.
         </p>
         <Link href="/" className="mt-6 inline-block text-ink underline">
-          Back to Pinprint
+          Back to Heartbound Maps
         </Link>
       </div>
     );
@@ -58,7 +58,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
             <div className="mx-auto flex h-16 w-full max-w-[1100px] items-center justify-between px-6">
               <div className="flex items-center gap-3">
                 <Link href="/" className="font-display text-2xl tracking-[-0.32px] text-ink">
-                  Pinprint
+                  Heartbound Maps
                 </Link>
                 <span className="rounded-full border border-hairline bg-surface-strong px-2 py-0.5 text-xs font-medium text-muted">
                   Admin

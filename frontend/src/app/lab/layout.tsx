@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 
 // Internal experiments: never indexed.
 export const metadata: Metadata = {
-  title: "Lab | Pinprint",
+  title: "Lab | Heartbound Maps",
   robots: { index: false, follow: false },
 };
 

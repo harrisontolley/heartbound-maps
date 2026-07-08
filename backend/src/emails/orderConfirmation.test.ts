@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { GUARANTEE_NAME } from "@pinprint/shared";
+import { GUARANTEE_NAME } from "@heartbound/shared";
 import { orderConfirmationEmail } from "./orderConfirmation.js";
 
 // Pure template — no I/O. Covers: item lines (qty/unit price/line total), the
@@ -22,14 +22,14 @@ const shippingAddress = {
 
 function baseInput(overrides: Record<string, unknown> = {}) {
   return {
-    orderNumber: "PP-ABCD1234",
+    orderNumber: "HB-ABCD1234",
     items: oneItem,
     subtotalCents: 9500,
     shippingCents: 0,
     totalCents: 9500,
     currency: "usd",
     shippingAddress,
-    trackUrl: "https://pinprint.example.com/track",
+    trackUrl: "https://heartboundmaps.example.com/track",
     ...overrides,
   };
 }
@@ -44,7 +44,7 @@ describe("orderConfirmationEmail", () => {
 
   it("includes the order number in the subject", () => {
     const { subject } = orderConfirmationEmail(baseInput());
-    expect(subject).toContain("PP-ABCD1234");
+    expect(subject).toContain("HB-ABCD1234");
   });
 
   it("renders each item's label, quantity, unit price, and line total", () => {
@@ -131,9 +131,9 @@ describe("orderConfirmationEmail", () => {
   });
 
   it("includes the /track link when trackUrl is provided", () => {
-    const { html, text } = orderConfirmationEmail(baseInput({ trackUrl: "https://pinprint.example.com/track" }));
-    expect(html).toContain("https://pinprint.example.com/track");
-    expect(text).toContain("https://pinprint.example.com/track");
+    const { html, text } = orderConfirmationEmail(baseInput({ trackUrl: "https://heartboundmaps.example.com/track" }));
+    expect(html).toContain("https://heartboundmaps.example.com/track");
+    expect(text).toContain("https://heartboundmaps.example.com/track");
   });
 
   it("gracefully omits the track link when trackUrl is null (no broken link)", () => {

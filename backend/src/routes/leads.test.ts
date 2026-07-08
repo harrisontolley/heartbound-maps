@@ -285,7 +285,7 @@ describe("POST /leads — happy path", () => {
     expect(res.status).toBe(202);
     const emailArg = sendEmail.mock.calls[0][0];
     expect(emailArg.html).not.toContain("evil.example.com");
-    expect(emailArg.html).toContain("Your Pinprint design");
+    expect(emailArg.html).toContain("Your Heartbound Maps design");
   });
 
   it("falls back to the generic label when the derived text contains a newline", async () => {
@@ -305,7 +305,7 @@ describe("POST /leads — happy path", () => {
     expect(res.status).toBe(202);
     const emailArg = sendEmail.mock.calls[0][0];
     expect(emailArg.html).not.toContain("Bcc: spam@example.com");
-    expect(emailArg.html).toContain("Your Pinprint design");
+    expect(emailArg.html).toContain("Your Heartbound Maps design");
   });
 
   it("a duplicate (same email + design) updates the existing lead and reuses its token", async () => {

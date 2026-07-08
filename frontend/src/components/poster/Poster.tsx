@@ -67,7 +67,7 @@ export type PosterProps = {
   title?: string | null;
   /** Override the subtitle (coordinates). Falls back to home coordinates. */
   subtitle?: string | null;
-  /** Override the footer wordmark. Falls back to "PINPRINT". */
+  /** Override the footer wordmark. Falls back to "HEARTBOUND MAPS". */
   footer?: string | null;
   /** Show/hide non-spec elements (legend, distances, north, footer). */
   display?: DisplayOptions;
@@ -105,7 +105,7 @@ export function Poster({
       : home
         ? formatCoords(home.lat, home.lng)
         : "";
-  const footerStr = footer && footer.trim() ? footer.trim() : "PINPRINT";
+  const footerStr = footer && footer.trim() ? footer.trim() : "HEARTBOUND MAPS";
 
   const titleMaxWidth = width - 2 * TITLE_SAFE_INSET;
   const fittedTitleSize = home

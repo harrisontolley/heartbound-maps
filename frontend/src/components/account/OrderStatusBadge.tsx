@@ -1,4 +1,4 @@
-import type { OrderStatus } from "@pinprint/shared";
+import type { OrderStatus } from "@heartbound/shared";
 
 // Status label + dot colour for an order, shared by the order list, order detail,
 // and the public /track page.

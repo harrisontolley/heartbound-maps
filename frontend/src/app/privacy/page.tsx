@@ -5,9 +5,9 @@ import { Section } from "@/components/landing/Section";
 import { SectionLabel } from "@/components/landing/SectionLabel";
 
 export const metadata: Metadata = {
-  title: "Privacy | Pinprint",
+  title: "Privacy | Heartbound Maps",
   description:
-    "What Pinprint collects, why, and who processes it. Your places are only used to render your artwork.",
+    "What Heartbound Maps collects, why, and who processes it. Your places are only used to render your artwork.",
   alternates: { canonical: "/privacy" },
 };
 
@@ -75,14 +75,14 @@ export default function PrivacyPage() {
             <p>
               You can design and preview without an account. You can ask us to
               delete your account and its data at any time by writing to
-              hello@pinprint.com, and we will keep only what tax and accounting
+              hello@heartboundmaps.com, and we will keep only what tax and accounting
               law requires us to retain about completed orders.
             </p>
           </Block>
 
           <Block title="Contact">
             <p>
-              Questions about this policy: hello@pinprint.com.
+              Questions about this policy: hello@heartboundmaps.com.
             </p>
           </Block>
         </article>

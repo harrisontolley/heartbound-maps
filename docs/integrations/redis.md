@@ -1,6 +1,6 @@
 # Redis (Upstash)
 
-Distributed state for the serverless, multi-instance world. The same Pinprint code
+Distributed state for the serverless, multi-instance world. The same Heartbound Maps code
 runs across many Vercel Fluid Compute instances, so anything held in module memory
 (rate-limit counters, geocode caches, the Nominatim gate) is per-instance and breaks
 at scale. Upstash Redis (REST/HTTP — no TCP pool, cold-start cheap) backs all of it,
@@ -15,7 +15,7 @@ app keeps working and tests stay hermetic without keys.
 | `UPSTASH_REDIS_REST_TOKEN` | backend **and** frontend | Upstash REST token. Server-only — exposing it to the browser grants full DB access. |
 
 One Upstash DB is currently shared by **dev / preview / prod**, so every key is
-namespaced by environment via `rk()` (`pinprint:{prod|preview|dev}:…`, derived from
+namespaced by environment via `rk()` (`heartbound:{prod|preview|dev}:…`, derived from
 `VERCEL_ENV`). Without that, dev traffic would corrupt prod counters/caches.
 **Follow-up:** provision a separate Upstash DB for dev to isolate fully.
 
@@ -62,12 +62,12 @@ not `NEXT_PUBLIC_`, so they never reach the browser bundle.
 Lowercase, colon-separated, env-prefixed (see the `redis-core` skill):
 
 ```
-pinprint:{env}:rl:{name}:{ip}          # rate-limit buckets (@upstash/ratelimit prefix)
-pinprint:{env}:geo:s:{query}           # geocode search results
-pinprint:{env}:geo:r:{lat},{lng}       # geocode reverse results
-pinprint:{env}:geo:nominatim:upstream  # distributed Nominatim gate
-pinprint:{env}:idem:checkout:{key}     # checkout idempotency claim
-pinprint:{env}:rl:auth:{ip}            # auth-proxy sign-in/sign-up limit
+heartbound:{env}:rl:{name}:{ip}          # rate-limit buckets (@upstash/ratelimit prefix)
+heartbound:{env}:geo:s:{query}           # geocode search results
+heartbound:{env}:geo:r:{lat},{lng}       # geocode reverse results
+heartbound:{env}:geo:nominatim:upstream  # distributed Nominatim gate
+heartbound:{env}:idem:checkout:{key}     # checkout idempotency claim
+heartbound:{env}:rl:auth:{ip}            # auth-proxy sign-in/sign-up limit
 ```
 
 ## Gotchas
@@ -91,8 +91,8 @@ pinprint:{env}:rl:auth:{ip}            # auth-proxy sign-in/sign-up limit
 
 ```bash
 # Hermetic suites (Redis unset → in-memory fallback path):
-pnpm --filter @pinprint/backend test:run
-pnpm --filter @pinprint/frontend test:run
+pnpm --filter @heartbound/backend test:run
+pnpm --filter @heartbound/frontend test:run
 
 # Readiness / liveness:
 curl -s localhost:8787/health/integrations   # { "redis": true|false, ... }
@@ -101,11 +101,11 @@ curl -s localhost:8787/health/redis           # { "ok": true } when reachable
 # Rate limit (shared across both mounts): loop >30× and expect a 429
 for i in $(seq 1 40); do \
   curl -s -o /dev/null -w "%{http_code}\n" -X POST localhost:8787/track \
-  -H 'content-type: application/json' -d '{"orderNumber":"PP-NOPE0","email":"x@y.com"}'; done | sort | uniq -c
+  -H 'content-type: application/json' -d '{"orderNumber":"HB-NOPE0","email":"x@y.com"}'; done | sort | uniq -c
 
 # Idempotency: same key twice → identical { url }, one order created
 curl -s -X POST localhost:8787/checkout/session -H 'content-type: application/json' \
   -H 'Idempotency-Key: demo-123' -d '{"items":[...]}'
 ```
 
-Keys appear in the Upstash console under the `pinprint:{env}:…` prefix.
+Keys appear in the Upstash console under the `heartbound:{env}:…` prefix.

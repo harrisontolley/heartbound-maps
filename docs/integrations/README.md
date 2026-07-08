@@ -1,6 +1,6 @@
 # Integrations
 
-Canonical reference for every third-party service Pinprint talks to. **Read the
+Canonical reference for every third-party service Heartbound Maps talks to. **Read the
 relevant file here before writing or changing integration code** — it records the
 env vars, the test/sandbox setup, where the code lives, the known footguns, and
 the exact command to verify your change.

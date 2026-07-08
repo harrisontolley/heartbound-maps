@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import type { Context } from "hono";
 import type Stripe from "stripe";
-import type { CreateCheckoutResponse } from "@pinprint/shared";
+import type { CreateCheckoutResponse } from "@heartbound/shared";
 import { type AuthVariables, getUser } from "../auth.js";
 import { getStripe } from "../stripe.js";
 import {

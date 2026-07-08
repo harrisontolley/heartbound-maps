@@ -4,7 +4,7 @@
 
 ## Context
 
-Pinprint lets users generate custom map/place fine-art posters. Question: is a **free downloadable design** a good lead magnet (Hormozi $100M Leads framework)? **Verdict: yes — near-textbook fit.** The free design natively exposes the next problem (a digital file is worthless on a wall → needs printing + framing), which is exactly the paid offer.
+Heartbound Maps lets users generate custom map/place fine-art posters. Question: is a **free downloadable design** a good lead magnet (Hormozi $100M Leads framework)? **Verdict: yes — near-textbook fit.** The free design natively exposes the next problem (a digital file is worthless on a wall → needs printing + framing), which is exactly the paid offer.
 
 ## The decision
 

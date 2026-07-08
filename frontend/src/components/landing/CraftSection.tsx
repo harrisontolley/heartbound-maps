@@ -11,7 +11,7 @@ import { copy } from "./copy";
 const PAPER_SCALE = [
   { label: "Everyday printer paper", gsm: 90 },
   { label: "Typical poster-shop print", gsm: 150 },
-  { label: "Pinprint, Hahnemühle German Etching", gsm: 310, accent: true },
+  { label: "Heartbound Maps, Hahnemühle German Etching", gsm: 310, accent: true },
 ] as const;
 
 export function CraftSection() {

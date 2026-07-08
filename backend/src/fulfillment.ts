@@ -5,7 +5,7 @@ import {
   type FrameColor,
   type FrameMaterial,
   type FrameSelection,
-} from "@pinprint/shared";
+} from "@heartbound/shared";
 import { arteloFetch, getArteloConfig } from "./artelo.js";
 import { signAssetUrl } from "./blob.js";
 import { capturePostHogServerEvent } from "./posthog.js";

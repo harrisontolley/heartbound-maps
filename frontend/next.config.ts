@@ -41,7 +41,7 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
-  transpilePackages: ["@pinprint/shared"],
+  transpilePackages: ["@heartbound/shared"],
   // PostHog sends a trailing-slash-sensitive request to /ingest/decide.
   skipTrailingSlashRedirect: true,
   async rewrites() {
@@ -59,6 +59,8 @@ export default withSentryConfig(nextConfig, {
   // For all available options, see:
   // https://www.npmjs.com/package/@sentry/webpack-plugin#options
 
+  // Sentry-side org/project slugs still use the old "pinprint" brand —
+  // rename the Sentry projects first before changing these.
   org: "pinprint",
 
   project: "pinprint-frontend",

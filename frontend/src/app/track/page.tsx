@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import type { TrackResult } from "@pinprint/shared";
+import type { TrackResult } from "@heartbound/shared";
 import { apiFetch } from "@/lib/apiClient";
 import { AccountNav } from "@/components/account/AccountNav";
 import { Card } from "@/components/account/Card";
@@ -45,7 +45,7 @@ export default function TrackPage() {
       <header className="border-b border-hairline bg-canvas/85 backdrop-blur">
         <div className="mx-auto flex h-16 w-full max-w-[760px] items-center justify-between px-6">
           <Link href="/" className="font-display text-2xl tracking-[-0.32px] text-ink">
-            Pinprint
+            Heartbound Maps
           </Link>
           <AccountNav />
         </div>
@@ -64,7 +64,7 @@ export default function TrackPage() {
               <input
                 value={orderNumber}
                 onChange={(e) => setOrderNumber(e.target.value)}
-                placeholder="PP-XXXXXX"
+                placeholder="HB-XXXXXX"
                 required
                 className="h-11 rounded-md border border-hairline-strong bg-canvas px-3 text-[16px] text-ink outline-none focus:border-ink"
               />

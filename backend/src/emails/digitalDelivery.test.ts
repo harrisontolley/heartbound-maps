@@ -39,9 +39,9 @@ describe("digitalDeliveryEmail", () => {
     expect(text).toBeTruthy();
   });
 
-  it('subject is exactly "Your Pinprint files are ready"', () => {
+  it('subject is exactly "Your Heartbound Maps files are ready"', () => {
     const { subject } = email({ items: oneItemBoth });
-    expect(subject).toBe("Your Pinprint files are ready");
+    expect(subject).toBe("Your Heartbound Maps files are ready");
   });
 
   it("includes the PNG and SVG links with their labels", () => {
@@ -215,10 +215,10 @@ describe("digitalDeliveryEmail", () => {
     it("includes the hanging-guide link when configured", () => {
       const { html, text } = email({
         items: oneItemBoth,
-        hangingGuideUrl: "https://pinprint.example.com/hanging-guide",
+        hangingGuideUrl: "https://heartboundmaps.example.com/hanging-guide",
       });
-      expect(html).toContain("https://pinprint.example.com/hanging-guide");
-      expect(text).toContain("https://pinprint.example.com/hanging-guide");
+      expect(html).toContain("https://heartboundmaps.example.com/hanging-guide");
+      expect(text).toContain("https://heartboundmaps.example.com/hanging-guide");
     });
 
     it("gracefully omits the hanging-guide link when unconfigured (no broken link)", () => {
@@ -245,7 +245,7 @@ describe("digitalDeliveryEmail", () => {
     const { subject, html, text } = email({
       items,
       isDigitalOrder: false,
-      hangingGuideUrl: "https://pinprint.example.com/hanging-guide",
+      hangingGuideUrl: "https://heartboundmaps.example.com/hanging-guide",
     });
     // Strip the literal "<!doctype html>" markup boilerplate before checking
     // for "!" — the rule is about authored copy, not HTML syntax.

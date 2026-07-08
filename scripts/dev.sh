@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Start the Pinprint dev server (frontend :3000 + backend :8787 via `pnpm dev`),
+# Start the Heartbound Maps dev server (frontend :3000 + backend :8787 via `pnpm dev`),
 # first freeing those ports by killing whatever is already listening on them.
 #
 # Usage: ./scripts/dev.sh

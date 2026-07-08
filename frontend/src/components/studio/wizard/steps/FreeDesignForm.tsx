@@ -2,7 +2,7 @@
 
 import { useEffect, useState, type FormEvent } from "react";
 import { usePostHog } from "posthog-js/react";
-import type { CreateLeadRequest, CreateLeadResponse } from "@pinprint/shared";
+import type { CreateLeadRequest, CreateLeadResponse } from "@heartbound/shared";
 import { usePosterStore } from "@/lib/store/posterStore";
 import { exportScreenPngBlob, slugify } from "@/lib/export";
 import { uploadFreePosterPng } from "@/lib/upload/uploadPosterPng";
@@ -185,7 +185,7 @@ export function FreeDesignForm({
       </Button>
 
       <p className="text-xs text-muted">
-        We&apos;ll send your design plus occasional Pinprint offers. Unsubscribe anytime.
+        We&apos;ll send your design plus occasional Heartbound Maps offers. Unsubscribe anytime.
       </p>
 
       {status === "error" && (

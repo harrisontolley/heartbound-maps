@@ -76,7 +76,7 @@ function trackingLinesText(tracking: ShipmentTracking | undefined): string[] {
 export function shipmentNotificationEmail(input: ShipmentNotificationEmailInput): EmailContent {
   const { kind, orderNumber, tracking, trackUrl } = input;
   const { subjectPhrase, heading, body } = introFor(kind);
-  const subject = `Your Pinprint order ${orderNumber} has ${subjectPhrase}`;
+  const subject = `Your Heartbound Maps order ${orderNumber} has ${subjectPhrase}`;
 
   const html = `<!doctype html>
 <html lang="en">

@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import type { CreateLeadResponse } from "@pinprint/shared";
+import type { CreateLeadResponse } from "@heartbound/shared";
 import { type AuthVariables, getUser } from "../auth.js";
 import { enforce } from "../rateLimit.js";
 import { getSql } from "../db.js";
@@ -34,7 +34,7 @@ const MAX_UTM_KEYS = 8;
 const MAX_UTM_VALUE_LENGTH = 200;
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const MAX_POSTER_LABEL_LENGTH = 100;
-const GENERIC_POSTER_LABEL = "Your Pinprint design";
+const GENERIC_POSTER_LABEL = "Your Heartbound Maps design";
 
 /**
  * Absolute base for links that hit this backend (not the frontend).
@@ -46,7 +46,7 @@ const GENERIC_POSTER_LABEL = "Your Pinprint design";
  * to their own domain. This URL, by contrast, is emailed to a *third party*
  * (the lead's address) — a spoofed Origin here lets an attacker POST directly
  * (curl, no CORS involved) with `Origin: https://evil.example` and get a
- * legitimate Pinprint email whose download link points at their own domain
+ * legitimate Heartbound Maps email whose download link points at their own domain
  * (phishing / token theft). Origin is attacker-controlled on non-browser
  * requests, so it must never seed a link that leaves the requester's hands.
  *

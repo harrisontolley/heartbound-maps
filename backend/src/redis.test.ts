@@ -32,16 +32,16 @@ describe("redis config", () => {
 
 describe("key namespacing", () => {
   it("defaults to the dev namespace off Vercel", () => {
-    expect(keyPrefix()).toBe("pinprint:dev");
-    expect(rk("rl", "checkout", "1.2.3.4")).toBe("pinprint:dev:rl:checkout:1.2.3.4");
+    expect(keyPrefix()).toBe("heartbound:dev");
+    expect(rk("rl", "checkout", "1.2.3.4")).toBe("heartbound:dev:rl:checkout:1.2.3.4");
   });
 
   it("maps VERCEL_ENV to prod / preview", () => {
     process.env.VERCEL_ENV = "production";
-    expect(keyPrefix()).toBe("pinprint:prod");
-    expect(rk("geo", "s", "paris")).toBe("pinprint:prod:geo:s:paris");
+    expect(keyPrefix()).toBe("heartbound:prod");
+    expect(rk("geo", "s", "paris")).toBe("heartbound:prod:geo:s:paris");
 
     process.env.VERCEL_ENV = "preview";
-    expect(keyPrefix()).toBe("pinprint:preview");
+    expect(keyPrefix()).toBe("heartbound:preview");
   });
 });

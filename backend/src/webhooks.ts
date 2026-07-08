@@ -1,5 +1,5 @@
 import type Stripe from "stripe";
-import type { OrderStatus, OrderTracking, OrderShippingAddress } from "@pinprint/shared";
+import type { OrderStatus, OrderTracking, OrderShippingAddress } from "@heartbound/shared";
 import {
   advanceOrderStatus,
   appendOrderEvent,

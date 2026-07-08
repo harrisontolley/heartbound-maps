@@ -1,5 +1,5 @@
 {
-  "name": "@pinprint/backend",
+  "name": "@heartbound/backend",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -7,7 +7,7 @@
   "scripts": {
     "dev": "tsx watch src/server.ts",
     "build": "tsc",
-    "vercel-build": "pnpm --filter @pinprint/shared run build && tsc",
+    "vercel-build": "pnpm --filter @heartbound/shared run build && tsc",
     "start": "node dist/server.js",
     "typecheck": "tsc --noEmit",
     "test": "vitest",
@@ -18,7 +18,7 @@
   "dependencies": {
     "@hono/node-server": "^1.13.7",
     "@neondatabase/serverless": "^0.10.4",
-    "@pinprint/shared": "workspace:*",
+    "@heartbound/shared": "workspace:*",
     "@resvg/resvg-js": "^2.6.2",
     "@sentry/node": "^10.62.0",
     "@upstash/ratelimit": "^2.0.5",

@@ -23,7 +23,7 @@ import { buildLeadsRouter } from "./routes/leads.js";
 import { buildMailingListRouter } from "./routes/mailingList.js";
 import { initSentry, captureError, isSentryConfigured } from "./sentry.js";
 
-// The Pinprint API. Owns the Nominatim geocoding proxy (User-Agent, rate gate,
+// The Heartbound Maps API. Owns the Nominatim geocoding proxy (User-Agent, rate gate,
 // LRU cache live in ./nominatim) and the Neon connectivity check.
 //
 // Deployed as a Vercel "service" mounted at routePrefix "/_/backend". Vercel
@@ -36,7 +36,7 @@ import { initSentry, captureError, isSentryConfigured } from "./sentry.js";
 export const SERVICE_PREFIX = "/_/backend";
 
 function registerRoutes(r: Hono): Hono {
-  r.get("/", (c) => c.json({ name: "pinprint-api", ok: true }));
+  r.get("/", (c) => c.json({ name: "heartbound-api", ok: true }));
 
   r.get("/health", (c) => c.json({ ok: true }));
 

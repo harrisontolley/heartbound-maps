@@ -1,5 +1,5 @@
 import { type Context, Hono } from "hono";
-import type { Order, TrackResult } from "@pinprint/shared";
+import type { Order, TrackResult } from "@heartbound/shared";
 import { findOrderByNumberAndEmail } from "../orders.js";
 import { __resetRateLimits, enforce } from "../rateLimit.js";
 

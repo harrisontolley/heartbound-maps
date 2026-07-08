@@ -1,16 +1,16 @@
-// Pinprint's own facts, derived from the canonical commerce catalogue so the
+// Heartbound Maps's own facts, derived from the canonical commerce catalogue so the
 // comparison pages never hardcode a price that can drift out of sync. Import these
-// wherever a comparison cell needs an exact Pinprint figure; a test asserts they
+// wherever a comparison cell needs an exact Heartbound Maps figure; a test asserts they
 // track the shared source (see competitors.test.ts).
 
 import { OFFERED_PRODUCTS } from "@/lib/commerce/printProducts";
 import { formatUsd } from "@/lib/commerce/price";
-import { DIGITAL_PRICE_CENTS } from "@pinprint/shared";
+import { DIGITAL_PRICE_CENTS } from "@heartbound/shared";
 
 const small = OFFERED_PRODUCTS[0];
 const large = OFFERED_PRODUCTS[OFFERED_PRODUCTS.length - 1];
 
-export type PinprintPrintFact = {
+export type HeartboundPrintFact = {
   /** e.g. "16 × 24 in". */
   size: string;
   /** Charged loose-print price, e.g. "$59.00". */
@@ -20,7 +20,7 @@ export type PinprintPrintFact = {
 };
 
 /** The three offered sizes, formatted. */
-export const PINPRINT_PRINTS: readonly PinprintPrintFact[] = OFFERED_PRODUCTS.map(
+export const HEARTBOUND_PRINTS: readonly HeartboundPrintFact[] = OFFERED_PRODUCTS.map(
   (p) => ({
     size: p.label,
     price: formatUsd(p.priceCents),
@@ -28,8 +28,8 @@ export const PINPRINT_PRINTS: readonly PinprintPrintFact[] = OFFERED_PRODUCTS.ma
   }),
 );
 
-export const PINPRINT_FACTS = {
-  prints: PINPRINT_PRINTS,
+export const HEARTBOUND_FACTS = {
+  prints: HEARTBOUND_PRINTS,
   /** e.g. "$45.00 to $95.00". */
   priceRange: `${formatUsd(small.priceCents)} to ${formatUsd(large.priceCents)}`,
   /** Framed range, e.g. "$95.00 to $195.00". */

@@ -4,7 +4,7 @@ import { compass16, computePlaces, fmtDistance, type Compass16 } from "@/lib/geo
 
 /**
  * Maps a home + its places into the arc/point arrays react-globe.gl consumes,
- * mirroring how a Pinprint poster encodes home -> places. This is pure data:
+ * mirroring how a Heartbound Maps poster encodes home -> places. This is pure data:
  * no three.js, no React — so it imports cheaply and is unit-testable.
  *
  * Each arc/destination also carries its EXACT measurement — true compass bearing

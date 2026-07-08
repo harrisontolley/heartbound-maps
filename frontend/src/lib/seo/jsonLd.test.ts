@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   FRAME_UPCHARGE_CENTS,
   PRINT_PRICE_CENTS,
-} from "@pinprint/shared";
+} from "@heartbound/shared";
 import {
   buildFaqJsonLd,
   buildOrganizationJsonLd,
@@ -14,9 +14,9 @@ import { SITE_URL, absoluteUrl, OG_IMAGE } from "./site";
 describe("buildOrganizationJsonLd", () => {
   const org = buildOrganizationJsonLd();
 
-  it("identifies Pinprint at the site origin with an absolute logo", () => {
+  it("identifies Heartbound Maps at the site origin with an absolute logo", () => {
     expect(org["@type"]).toBe("Organization");
-    expect(org.name).toBe("Pinprint");
+    expect(org.name).toBe("Heartbound Maps");
     expect(org.url).toBe(SITE_URL);
     expect(org.logo).toBe(absoluteUrl(OG_IMAGE));
   });
@@ -26,7 +26,7 @@ describe("buildWebSiteJsonLd", () => {
   it("names the site at the site origin", () => {
     const site = buildWebSiteJsonLd();
     expect(site["@type"]).toBe("WebSite");
-    expect(site.name).toBe("Pinprint");
+    expect(site.name).toBe("Heartbound Maps");
     expect(site.url).toBe(SITE_URL);
   });
 });
@@ -35,9 +35,9 @@ describe("buildProductJsonLd", () => {
   const product = buildProductJsonLd();
   const offers = product.offers as Record<string, unknown>;
 
-  it("is a Product with a Pinprint brand and absolute image", () => {
+  it("is a Product with a Heartbound Maps brand and absolute image", () => {
     expect(product["@type"]).toBe("Product");
-    expect(product.brand).toEqual({ "@type": "Brand", name: "Pinprint" });
+    expect(product.brand).toEqual({ "@type": "Brand", name: "Heartbound Maps" });
     expect(product.image).toBe(absoluteUrl(OG_IMAGE));
   });
 

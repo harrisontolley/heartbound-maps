@@ -58,7 +58,7 @@ to send there; `next.config.ts` rewrites `/ingest/*` to `NEXT_PUBLIC_POSTHOG_UPS
 ## Verify
 
 ```bash
-pnpm --filter @pinprint/frontend build      # builds with and without the key set
+pnpm --filter @heartbound/frontend build      # builds with and without the key set
 # With NEXT_PUBLIC_POSTHOG_KEY set, run `pnpm dev` and confirm requests hit /ingest in
 # the browser Network tab and events land in the PostHog dashboard.
 ```

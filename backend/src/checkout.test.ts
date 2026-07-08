@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { DIGITAL_PRICE_CENTS, PRODUCTS_BASE_BY_ID } from "@pinprint/shared";
+import { DIGITAL_PRICE_CENTS, PRODUCTS_BASE_BY_ID } from "@heartbound/shared";
 import { CheckoutValidationError, isAllowedAssetUrl, priceCheckout } from "./checkout.js";
 
 // The checkout pricer is the security boundary: the client sends only choices

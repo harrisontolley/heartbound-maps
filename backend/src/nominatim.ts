@@ -1,5 +1,5 @@
 import { Ratelimit } from "@upstash/ratelimit";
-import type { GeoResult } from "@pinprint/shared";
+import type { GeoResult } from "@heartbound/shared";
 import { getRedis, rk } from "./redis.js";
 
 // Server-side geocoding client. Lives behind the route handlers so we can keep
@@ -17,7 +17,7 @@ import { getRedis, rk } from "./redis.js";
 // frontend are provider-agnostic. Cache keys are namespaced by provider so a
 // key being added/removed never serves cross-provider entries.
 
-const UA = "Pinprint/1.0 (poster-map demo; contact htolley0@gmail.com)";
+const UA = "Heartbound Maps/1.0 (poster-map demo; contact htolley0@gmail.com)";
 const BASE = "https://nominatim.openstreetmap.org";
 const MAPTILER_BASE = "https://api.maptiler.com/geocoding";
 
@@ -196,7 +196,7 @@ async function fetchJson(url: string): Promise<unknown> {
     headers: {
       "User-Agent": UA,
       "Accept-Language": "en",
-      Referer: "https://pinprint.app",
+      Referer: "https://heartboundmaps.com",
     },
     signal: AbortSignal.timeout(TIMEOUT_MS),
   });

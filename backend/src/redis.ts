@@ -45,9 +45,9 @@ function envSlug(): string {
   }
 }
 
-/** `pinprint:{env}` — the prefix every key (and every Ratelimit) lives under. */
+/** `heartbound:{env}` — the prefix every key (and every Ratelimit) lives under. */
 export function keyPrefix(): string {
-  return `pinprint:${envSlug()}`;
+  return `heartbound:${envSlug()}`;
 }
 
 /** Build an env-namespaced, colon-separated key, e.g. rk("geo","s",q). */

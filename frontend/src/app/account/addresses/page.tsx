@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import type { Address, AddressInput } from "@pinprint/shared";
+import type { Address, AddressInput } from "@heartbound/shared";
 import { useResource } from "@/lib/account/useResource";
 import { apiFetch } from "@/lib/apiClient";
 import { Card, SectionHeading } from "@/components/account/Card";

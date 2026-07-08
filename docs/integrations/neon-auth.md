@@ -56,8 +56,8 @@ proxy. Secrets stay server-side, matching the repo's "secrets only in the backen
 ## Database
 
 App tables (orders, addresses, profiles, rewards, …) live in `public`, applied by the
-SQL runner: `pnpm --filter @pinprint/backend migrate`. Seed demo data with
-`pnpm --filter @pinprint/backend seed [authUserId]`. See [neon.md](./neon.md).
+SQL runner: `pnpm --filter @heartbound/backend migrate`. Seed demo data with
+`pnpm --filter @heartbound/backend seed [authUserId]`. See [neon.md](./neon.md).
 
 ## Verify
 
@@ -72,4 +72,4 @@ curl -s localhost:8787/account/orders -H "authorization: Bearer <jwt>"
 ## MCP / provisioning
 
 Provisioned via the Neon MCP (`provision_neon_auth` → returns base_url + jwks_url;
-`get_neon_auth_config` shows OAuth providers). Project: `square-bird-24031932` (`pinprint`).
+`get_neon_auth_config` shows OAuth providers). Project: `square-bird-24031932` (`heartbound`).

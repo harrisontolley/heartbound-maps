@@ -4,7 +4,7 @@ import type { ReactNode } from "react";
 // Transactional page: crawlable (so the noindex below is actually seen) but
 // never indexed.
 export const metadata: Metadata = {
-  title: "Cart | Pinprint",
+  title: "Cart | Heartbound Maps",
   robots: { index: false, follow: false },
 };
 

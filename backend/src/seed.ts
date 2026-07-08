@@ -2,21 +2,21 @@ import { existsSync } from "node:fs";
 import { getSql } from "./db.js";
 import { createOrder, type NewOrder } from "./orders.js";
 import { getOrCreateProfile, getOrCreateRewards, createAddress } from "./accountStore.js";
-import type { OrderStatus } from "@pinprint/shared";
+import type { OrderStatus } from "@heartbound/shared";
 
 // Seeds demonstrable account data: a profile, rewards, a saved address, and a few
 // orders in different lifecycle stages with realistic backdated timelines. Lets
 // the account UI + public /track be exercised before the real checkout flow ships.
 //
-//   pnpm --filter @pinprint/backend seed              # attaches to DEMO_USER_ID
-//   pnpm --filter @pinprint/backend seed <authUserId> # attach to a signed-in user
+//   pnpm --filter @heartbound/backend seed              # attaches to DEMO_USER_ID
+//   pnpm --filter @heartbound/backend seed <authUserId> # attach to a signed-in user
 //
 // Guarded: refuses to run without DATABASE_URL, and in production without DEV_SEED_TOKEN.
 
 if (existsSync(".env")) process.loadEnvFile(".env");
 
 const DEMO_USER_ID = process.argv[2] ?? "demo-user";
-const DEMO_EMAIL = "demo@pinprint.app";
+const DEMO_EMAIL = "demo@heartboundmaps.com";
 
 const daysAgo = (n: number, hour = 10) => {
   const d = new Date();

@@ -108,7 +108,7 @@ export const useCartStore = create<CartState>()(
       clear: () => set({ items: [] }),
     }),
     {
-      name: "pinprint-cart-v1",
+      name: "heartbound-cart-v1",
       version: 1,
       storage: createJSONStorage(() => localStorage),
       skipHydration: true,

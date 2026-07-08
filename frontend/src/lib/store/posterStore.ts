@@ -184,7 +184,7 @@ export const usePosterStore = create<PosterState>()(
   },
     }),
     {
-      name: "pinprint-draft-v1",
+      name: "heartbound-draft-v1",
       version: 1,
       storage: createJSONStorage(() => localStorage),
       skipHydration: true,

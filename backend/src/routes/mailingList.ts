@@ -1,6 +1,6 @@
 import { Hono } from "hono";
-import type { CreateMailingListSignupResponse, MailingListReason } from "@pinprint/shared";
-import { MAILING_LIST_REASONS } from "@pinprint/shared";
+import type { CreateMailingListSignupResponse, MailingListReason } from "@heartbound/shared";
+import { MAILING_LIST_REASONS } from "@heartbound/shared";
 import { enforce } from "../rateLimit.js";
 import { getSql } from "../db.js";
 import { isResendConfigured, sendEmail } from "../email.js";

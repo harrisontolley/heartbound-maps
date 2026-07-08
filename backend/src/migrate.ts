@@ -5,7 +5,7 @@ import { Pool, neonConfig } from "@neondatabase/serverless";
 // Tiny SQL migration runner. Numbered .sql files in ../migrations are applied in
 // order, each in its own transaction, and recorded in the `_migrations` table so
 // they run exactly once. No-ops cleanly when DATABASE_URL is unset (CI / hermetic
-// tests) so it can run unconditionally. Run with: pnpm --filter @pinprint/backend migrate
+// tests) so it can run unconditionally. Run with: pnpm --filter @heartbound/backend migrate
 //
 // The HTTP neon() client only runs one statement at a time; multi-statement .sql
 // files need the WebSocket Pool. Node 20.10+ ships a global WebSocket we point at.

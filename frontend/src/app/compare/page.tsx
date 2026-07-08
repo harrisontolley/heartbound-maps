@@ -8,9 +8,9 @@ import { SectionLabel } from "@/components/landing/SectionLabel";
 import { COMPETITORS } from "@/lib/compare/competitors";
 import { OG_IMAGE } from "@/lib/seo/site";
 
-const TITLE = "Pinprint vs the alternatives: custom map print comparisons";
+const TITLE = "Heartbound Maps vs the alternatives: custom map print comparisons";
 const DESCRIPTION =
-  "See how Pinprint's measured, multi-place fine art maps stack up against Mapiful, Grafomap, Craft & Oak, Positive Prints and Posterhaste: concept, materials, pricing and shipping, side by side.";
+  "See how Heartbound Maps's measured, multi-place fine art maps stack up against Mapiful, Grafomap, Craft & Oak, Positive Prints and Posterhaste: concept, materials, pricing and shipping, side by side.";
 
 export const metadata: Metadata = {
   title: TITLE,
@@ -31,7 +31,7 @@ export const metadata: Metadata = {
   },
 };
 
-/** Hub linking to every "Pinprint vs X" page — an indexable surface + link mesh. */
+/** Hub linking to every "Heartbound Maps vs X" page — an indexable surface + link mesh. */
 export default function CompareHubPage() {
   return (
     <main className="bg-canvas text-body">
@@ -42,10 +42,10 @@ export default function CompareHubPage() {
           <header className="flex max-w-[680px] flex-col gap-4">
             <SectionLabel>Compare</SectionLabel>
             <h1 className="font-display text-title font-normal text-ink">
-              How Pinprint compares
+              How Heartbound Maps compares
             </h1>
             <p className="text-copy text-body">
-              Most custom-map shops print one place — a single city or street. Pinprint
+              Most custom-map shops print one place — a single city or street. Heartbound Maps
               maps all the places that matter at once, each drawn in its true compass
               direction from home with the real distance beside it. Here&rsquo;s how it
               lines up against the popular alternatives.
@@ -60,7 +60,7 @@ export default function CompareHubPage() {
                   className="flex h-full flex-col gap-2 rounded-xl border border-hairline bg-surface-card p-6 transition-shadow hover:shadow-card"
                 >
                   <span className="font-display text-[20px] font-normal tracking-[-0.2px] text-ink">
-                    Pinprint vs {c.name}
+                    Heartbound Maps vs {c.name}
                   </span>
                   <span className="text-[15px] leading-[1.5] text-body">
                     {c.oneLiner}

@@ -1,4 +1,4 @@
-// Central, tunable money for the studio offer — now sourced from @pinprint/shared
+// Central, tunable money for the studio offer — now sourced from @heartbound/shared
 // so the backend prices checkout authoritatively from the same numbers. This
 // module stays as a thin re-export to keep existing frontend import paths stable.
 // Edit the prices in packages/shared/src/commerce.ts.
@@ -14,9 +14,9 @@ export {
   FOUNDING_PRICES_END_ISO,
   isFoundingPricingActive,
   discountPercent,
-} from "@pinprint/shared";
+} from "@heartbound/shared";
 
-import { FOUNDING_PRICES_END_ISO, isFoundingPricingActive } from "@pinprint/shared";
+import { FOUNDING_PRICES_END_ISO, isFoundingPricingActive } from "@heartbound/shared";
 
 const FOUNDING_DEADLINE_FORMATTER = new Intl.DateTimeFormat("en-US", {
   month: "long",

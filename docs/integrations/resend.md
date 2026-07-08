@@ -12,7 +12,7 @@ bonus wallpapers and coordinate story). No SDK — plain `fetch` against
 | Var | Where | Notes |
 | --- | --- | --- |
 | `RESEND_API_KEY` | backend | From the Resend dashboard → API Keys. Sent as `Authorization: Bearer …`. |
-| `EMAIL_FROM` | backend | The `from` address, e.g. `Pinprint <hello@example.com>`. Must be `onboarding@resend.dev` (or any address on a verified domain) — see gotchas. |
+| `EMAIL_FROM` | backend | The `from` address, e.g. `Heartbound Maps <hello@example.com>`. Must be `onboarding@resend.dev` (or any address on a verified domain) — see gotchas. |
 
 Both must be set for `isResendConfigured()` to return true; either missing and
 `sendEmail` is a no-op (see below).
@@ -73,7 +73,7 @@ DNS records added at your registrar (Resend dashboard → Domains → Add Domain
 **No production domain has been purchased for this project yet** (see the
 pre-launch TODO in `CLAUDE.md`), so real (non-owner) recipients are blocked
 until one exists and is verified. Once it is, set `EMAIL_FROM` to an address on
-that domain (e.g. `Pinprint <hello@yourdomain.com>`).
+that domain (e.g. `Heartbound Maps <hello@yourdomain.com>`).
 
 ## Verify
 

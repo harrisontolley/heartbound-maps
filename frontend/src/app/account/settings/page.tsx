@@ -26,7 +26,7 @@ export default function SettingsPage() {
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = "pinprint-account.json";
+      a.download = "heartbound-account.json";
       a.click();
       URL.revokeObjectURL(url);
     } catch {

@@ -27,7 +27,7 @@ function initialsFor(user: AvatarUser): string {
 
 /**
  * The signed-in user's mark. A real photo when we have one; otherwise the user's
- * initials set in the same display face as the Pinprint wordmark, so the avatar
+ * initials set in the same display face as the Heartbound Maps wordmark, so the avatar
  * reads as a small piece of the masthead rather than a generic account widget.
  *
  * Decorative by default (`aria-hidden`) — the surrounding control names itself.

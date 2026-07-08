@@ -1,4 +1,4 @@
-import { formatUsd, GUARANTEE_NAME } from "@pinprint/shared";
+import { formatUsd, GUARANTEE_NAME } from "@heartbound/shared";
 import { escapeHtml } from "./leadMagnet.js";
 
 // Pure email template — no I/O. Fired once from the paid transition (see
@@ -103,7 +103,7 @@ function addressHtml(a: OrderConfirmationShippingAddress): string {
 
 export function orderConfirmationEmail(input: OrderConfirmationEmailInput): EmailContent {
   const { orderNumber, items, subtotalCents, shippingCents, totalCents, shippingAddress, trackUrl } = input;
-  const subject = `Your Pinprint order ${orderNumber} is confirmed`;
+  const subject = `Your Heartbound Maps order ${orderNumber} is confirmed`;
   const shippingLabel = shippingCents === 0 ? "Free" : money(shippingCents);
   const hasShipping = Boolean(shippingAddress && addressLines(shippingAddress).length > 0);
 

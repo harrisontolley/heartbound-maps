@@ -13,7 +13,7 @@ import { JsonLd } from "@/components/seo/JsonLd";
 import { buildProductJsonLd } from "@/lib/seo/jsonLd";
 import { OG_IMAGE } from "@/lib/seo/site";
 
-const TITLE = "Pricing | Pinprint";
+const TITLE = "Pricing | Heartbound Maps";
 const DESCRIPTION =
   "Three sizes on Hahnemühle 310gsm fine art paper, framed or unframed, plus a digital download. Free US shipping, and every order includes the files.";
 

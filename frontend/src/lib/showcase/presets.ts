@@ -10,12 +10,12 @@ import type { TemplateId, VintageVariant } from "@/lib/templates/types";
  *
  *  - `look-<lookId>`: one per studio look (src/lib/looks/looks.ts), used by the
  *    landing style gallery. Distinct geography per look so the grid never repeats.
- *  - `story-*`: the evocative example prints ("Made with Pinprint" stories).
+ *  - `story-*`: the evocative example prints ("Made with Heartbound Maps" stories).
  *  - `hero-poster` / `exportcard-*`: singles consumed by the hero scene
  *    compositor (scripts/compose-scenes.ts) and the export/craft imagery.
  *
  * NOTE: the committed PNGs under public/showcase are pre-rendered. After changing
- * a preset, regenerate with `pnpm --filter @pinprint/frontend render:posters`
+ * a preset, regenerate with `pnpm --filter @heartbound/frontend render:posters`
  * (on-demand; needs Playwright + a dev server).
  */
 
@@ -190,7 +190,7 @@ export const PRESETS: PosterPreset[] = [
     ],
   },
 
-  // ── Story prints ("Made with Pinprint") ───────────────────────────────────
+  // ── Story prints ("Made with Heartbound Maps") ───────────────────────────────────
   // Each story home is chosen to sit roughly CENTRAL to its places so the
   // arrows fan out in many directions (≥4 of the 6 compass sextants — checked
   // with initialBearingDeg when these were authored), and together the six

@@ -7,7 +7,7 @@ import type {
   AddressInput,
   RewardEvent,
   Rewards,
-} from "@pinprint/shared";
+} from "@heartbound/shared";
 import { getSql } from "./db.js";
 import { listOrdersForUser, getOrderForUser } from "./orders.js";
 
@@ -220,7 +220,7 @@ export async function getOrCreateRewards(userId: string): Promise<Rewards> {
     row = created[0];
     await sql`
       insert into reward_events (user_id, kind, points, credit_cents, description)
-      values (${userId}, 'signup_bonus', 100, 0, 'Welcome bonus for joining Pinprint')
+      values (${userId}, 'signup_bonus', 100, 0, 'Welcome bonus for joining Heartbound Maps')
     `;
   }
 

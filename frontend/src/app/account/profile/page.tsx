@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import type { AccountProfile, AccountUnits } from "@pinprint/shared";
+import type { AccountProfile, AccountUnits } from "@heartbound/shared";
 import { authClient } from "@/lib/auth/client";
 import { useResource } from "@/lib/account/useResource";
 import { apiFetch } from "@/lib/apiClient";

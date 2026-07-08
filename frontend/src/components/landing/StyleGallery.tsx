@@ -47,7 +47,7 @@ export function StyleGallery() {
                 media={{
                   label: look.label,
                   src: `/showcase/look-${look.id}.png`,
-                  alt: `${look.label} style Pinprint`,
+                  alt: `${look.label} style Heartbound Maps`,
                 }}
                 className="transition-shadow group-hover:shadow-[0_6px_20px_rgba(31,27,22,0.12)]"
                 sizes="(min-width: 1024px) 18vw, (min-width: 768px) 30vw, 45vw"

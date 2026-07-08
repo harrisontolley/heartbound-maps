@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 
 // Transactional pages (checkout success): never indexed.
 export const metadata: Metadata = {
-  title: "Checkout | Pinprint",
+  title: "Checkout | Heartbound Maps",
   robots: { index: false, follow: false },
 };
 

@@ -45,7 +45,7 @@ class GlobeErrorBoundary extends Component<
 }
 
 /**
- * The comprehension beat: teaches a first-time visitor how to *read* a Pinprint —
+ * The comprehension beat: teaches a first-time visitor how to *read* a Heartbound Maps —
  * home at the center, an arrow in each place's true compass bearing, the
  * great-circle distance beside it (the same numbers it prints). A short decode
  * list spells that out; a "try it from your home town" search lets them measure

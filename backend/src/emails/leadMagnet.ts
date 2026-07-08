@@ -2,7 +2,7 @@
 // trivial to unit test. HTML is table-based with inline styles only, the
 // email-client-safe baseline (no <style> blocks, no flex/grid).
 
-import { OFFERED_PRODUCT_IDS, PRINT_PRICE_CENTS } from "@pinprint/shared";
+import { OFFERED_PRODUCT_IDS, PRINT_PRICE_CENTS } from "@heartbound/shared";
 
 /** "from $65" — derived from the live catalogue so a reprice never strands this copy. */
 const FROM_PRICE = `$${Math.min(...OFFERED_PRODUCT_IDS.map((id) => PRINT_PRICE_CENTS[id])) / 100}`;
@@ -45,7 +45,7 @@ export function escapeHtml(value: string): string {
 export function leadMagnetEmail(input: LeadMagnetEmailInput): EmailContent {
   const { downloadUrl, posterLabel } = input;
 
-  const subject = "Your Pinprint Design Proof is ready";
+  const subject = "Your Heartbound Maps Design Proof is ready";
 
   const safePosterLabel = escapeHtml(posterLabel);
   const safeDownloadUrl = escapeHtml(downloadUrl);

@@ -1,11 +1,11 @@
 {
-  "name": "@pinprint/frontend",
+  "name": "@heartbound/frontend",
   "version": "0.1.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "vercel-build": "pnpm --filter @pinprint/shared run build && next build",
+    "vercel-build": "pnpm --filter @heartbound/shared run build && next build",
     "start": "next start",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
@@ -17,7 +17,7 @@
   },
   "dependencies": {
     "@neondatabase/auth": "0.4.2-beta",
-    "@pinprint/shared": "workspace:*",
+    "@heartbound/shared": "workspace:*",
     "@sentry/nextjs": "^10.62.0",
     "@upstash/ratelimit": "^2.0.5",
     "@upstash/redis": "^1.34.3",

@@ -1,5 +1,5 @@
 // The poster sizes a customer can buy. The numeric catalogue (ids, sizes, prices,
-// frame upcharges) is the single source of truth in @pinprint/shared so the
+// frame upcharges) is the single source of truth in @heartbound/shared so the
 // backend can price checkout authoritatively. This module is the FRONTEND adapter
 // that layers on the rendering-only SVG `viewBox` (reusing the engine's proven
 // (w,h) ratios from templates/sizes.ts) and re-exports the catalogue helpers the
@@ -11,15 +11,15 @@ import {
   OFFERED_PRODUCT_IDS,
   type Orientation,
   type ProductBase,
-} from "@pinprint/shared";
+} from "@heartbound/shared";
 
-export type { Orientation } from "@pinprint/shared";
+export type { Orientation } from "@heartbound/shared";
 export {
   ORIENTATION_ORDER,
   ORIENTATION_LABELS,
   DEFAULT_PRODUCT_ID,
   OFFERED_PRODUCT_IDS,
-} from "@pinprint/shared";
+} from "@heartbound/shared";
 
 /** A catalogue product enriched with the SVG viewBox the poster renders into. */
 export type PrintProduct = ProductBase & {

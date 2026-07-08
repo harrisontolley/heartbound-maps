@@ -39,7 +39,7 @@ const PRINT_QUAD: Quad = [
 
 /**
  * The live "output" poster beside the globe, composited into a real room: the
- * bold-modern Pinprint poster for the SAME home + places that drive the globe, so
+ * bold-modern Heartbound Maps poster for the SAME home + places that drive the globe, so
  * changing the home (the search widget) re-renders the poster on the wall. Mirrors
  * the /render/[id] route's measure pipeline; the Poster SVG is responsive (viewBox +
  * width/height=100%) and is warped (CSS matrix3d homography) onto the framed print so
@@ -102,7 +102,7 @@ export function LandingPoster({
     >
       <Image
         src={ROOM_SRC}
-        alt="A framed Pinprint piece hanging on a deep green wall above a leather armchair and a brass lamp"
+        alt="A framed Heartbound Maps piece hanging on a deep green wall above a leather armchair and a brass lamp"
         width={ROOM_W}
         height={ROOM_H}
         className="absolute inset-0 h-full w-full object-cover"

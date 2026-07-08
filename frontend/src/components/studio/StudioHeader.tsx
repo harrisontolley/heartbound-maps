@@ -56,7 +56,7 @@ export function StudioHeader({ className = "" }: { className?: string }) {
             onClick={handleLeave}
             className="rounded-sm transition-opacity hover:opacity-70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
           >
-            <h1 className="font-display text-2xl leading-none text-ink">Pinprint</h1>
+            <h1 className="font-display text-2xl leading-none text-ink">Heartbound Maps</h1>
           </Link>
           <span className="hidden text-sm text-muted sm:inline">
             fine art maps of the places that matter

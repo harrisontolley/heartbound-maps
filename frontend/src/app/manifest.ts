@@ -8,8 +8,8 @@ import type { MetadataRoute } from "next";
  */
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Pinprint",
-    short_name: "Pinprint",
+    name: "Heartbound Maps",
+    short_name: "Heartbound Maps",
     description:
       "Personalized map wall art, made to order as a custom fine art print.",
     start_url: "/",

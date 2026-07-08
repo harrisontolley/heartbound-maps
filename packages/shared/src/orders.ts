@@ -1,4 +1,4 @@
-// Order contract types — the shape of a Pinprint order as it crosses the
+// Order contract types — the shape of a Heartbound Maps order as it crosses the
 // frontend <-> backend boundary. The backend persists richer rows (Stripe/Artelo
 // ids, raw event payloads); only the fields below are ever sent to the client.
 
@@ -47,7 +47,7 @@ export type OrderTracking = {
 
 /** Lightweight row for order-history lists. */
 export type OrderSummary = {
-  orderNumber: string; // public, human-friendly: PP-XXXXXX
+  orderNumber: string; // public, human-friendly: HB-XXXXXX
   status: OrderStatus;
   currency: string;
   totalCents: number;

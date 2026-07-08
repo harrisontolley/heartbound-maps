@@ -11,7 +11,7 @@ import * as Sentry from "@sentry/nextjs";
 Sentry.init({
   dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
 
-  // Don't send PII (IP, headers, user data) — Pinprint handles addresses +
+  // Don't send PII (IP, headers, user data) — Heartbound Maps handles addresses +
   // accounts. Default is false; set true only to deliberately capture context.
   sendDefaultPii: false,
 });

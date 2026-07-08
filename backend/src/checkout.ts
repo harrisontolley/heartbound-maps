@@ -1,10 +1,10 @@
 import type Stripe from "stripe";
-import type { CheckoutItemInput, FrameColor, FrameMaterial, FrameSelection } from "@pinprint/shared";
+import type { CheckoutItemInput, FrameColor, FrameMaterial, FrameSelection } from "@heartbound/shared";
 import {
   FRAME_COLORS_BY_MATERIAL,
   PRODUCTS_BASE_BY_ID,
   selectionTotalCents,
-} from "@pinprint/shared";
+} from "@heartbound/shared";
 import type { NewOrderItem } from "./orders.js";
 import { isAllowedAssetUrl } from "./assetUrl.js";
 

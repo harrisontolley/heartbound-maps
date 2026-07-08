@@ -10,9 +10,9 @@ const tracking = { carrier: "UPS", number: "1Z999AA10123456784", url: "https://u
 function baseInput(overrides: Record<string, unknown> = {}) {
   return {
     kind: "shipped" as const,
-    orderNumber: "PP-ABCD1234",
+    orderNumber: "HB-ABCD1234",
     tracking,
-    trackUrl: "https://pinprint.example.com/track",
+    trackUrl: "https://heartboundmaps.example.com/track",
     ...overrides,
   };
 }
@@ -27,7 +27,7 @@ describe("shipmentNotificationEmail", () => {
 
   it("includes the order number in the subject", () => {
     const { subject } = shipmentNotificationEmail(baseInput());
-    expect(subject).toContain("PP-ABCD1234");
+    expect(subject).toContain("HB-ABCD1234");
   });
 
   it('frames "shipped" as on its way, with a grammatical "has shipped" subject', () => {
@@ -80,9 +80,9 @@ describe("shipmentNotificationEmail", () => {
   });
 
   it("includes the /track link when trackUrl is provided", () => {
-    const { html, text } = shipmentNotificationEmail(baseInput({ trackUrl: "https://pinprint.example.com/track" }));
-    expect(html).toContain("https://pinprint.example.com/track");
-    expect(text).toContain("https://pinprint.example.com/track");
+    const { html, text } = shipmentNotificationEmail(baseInput({ trackUrl: "https://heartboundmaps.example.com/track" }));
+    expect(html).toContain("https://heartboundmaps.example.com/track");
+    expect(text).toContain("https://heartboundmaps.example.com/track");
   });
 
   it("gracefully omits the track link when trackUrl is null", () => {

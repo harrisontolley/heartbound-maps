@@ -9,7 +9,7 @@ import type {
   OrderShippingAddress,
   CheckoutOrderStatus,
   EventSource,
-} from "@pinprint/shared";
+} from "@heartbound/shared";
 import { getSql } from "./db.js";
 
 // Order persistence + the helpers the Stripe/Artelo webhooks and the dev/seed
@@ -20,7 +20,7 @@ import { getSql } from "./db.js";
 const ORDER_NUMBER_ALPHABET = "23456789ABCDEFGHJKMNPQRSTUVWXYZ"; // no 0/O/1/I/L
 
 /**
- * Public, human-friendly order number: PP-XXXXXXXX. Order numbers are exposed via
+ * Public, human-friendly order number: HB-XXXXXXXX. Order numbers are exposed via
  * the public /track lookup (number + email), so they're generated with a CSPRNG
  * (crypto.randomInt) and 8 chars (~31^8 ≈ 8.5e11 space) to make guessing/enumeration
  * impractical — email match is still required on top.
@@ -30,7 +30,7 @@ export function generateOrderNumber(): string {
   for (let i = 0; i < 8; i += 1) {
     s += ORDER_NUMBER_ALPHABET[randomInt(ORDER_NUMBER_ALPHABET.length)];
   }
-  return `PP-${s}`;
+  return `HB-${s}`;
 }
 
 // ── Row shapes (snake_case from Postgres) ────────────────────────────────────

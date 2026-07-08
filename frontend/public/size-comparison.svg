@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1400" height="690" viewBox="0 0 1400 690" font-family="Inter, Helvetica, Arial, sans-serif">
   <!--
-    Pinprint poster size comparison — drawn to scale.
+    Heartbound Maps poster size comparison — drawn to scale.
     Scale: 0.42 px per mm. Baseline y=620.
     Sizes (mm):  A4 210x297 | 12x18 304.8x457.2 | 16x24 406.4x609.6 | 24x36 609.6x914.4
   -->
@@ -14,7 +14,7 @@
   <rect width="1400" height="690" fill="url(#bg)"/>
 
   <!-- Title -->
-  <text x="60" y="60" fill="#f8fafc" font-size="32" font-weight="700">Pinprint poster sizes — to scale</text>
+  <text x="60" y="60" fill="#f8fafc" font-size="32" font-weight="700">Heartbound Maps poster sizes — to scale</text>
   <text x="60" y="90" fill="#94a3b8" font-size="16">Every print is portrait 2:3. A4 paper shown for reference. Drawn at 0.42&#8202;px / mm.</text>
 
   <!-- ============ Relative-area callouts (top-right) ============ -->

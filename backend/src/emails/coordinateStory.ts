@@ -7,7 +7,7 @@ import {
   rhumbDistanceKm,
   type AccountUnits,
   type Compass16,
-} from "@pinprint/shared";
+} from "@heartbound/shared";
 
 // Builds the digital-delivery email's "story behind your coordinates" section
 // from one order item's poster_config JSON snapshot (frontend/src/lib/commerce

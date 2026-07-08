@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import type { AddressInput, AccountProfilePatch } from "@pinprint/shared";
+import type { AddressInput, AccountProfilePatch } from "@heartbound/shared";
 import { type AuthVariables, requireUser } from "../auth.js";
 import {
   createAddress,
@@ -114,7 +114,7 @@ export function buildAccountRouter(): Hono<{ Variables: AuthVariables }> {
   r.post("/export", async (c) => {
     const user = c.get("user")!;
     const bundle = await exportAccount(user.userId, user.email);
-    c.header("Content-Disposition", 'attachment; filename="pinprint-account.json"');
+    c.header("Content-Disposition", 'attachment; filename="heartbound-account.json"');
     return c.json(bundle);
   });
 

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import type { AdminMetrics } from "@pinprint/shared";
+import type { AdminMetrics } from "@heartbound/shared";
 import { useResource } from "@/lib/account/useResource";
 import { Card, SectionHeading } from "@/components/account/Card";
 import { Loading, ErrorState } from "@/components/account/States";

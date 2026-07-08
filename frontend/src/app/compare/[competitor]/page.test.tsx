@@ -27,31 +27,31 @@ describe("compare/[competitor] route", () => {
 
   it("renders the matching competitor for a known slug", async () => {
     const element = await Page({
-      params: Promise.resolve({ competitor: "pinprint-vs-mapiful" }),
+      params: Promise.resolve({ competitor: "heartbound-maps-vs-mapiful" }),
     });
-    expect(element.props.competitor.slug).toBe("pinprint-vs-mapiful");
+    expect(element.props.competitor.slug).toBe("heartbound-maps-vs-mapiful");
     expect(element.props.competitor.name).toBe("Mapiful");
   });
 
   it("404s for an unknown slug", async () => {
     await expect(
-      Page({ params: Promise.resolve({ competitor: "pinprint-vs-nope" }) }),
+      Page({ params: Promise.resolve({ competitor: "heartbound-maps-vs-nope" }) }),
     ).rejects.toThrow("NEXT_NOT_FOUND");
   });
 
   it("builds canonical, title and description metadata for a known slug", async () => {
     const meta = await generateMetadata({
-      params: Promise.resolve({ competitor: "pinprint-vs-grafomap" }),
+      params: Promise.resolve({ competitor: "heartbound-maps-vs-grafomap" }),
     });
     expect(meta.title).toContain("Grafomap");
     expect(meta.description).toBeTruthy();
-    expect(meta.alternates?.canonical).toBe("/compare/pinprint-vs-grafomap");
-    expect(meta.openGraph?.url).toBe("/compare/pinprint-vs-grafomap");
+    expect(meta.alternates?.canonical).toBe("/compare/heartbound-maps-vs-grafomap");
+    expect(meta.openGraph?.url).toBe("/compare/heartbound-maps-vs-grafomap");
   });
 
   it("returns empty metadata for an unknown slug", async () => {
     const meta = await generateMetadata({
-      params: Promise.resolve({ competitor: "pinprint-vs-nope" }),
+      params: Promise.resolve({ competitor: "heartbound-maps-vs-nope" }),
     });
     expect(meta).toEqual({});
   });

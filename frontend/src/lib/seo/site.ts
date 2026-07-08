@@ -22,7 +22,7 @@ const RAW_SITE_URL =
  */
 export const IS_LAUNCHED = Boolean(process.env.NEXT_PUBLIC_SITE_URL);
 
-/** Absolute site origin, no trailing slash (e.g. "https://pinprint.com"). */
+/** Absolute site origin, no trailing slash (e.g. "https://heartboundmaps.com"). */
 export const SITE_URL = RAW_SITE_URL.replace(/\/+$/, "");
 
 /** Resolve a root-relative path to an absolute URL, e.g. "/compare" → "https://…/compare". */

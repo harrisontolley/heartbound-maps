@@ -1,7 +1,7 @@
 ---
 version: 1.0
-name: pinprint-warm-gallery
-description: Pinprint's brand system reads like a small fine-art gallery that happens to sell one perfect object. The canvas is warm ivory (`#faf8f3`) holding warm charcoal ink (`#1f1b16`). One accent exists, a cartographer's terracotta (`#b5573a`), and it is reserved for the product's own visual language — pin and arrow marks, bearing ticks, diagram strokes — never for buttons or headlines. Display runs Fraunces (the same optical serif the poster's warm-minimal look uses, so chrome and artwork share a voice); Inter carries body, UI, and the tracked-uppercase micro-labels that echo the poster's typographic place labels. CTAs are quiet near-black ink pills. Photography is warm interior lifestyle; the room sells the print. No discount chrome, no emoji, no em dashes in copy, no star widgets.
+name: heartbound-warm-gallery
+description: Heartbound Maps's brand system reads like a small fine-art gallery that happens to sell one perfect object. The canvas is warm ivory (`#faf8f3`) holding warm charcoal ink (`#1f1b16`). One accent exists, a cartographer's terracotta (`#b5573a`), and it is reserved for the product's own visual language — pin and arrow marks, bearing ticks, diagram strokes — never for buttons or headlines. Display runs Fraunces (the same optical serif the poster's warm-minimal look uses, so chrome and artwork share a voice); Inter carries body, UI, and the tracked-uppercase micro-labels that echo the poster's typographic place labels. CTAs are quiet near-black ink pills. Photography is warm interior lifestyle; the room sells the print. No discount chrome, no emoji, no em dashes in copy, no star widgets.
 
 colors:
   primary: "#2b2620"
@@ -137,7 +137,7 @@ spacing:
 
 ## Overview
 
-Pinprint's chrome is a warm gallery: ivory walls, charcoal ink, oak-frame warmth, and one terracotta mark borrowed from the map itself. The system exists to make the poster — the actual product — the only loud thing on any page.
+Heartbound Maps's chrome is a warm gallery: ivory walls, charcoal ink, oak-frame warmth, and one terracotta mark borrowed from the map itself. The system exists to make the poster — the actual product — the only loud thing on any page.
 
 **Key characteristics:**
 
@@ -152,7 +152,7 @@ Pinprint's chrome is a warm gallery: ivory walls, charcoal ink, oak-frame warmth
 
 ## The cartographic signature
 
-The brand's structural grammar comes from the poster: tracked-out labels, bearing arrows, distances, compass ticks. Where a generic site would use numbered markers or icon bullets, Pinprint uses the product's own language — a terracotta tick, a bearing degree, a distance in km. Any decorative device that could appear on any other site should be replaced with one that could only appear here.
+The brand's structural grammar comes from the poster: tracked-out labels, bearing arrows, distances, compass ticks. Where a generic site would use numbered markers or icon bullets, Heartbound Maps uses the product's own language — a terracotta tick, a bearing degree, a distance in km. Any decorative device that could appear on any other site should be replaced with one that could only appear here.
 
 ## Color rules
 

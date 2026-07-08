@@ -37,7 +37,7 @@ const { deliverDigitalFiles } = await import("./digitalDelivery.js");
 function baseOrder(overrides: Record<string, unknown> = {}) {
   return {
     id: "ord-1",
-    orderNumber: "PP-ABCD1234",
+    orderNumber: "HB-ABCD1234",
     email: "buyer@example.com",
     digitalDeliveredAt: null,
     items: [
@@ -136,7 +136,7 @@ describe("deliverDigitalFiles — content", () => {
     expect(sendEmail).toHaveBeenCalledTimes(1);
     const arg = sendEmail.mock.calls[0][0];
     expect(arg.to).toBe("buyer@example.com");
-    expect(arg.subject).toBe("Your Pinprint files are ready");
+    expect(arg.subject).toBe("Your Heartbound Maps files are ready");
     expect(arg.html).toContain("https://blob.example.com/posters/d.png?signed=1");
     expect(arg.html).toContain("https://blob.example.com/posters/d.svg?signed=1");
     expect(arg.html.toLowerCase()).not.toContain("free with your print");

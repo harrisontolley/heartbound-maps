@@ -8,7 +8,7 @@
  * palette-quantised result to public/showcase/. The hero scene also yields the
  * 1200x630 OpenGraph card.
  *
- *   pnpm --filter @pinprint/frontend render:scenes
+ *   pnpm --filter @heartbound/frontend render:scenes
  *   COMPOSE_ONLY=scene-gift pnpm ... render:scenes   # comma-separated `out` names only
  *
  * Run AFTER `render:posters` (it consumes public/showcase/<poster>.png).

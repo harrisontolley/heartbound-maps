@@ -5,7 +5,7 @@ import type {
   CreateMailingListSignupRequest,
   CreateMailingListSignupResponse,
   MailingListReason,
-} from "@pinprint/shared";
+} from "@heartbound/shared";
 import { apiSend, ApiError } from "@/lib/apiClient";
 import { Button } from "@/components/ui/Button";
 import { ANALYTICS_EVENTS } from "@/lib/analytics/events";

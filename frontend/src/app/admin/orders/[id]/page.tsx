@@ -2,7 +2,7 @@
 
 import { use, useState } from "react";
 import Link from "next/link";
-import type { AdminOrderDetail, OrderShippingAddress } from "@pinprint/shared";
+import type { AdminOrderDetail, OrderShippingAddress } from "@heartbound/shared";
 import { useResource } from "@/lib/account/useResource";
 import { apiSend, ApiError } from "@/lib/apiClient";
 import { Card, SectionHeading } from "@/components/account/Card";

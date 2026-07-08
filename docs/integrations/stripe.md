@@ -51,7 +51,7 @@ stripe trigger payment_intent.succeeded                       # fire a test even
 ## Verify
 
 ```bash
-pnpm --filter @pinprint/backend test       # hermetic signature accept/reject (backend/src/stripe.test.ts)
+pnpm --filter @heartbound/backend test       # hermetic signature accept/reject (backend/src/stripe.test.ts)
 curl -s localhost:8787/health/integrations  # { "stripe": true|false, ... }
 curl -i -X POST localhost:8787/webhooks/stripe   # no signature → 400
 ```

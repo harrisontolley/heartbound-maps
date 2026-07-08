@@ -90,7 +90,7 @@ describe("posterStore", () => {
   });
 
   describe("persisted-draft migration", () => {
-    const KEY = "pinprint-draft-v1";
+    const KEY = "heartbound-draft-v1";
 
     async function rehydrateWith(state: Record<string, unknown>) {
       localStorage.setItem(KEY, JSON.stringify({ state, version: 1 }));

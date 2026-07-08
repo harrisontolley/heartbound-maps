@@ -1,5 +1,5 @@
 // USD money formatting + selection pricing for the studio's buy flow. The pure
-// logic now lives in @pinprint/shared (so the backend recomputes the same totals
+// logic now lives in @heartbound/shared (so the backend recomputes the same totals
 // at checkout); this module re-exports it to keep existing frontend import paths
 // stable. The pricing fns accept any product carrying the catalogue's numeric
 // fields, so the frontend's viewBox-enriched PrintProduct works unchanged.
@@ -14,7 +14,7 @@ export {
   FRAME_COLORS_BY_MATERIAL,
   FRAME_COLOR_LABELS,
   DEFAULT_FRAME_COLOR,
-} from "@pinprint/shared";
+} from "@heartbound/shared";
 
 export type {
   StudioFormat,
@@ -23,4 +23,4 @@ export type {
   FrameMaterial,
   FrameColor,
   FrameSelection,
-} from "@pinprint/shared";
+} from "@heartbound/shared";

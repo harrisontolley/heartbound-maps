@@ -1,4 +1,4 @@
-import type { OrderStatus } from "@pinprint/shared";
+import type { OrderStatus } from "@heartbound/shared";
 import { formatDate } from "@/lib/account/format";
 
 // Vertical tracking timeline. Newest event on top and emphasised as the current

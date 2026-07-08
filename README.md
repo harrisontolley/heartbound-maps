@@ -1,7 +1,7 @@
-# Pinprint
+# Heartbound Maps
 
 Poster maps of the places that matter. Pick a **home** location, add the places
-you have ties to (born / lived / visited / family), and Pinprint renders a
+you have ties to (born / lived / visited / family), and Heartbound Maps renders a
 portrait poster with an **arrow pointing in each place's true compass bearing**
 from home, labeled with the great-circle distance — across switchable designs,
 with no overlapping labels. Export to SVG or print-quality PNG.

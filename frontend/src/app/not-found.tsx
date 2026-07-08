@@ -7,7 +7,7 @@ import { SectionLabel } from "@/components/landing/SectionLabel";
 import { LinkButton } from "@/components/landing/LinkButton";
 
 export const metadata: Metadata = {
-  title: "Page not found | Pinprint",
+  title: "Page not found | Heartbound Maps",
 };
 
 /** Branded 404: keeps lost visitors on-site with paths back to the good pages. */
@@ -34,7 +34,7 @@ export default function NotFound() {
               Back to the homepage
             </Link>
             <Link href="/compare" className="text-copy text-ink underline">
-              See how Pinprint compares
+              See how Heartbound Maps compares
             </Link>
           </div>
         </div>

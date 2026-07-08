@@ -155,7 +155,7 @@ function itemBlockText(item: DigitalDeliveryItem): string {
  */
 export function digitalDeliveryEmail(input: DigitalDeliveryEmailInput): EmailContent {
   const { items, isDigitalOrder, hangingGuideUrl } = input;
-  const subject = "Your Pinprint files are ready";
+  const subject = "Your Heartbound Maps files are ready";
   const { heading, body } = introFor(isDigitalOrder);
 
   const html = `<!doctype html>

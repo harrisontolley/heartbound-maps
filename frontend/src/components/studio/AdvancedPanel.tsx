@@ -410,7 +410,7 @@ export function AdvancedPanel() {
           <TextRow
             label="Footer"
             value={c.footerText}
-            placeholder="PINPRINT"
+            placeholder="HEARTBOUND MAPS"
             onChange={(v) => set({ footerText: v })}
           />
         </div>

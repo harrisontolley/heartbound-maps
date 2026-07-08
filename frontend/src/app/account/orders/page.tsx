@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import type { OrderSummary } from "@pinprint/shared";
+import type { OrderSummary } from "@heartbound/shared";
 import { useResource } from "@/lib/account/useResource";
 import { Card, SectionHeading } from "@/components/account/Card";
 import { OrderStatusBadge } from "@/components/account/OrderStatusBadge";

@@ -10,7 +10,7 @@ import type {
   OrderEvent,
   OrderItem,
   OrderShippingAddress,
-} from "@pinprint/shared";
+} from "@heartbound/shared";
 import { getSql } from "./db.js";
 
 // Admin read layer: dashboards over the same tables the customer app uses, plus

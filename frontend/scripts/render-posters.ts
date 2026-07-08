@@ -7,9 +7,9 @@
  * rasterisation, and writes `public/showcase/<slug>.png` (and optionally .svg
  * with `--svg`).
  *
- *   pnpm --filter @pinprint/frontend render:posters            # spawns `next dev`
+ *   pnpm --filter @heartbound/frontend render:posters            # spawns `next dev`
  *   RENDER_BASE_URL=http://localhost:3000 pnpm ... render:posters   # reuse a server
- *   pnpm --filter @pinprint/frontend render:posters --svg      # also emit SVGs
+ *   pnpm --filter @heartbound/frontend render:posters --svg      # also emit SVGs
  *   RENDER_ONLY=story-where-it-started pnpm ... render:posters # comma-separated slugs only
  *
  * This is on-demand asset generation — NOT part of `next build` or CI.

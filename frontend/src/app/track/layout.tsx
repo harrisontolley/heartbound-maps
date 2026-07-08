@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 
 // Order tracking is per-customer: never indexed.
 export const metadata: Metadata = {
-  title: "Track your order | Pinprint",
+  title: "Track your order | Heartbound Maps",
   robots: { index: false, follow: false },
 };
 

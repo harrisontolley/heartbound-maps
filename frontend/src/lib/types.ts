@@ -44,4 +44,4 @@ export type Computed = Place & {
 };
 
 /** Normalized geocoder result returned by the backend /geocode routes. */
-export type { GeoResult } from "@pinprint/shared";
+export type { GeoResult } from "@heartbound/shared";

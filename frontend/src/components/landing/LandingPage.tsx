@@ -14,7 +14,7 @@ import { SiteFooter } from "./SiteFooter";
 import { MobileCtaBar } from "./MobileCtaBar";
 
 /**
- * Marketing landing page for Pinprint. Server-rendered; the interactive pieces
+ * Marketing landing page for Heartbound Maps. Server-rendered; the interactive pieces
  * (the globe demo, FAQ's native <details>, and the mobile CTA bar) are client
  * islands. Every CTA links to the studio. All copy lives in copy.ts; all
  * imagery is real engine renders or composited lifestyle scenes

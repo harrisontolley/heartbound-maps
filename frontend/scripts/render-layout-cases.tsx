@@ -6,7 +6,7 @@
  * → <Poster>) to PNGs in `frontend/.layout-renders/`, with a debug overlay
  * (label boxes, safe rect, tips, home disc) and a per-case invariant scoreboard.
  *
- *   pnpm --filter @pinprint/frontend render:layout               # named cases
+ *   pnpm --filter @heartbound/frontend render:layout               # named cases
  *   pnpm ... render:layout --seeds 30                            # + stress seeds
  *   pnpm ... render:layout --size 1200x1200                      # non-default size
  *   pnpm ... render:layout --svg                                 # also keep SVGs

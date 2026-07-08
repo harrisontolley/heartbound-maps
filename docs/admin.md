@@ -29,7 +29,7 @@ allowlist. There is no separate admin login.
 | --- | --- |
 | `/admin` | Metrics: gross revenue, refunds, Artelo COGS, net margin, failed-fulfilment count, test-order count, orders-by-status. |
 | `/admin/orders` | Searchable/filterable table (by order #, email, status) with a per-order margin column. |
-| `/admin/orders/[id]` | Full detail + actions + the forensic logs (timeline, **raw webhook log**, fulfilment attempts w/ COGS, admin-action audit). Keyed by the **internal order id**, not the public `PP-…` number. |
+| `/admin/orders/[id]` | Full detail + actions + the forensic logs (timeline, **raw webhook log**, fulfilment attempts w/ COGS, admin-action audit). Keyed by the **internal order id**, not the public `HB-…` number. |
 
 ## API
 
@@ -98,7 +98,7 @@ Prereqs in `backend/.env`: `DATABASE_URL`, `STRIPE_SECRET_KEY`, `ARTELO_API_KEY`
 `ARTELO_TEST_ORDERS=true` so nothing is produced), `BLOB_READ_WRITE_TOKEN` (needs a provisioned Vercel
 Blob store), `ADMIN_EMAILS=<you>`. Frontend `NEXT_PUBLIC_BACKEND_URL=http://localhost:8787`.
 
-1. `pnpm --filter @pinprint/backend migrate` (applies 0001–0003).
+1. `pnpm --filter @heartbound/backend migrate` (applies 0001–0003).
 2. `pnpm dev` (frontend :3000 + backend :8787).
 3. `stripe listen --forward-to localhost:8787/webhooks/stripe` → copy the `whsec_…` into
    `STRIPE_WEBHOOK_SECRET` and restart the backend.

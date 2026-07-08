@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { SignedIn } from "@neondatabase/auth/react/ui";
-import type { CheckoutOrderStatus, OrderStatus } from "@pinprint/shared";
+import type { CheckoutOrderStatus, OrderStatus } from "@heartbound/shared";
 import { apiGet } from "@/lib/apiClient";
 import { AccountNav } from "@/components/account/AccountNav";
 import { CartNav } from "@/components/cart/CartNav";
@@ -107,7 +107,7 @@ export default function CheckoutSuccessPage() {
       <header className="border-b border-hairline bg-canvas/85 backdrop-blur">
         <div className="mx-auto flex h-16 w-full max-w-[760px] items-center justify-between px-6">
           <Link href="/" className="font-display text-2xl tracking-[-0.32px] text-ink">
-            Pinprint
+            Heartbound Maps
           </Link>
           <div className="flex items-center gap-2 sm:gap-3">
             <CartNav />

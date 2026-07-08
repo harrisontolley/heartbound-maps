@@ -4,7 +4,7 @@ import type { ReactNode } from "react";
 // Internal print-render surface (consumed by the server renderer): crawlable
 // so the noindex is seen, never indexed.
 export const metadata: Metadata = {
-  title: "Print render | Pinprint",
+  title: "Print render | Heartbound Maps",
   robots: { index: false, follow: false },
 };
 

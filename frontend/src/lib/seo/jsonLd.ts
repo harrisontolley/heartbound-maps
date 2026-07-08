@@ -9,12 +9,12 @@ import type { Competitor } from "@/lib/compare/types";
 import {
   FRAME_UPCHARGE_CENTS,
   PRINT_PRICE_CENTS,
-} from "@pinprint/shared";
+} from "@heartbound/shared";
 import { OG_IMAGE, SITE_URL, absoluteUrl } from "./site";
 
 export type JsonLdObject = Record<string, unknown>;
 
-/** Home → Compare → "Pinprint vs {name}" breadcrumb trail with absolute URLs. */
+/** Home → Compare → "Heartbound Maps vs {name}" breadcrumb trail with absolute URLs. */
 export function buildBreadcrumbJsonLd(competitor: Competitor): JsonLdObject {
   return {
     "@context": "https://schema.org",
@@ -30,7 +30,7 @@ export function buildBreadcrumbJsonLd(competitor: Competitor): JsonLdObject {
       {
         "@type": "ListItem",
         position: 3,
-        name: `Pinprint vs ${competitor.name}`,
+        name: `Heartbound Maps vs ${competitor.name}`,
         item: absoluteUrl(`/compare/${competitor.slug}`),
       },
     ],
@@ -42,7 +42,7 @@ export function buildOrganizationJsonLd(): JsonLdObject {
   return {
     "@context": "https://schema.org",
     "@type": "Organization",
-    name: "Pinprint",
+    name: "Heartbound Maps",
     url: SITE_URL,
     logo: absoluteUrl(OG_IMAGE),
   };
@@ -53,7 +53,7 @@ export function buildWebSiteJsonLd(): JsonLdObject {
   return {
     "@context": "https://schema.org",
     "@type": "WebSite",
-    name: "Pinprint",
+    name: "Heartbound Maps",
     url: SITE_URL,
   };
 }
@@ -78,7 +78,7 @@ export function buildProductJsonLd(): JsonLdObject {
     description:
       "A personalized fine art print of the places that matter, made to order in three sizes, loose or framed.",
     image: absoluteUrl(OG_IMAGE),
-    brand: { "@type": "Brand", name: "Pinprint" },
+    brand: { "@type": "Brand", name: "Heartbound Maps" },
     offers: {
       "@type": "AggregateOffer",
       priceCurrency: "USD",

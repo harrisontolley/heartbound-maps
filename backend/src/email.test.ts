@@ -33,7 +33,7 @@ describe("isResendConfigured", () => {
     expect(isResendConfigured()).toBe(false);
 
     delete process.env.RESEND_API_KEY;
-    process.env.EMAIL_FROM = "Pinprint <hello@example.com>";
+    process.env.EMAIL_FROM = "Heartbound Maps <hello@example.com>";
     expect(isResendConfigured()).toBe(false);
 
     process.env.RESEND_API_KEY = "re_test";
@@ -51,7 +51,7 @@ describe("sendEmail", () => {
 
   it("posts to Resend and returns the id on a 200", async () => {
     process.env.RESEND_API_KEY = "re_test";
-    process.env.EMAIL_FROM = "Pinprint <hello@example.com>";
+    process.env.EMAIL_FROM = "Heartbound Maps <hello@example.com>";
     const fetchMock = vi.fn().mockResolvedValue(jsonResponse(200, { id: "email_123" }));
     vi.stubGlobal("fetch", fetchMock);
 
@@ -63,7 +63,7 @@ describe("sendEmail", () => {
     expect(String(url)).toBe("https://api.resend.com/emails");
     expect((init.headers as Record<string, string>).Authorization).toBe("Bearer re_test");
     expect(JSON.parse(init.body as string)).toEqual({
-      from: "Pinprint <hello@example.com>",
+      from: "Heartbound Maps <hello@example.com>",
       to: ["a@example.com"],
       subject: "Hi",
       html: "<p>hi</p>",
@@ -73,7 +73,7 @@ describe("sendEmail", () => {
 
   it("returns null on a non-2xx response", async () => {
     process.env.RESEND_API_KEY = "re_test";
-    process.env.EMAIL_FROM = "Pinprint <hello@example.com>";
+    process.env.EMAIL_FROM = "Heartbound Maps <hello@example.com>";
     const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue(jsonResponse(422, { message: "invalid" })));
 
@@ -85,7 +85,7 @@ describe("sendEmail", () => {
 
   it("returns null when fetch throws", async () => {
     process.env.RESEND_API_KEY = "re_test";
-    process.env.EMAIL_FROM = "Pinprint <hello@example.com>";
+    process.env.EMAIL_FROM = "Heartbound Maps <hello@example.com>";
     const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
     vi.stubGlobal("fetch", vi.fn().mockRejectedValue(new Error("network down")));
 
@@ -97,7 +97,7 @@ describe("sendEmail", () => {
 
   it("returns null when the response JSON has no id", async () => {
     process.env.RESEND_API_KEY = "re_test";
-    process.env.EMAIL_FROM = "Pinprint <hello@example.com>";
+    process.env.EMAIL_FROM = "Heartbound Maps <hello@example.com>";
     const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue(jsonResponse(200, {})));
 

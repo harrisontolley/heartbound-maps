@@ -43,5 +43,5 @@ function envSlug(): string {
 
 /** Build an env-namespaced, colon-separated key, e.g. rk("rl","auth",ip). */
 export function rk(...parts: string[]): string {
-  return `pinprint:${envSlug()}:${parts.join(":")}`;
+  return `heartbound:${envSlug()}:${parts.join(":")}`;
 }

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { DIGITAL_PRICE_CENTS } from "@pinprint/shared";
+import { DIGITAL_PRICE_CENTS } from "@heartbound/shared";
 import { OFFERED_PRODUCTS } from "@/lib/commerce/printProducts";
 import { formatUsd } from "@/lib/commerce/price";
 import { copy } from "@/components/landing/copy";
@@ -9,7 +9,7 @@ import {
   competitorBySlug,
   getCompetitor,
 } from "./competitors";
-import { PINPRINT_FACTS } from "./pinprintFacts";
+import { HEARTBOUND_FACTS } from "./heartboundFacts";
 import type { DeepDiveId } from "./types";
 
 const REQUIRED_DEEPDIVE: DeepDiveId[] = [
@@ -20,7 +20,7 @@ const REQUIRED_DEEPDIVE: DeepDiveId[] = [
   "shipping",
   "ease",
 ];
-const ADVANTAGES = new Set(["pinprint", "competitor", "even"]);
+const ADVANTAGES = new Set(["heartbound", "competitor", "even"]);
 
 describe("competitors data", () => {
   it("has the five expected competitors", () => {
@@ -35,8 +35,8 @@ describe("competitors data", () => {
   });
 
   it("resolves known slugs and rejects unknown ones", () => {
-    expect(getCompetitor("pinprint-vs-mapiful")?.name).toBe("Mapiful");
-    expect(getCompetitor("pinprint-vs-craft-and-oak")?.name).toBe("Craft & Oak");
+    expect(getCompetitor("heartbound-maps-vs-mapiful")?.name).toBe("Mapiful");
+    expect(getCompetitor("heartbound-maps-vs-craft-and-oak")?.name).toBe("Craft & Oak");
     expect(getCompetitor("does-not-exist")).toBeUndefined();
   });
 
@@ -44,8 +44,8 @@ describe("competitors data", () => {
     "%s",
     (_name, c) => {
       it("uses a keyword-rich slug derived from its key", () => {
-        expect(c.slug).toBe(`pinprint-vs-${c.key}`);
-        expect(c.slug).toMatch(/^pinprint-vs-[a-z0-9-]+$/);
+        expect(c.slug).toBe(`heartbound-maps-vs-${c.key}`);
+        expect(c.slug).toMatch(/^heartbound-maps-vs-[a-z0-9-]+$/);
       });
 
       it("has a sourced, dated homepage", () => {
@@ -56,11 +56,11 @@ describe("competitors data", () => {
       it("has all the required, non-empty content", () => {
         expect(c.name.length).toBeGreaterThan(0);
         expect(c.oneLiner.length).toBeGreaterThan(0);
-        expect(c.hero.h1).toContain(`Pinprint vs ${c.name}`);
+        expect(c.hero.h1).toContain(`Heartbound Maps vs ${c.name}`);
         expect(c.hero.subhead.length).toBeGreaterThan(0);
         expect(c.tldr.length).toBeGreaterThanOrEqual(3);
         expect(c.atAGlance.length).toBeGreaterThanOrEqual(4);
-        expect(c.whoFits.pinprint.length).toBeGreaterThan(0);
+        expect(c.whoFits.heartbound.length).toBeGreaterThan(0);
         expect(c.whoFits.competitor.length).toBeGreaterThan(0);
         expect(c.verdict.length).toBeGreaterThan(0);
         expect(c.faq.length).toBeGreaterThanOrEqual(4);
@@ -80,12 +80,12 @@ describe("competitors data", () => {
       it("has well-formed comparison rows", () => {
         for (const row of c.atAGlance) {
           expect(row.attribute.length).toBeGreaterThan(0);
-          expect(row.pinprint.length).toBeGreaterThan(0);
+          expect(row.heartbound.length).toBeGreaterThan(0);
           expect(row.competitor.length).toBeGreaterThan(0);
           if (row.advantage) expect(ADVANTAGES.has(row.advantage)).toBe(true);
         }
-        // Every page should surface at least one genuine Pinprint advantage.
-        expect(c.atAGlance.some((r) => r.advantage === "pinprint")).toBe(true);
+        // Every page should surface at least one genuine Heartbound Maps advantage.
+        expect(c.atAGlance.some((r) => r.advantage === "heartbound")).toBe(true);
       });
 
       it("keeps SEO metadata within SERP limits", () => {
@@ -103,10 +103,10 @@ describe("competitors data", () => {
   });
 });
 
-describe("Pinprint facts stay in sync with the commerce catalogue", () => {
+describe("Heartbound Maps facts stay in sync with the commerce catalogue", () => {
   it("formats each offered print's price from the canonical source", () => {
-    expect(PINPRINT_FACTS.prints).toHaveLength(OFFERED_PRODUCTS.length);
-    PINPRINT_FACTS.prints.forEach((p, i) => {
+    expect(HEARTBOUND_FACTS.prints).toHaveLength(OFFERED_PRODUCTS.length);
+    HEARTBOUND_FACTS.prints.forEach((p, i) => {
       expect(p.price).toBe(formatUsd(OFFERED_PRODUCTS[i].priceCents));
       expect(p.framedPrice).toBe(
         formatUsd(
@@ -117,18 +117,18 @@ describe("Pinprint facts stay in sync with the commerce catalogue", () => {
   });
 
   it("tracks the digital price and the headline range", () => {
-    expect(PINPRINT_FACTS.digitalPrice).toBe(formatUsd(DIGITAL_PRICE_CENTS));
-    expect(PINPRINT_FACTS.priceRange).toContain(
+    expect(HEARTBOUND_FACTS.digitalPrice).toBe(formatUsd(DIGITAL_PRICE_CENTS));
+    expect(HEARTBOUND_FACTS.priceRange).toContain(
       formatUsd(OFFERED_PRODUCTS[0].priceCents),
     );
-    expect(PINPRINT_FACTS.priceRange).toContain(
+    expect(HEARTBOUND_FACTS.priceRange).toContain(
       formatUsd(OFFERED_PRODUCTS[OFFERED_PRODUCTS.length - 1].priceCents),
     );
   });
 
   it("tracks the frame upcharge range across all offered sizes", () => {
     const upcharges = OFFERED_PRODUCTS.map((p) => p.frameUpchargeCents);
-    expect(PINPRINT_FACTS.frameUpchargeRange).toBe(
+    expect(HEARTBOUND_FACTS.frameUpchargeRange).toBe(
       `${formatUsd(Math.min(...upcharges))} to ${formatUsd(Math.max(...upcharges))}`,
     );
   });
@@ -140,7 +140,7 @@ describe("competitors never hardcode the frame upcharge", () => {
     expect(blob).not.toContain("$50 to $100");
     // The range must actually appear somewhere — otherwise this would pass
     // vacuously if every mention were silently deleted instead of replaced.
-    expect(blob).toContain(PINPRINT_FACTS.frameUpchargeRange);
+    expect(blob).toContain(HEARTBOUND_FACTS.frameUpchargeRange);
   });
 });
 
