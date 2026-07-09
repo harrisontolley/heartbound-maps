@@ -52,8 +52,8 @@ export function PricingPreview() {
           <div className="border-t border-hairline">
             <div className={`${PRICE_GRID_CLASS} items-center border-b border-hairline py-3`}>
               <span className="sr-only">Size</span>
-              <SectionLabel className="block text-right">Unframed</SectionLabel>
-              <SectionLabel className="block text-right">Framed</SectionLabel>
+              <SectionLabel className="col-start-2 block text-right">Unframed</SectionLabel>
+              <SectionLabel className="col-start-3 block text-right">Framed</SectionLabel>
             </div>
             <ul className="flex flex-col">
               {OFFERED_PRODUCTS.map((p) => {
