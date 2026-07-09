@@ -19,6 +19,14 @@ export const ANALYTICS_EVENTS = {
   checkoutStarted: "checkout_started",
   checkoutFailed: "checkout_failed",
   checkoutSuccessViewed: "checkout_success_viewed",
+  removeFromCart: "remove_from_cart",
+  placeSearchFailed: "place_search_failed",
+  orderTrackLookup: "order_track_lookup",
+  signedIn: "signed_in",
+  freeDesignFormViewed: "free_design_form_viewed",
+  freeDesignSubmitted: "free_design_submitted",
+  freeDesignSent: "free_design_sent",
+  freeDesignFailed: "free_design_failed",
 } as const;
 
 export type StudioStepDirection = "next" | "back" | "jump";
@@ -78,6 +86,29 @@ export type AnalyticsEventProps = {
   [ANALYTICS_EVENTS.checkoutSuccessViewed]: {
     order_number: string;
     status: string;
+  };
+  [ANALYTICS_EVENTS.removeFromCart]: {
+    product_id: string;
+    format: string;
+    framed: boolean;
+  };
+  // Never the raw query text (could be a home address) — only its length.
+  [ANALYTICS_EVENTS.placeSearchFailed]: {
+    query_length: number;
+    reason: "no_results" | "error";
+  };
+  [ANALYTICS_EVENTS.orderTrackLookup]: {
+    outcome: "found" | "not_found" | "rate_limited" | "error";
+  };
+  [ANALYTICS_EVENTS.signedIn]: Record<string, never>;
+  [ANALYTICS_EVENTS.freeDesignFormViewed]: {
+    template_id: string;
+    places_count: number;
+  };
+  [ANALYTICS_EVENTS.freeDesignSubmitted]: Record<string, never>;
+  [ANALYTICS_EVENTS.freeDesignSent]: Record<string, never>;
+  [ANALYTICS_EVENTS.freeDesignFailed]: {
+    error: string;
   };
 };
 

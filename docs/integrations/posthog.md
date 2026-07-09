@@ -46,7 +46,12 @@ to send there; `next.config.ts` rewrites `/ingest/*` to `NEXT_PUBLIC_POSTHOG_UPS
   inputs by default** for privacy (`maskAllInputs`). Don't record payment fields.
 - **Feature flags** — read via `useFeatureFlag` / `posthog.isFeatureEnabled(key)`;
   bootstrap from the provider to avoid a flicker on first paint.
-- **Error tracking** — exceptions auto-captured; PostHog replaces Sentry here.
+- **Error tracking** — client exceptions auto-captured; backend errors are mirrored
+  into PostHog by `captureError` (`backend/src/sentry.ts`) as `$exception` events with
+  `source: "backend"`, alongside Sentry.
+- **User identification** — `PostHogIdentify` (`frontend/src/lib/analytics/PostHogIdentify.tsx`)
+  calls `posthog.identify(userId, { email, name })` when a Neon Auth session appears and
+  `posthog.reset()` on sign-out, so events/replays attach to real customers.
 
 ## Gotchas
 
@@ -92,8 +97,16 @@ since they must be trustworthy even when client JS never runs.
 | `mailing_list_signup` | Mailing-list form submitted (`MailingListForm`) | `reasons`, `has_other_text` |
 | `checkout_started` / `checkout_failed` | Cart checkout click / API error (`cart/page.tsx`) | `cart_item_count`, `subtotal_cents` / `error_code` |
 | `checkout_success_viewed` | Success page resolves order status (`checkout/success`, once per order) | `order_number`, `status` |
+| `remove_from_cart` | An item removed from the cart (`cart/page.tsx`) | `product_id`, `format`, `framed` |
+| `place_search_failed` | Geocode search settles with no results or errors (`useGeocodeSearch`) | `query_length`, `reason` (`no_results`/`error`) — never the query text (could be a home address) |
+| `order_track_lookup` | Public order tracking submitted (`track/page.tsx`) | `outcome` (`found`/`not_found`/`rate_limited`/`error`) |
+| `signed_in` | Neon Auth session appears (`PostHogIdentify`) | — |
+| `free_design_form_viewed` / `free_design_submitted` / `free_design_sent` / `free_design_failed` | Lead-magnet form lifecycle (`FreeDesignForm`) | `template_id` + `places_count` / — / — / `error` |
 | `checkout_completed` *(server)* | Order marked paid (webhook) | `order_id`, `total_cents`, `currency` |
 | `order_fulfilled` *(server)* | Artelo submission succeeds | `order_id`, `is_test_order` |
+| `fulfillment_failed` *(server)* | Artelo submission fails (DPI floor, HTTP error, exception) | `order_id`, `error_code`, `is_test_order` |
+| `digital_delivery_sent` *(server)* | Digital files emailed | `order_id` |
+| `$exception` *(server)* | `captureError` in `backend/src/sentry.ts` mirrors every backend error into PostHog error tracking (alongside Sentry) | `$exception_list`, `source: "backend"` |
 
 Admin mutations are deliberately *not* PostHog events — they're durably logged to
 the `admin_actions` table (see `docs/admin.md`), which is the better audit trail.

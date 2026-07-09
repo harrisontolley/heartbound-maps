@@ -2,6 +2,7 @@ import { signAssetUrl } from "./blob.js";
 import { buildCoordinateStory } from "./emails/coordinateStory.js";
 import { getSql } from "./db.js";
 import { isResendConfigured, sendEmail } from "./email.js";
+import { capturePostHogServerEvent } from "./posthog.js";
 import { digitalDeliveryEmail, type DigitalDeliveryItem } from "./emails/digitalDelivery.js";
 import {
   appendOrderEvent,
@@ -172,6 +173,10 @@ export async function deliverDigitalFiles(orderId: string): Promise<DeliveryResu
         source: "system",
       }).catch(() => {});
     }
+
+    await capturePostHogServerEvent("digital_delivery_sent", order.id, {
+      order_id: order.id,
+    });
 
     return { delivered: true };
   } catch {

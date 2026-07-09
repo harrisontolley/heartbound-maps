@@ -1,5 +1,6 @@
 "use client";
 
+import { useCallback } from "react";
 import { usePostHog } from "posthog-js/react";
 import type { AnalyticsEventProps } from "./events";
 
@@ -8,14 +9,18 @@ import type { AnalyticsEventProps } from "./events";
  * compile-time check that they passed the right properties for the event
  * name, instead of freehand strings drifting from docs/integrations/posthog.md.
  * No-ops safely when PostHog isn't configured (usePostHog returns a client
- * whose capture() is already a no-op in that case).
+ * whose capture() is already a no-op in that case). Referentially stable
+ * (the client never changes), so it's safe in effect dependency arrays.
  */
 export function useTrackEvent() {
   const posthog = usePostHog();
-  return function track<E extends keyof AnalyticsEventProps>(
-    event: E,
-    properties: AnalyticsEventProps[E],
-  ) {
-    posthog.capture(event, properties);
-  };
+  return useCallback(
+    function track<E extends keyof AnalyticsEventProps>(
+      event: E,
+      properties: AnalyticsEventProps[E],
+    ) {
+      posthog.capture(event, properties);
+    },
+    [posthog],
+  );
 }

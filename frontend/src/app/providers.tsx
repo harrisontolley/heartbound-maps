@@ -5,6 +5,7 @@ import posthog from "posthog-js";
 import { PostHogProvider as PHProvider } from "posthog-js/react";
 import { AuthProvider } from "./auth-provider";
 import { CartHydrator } from "@/components/cart/CartHydrator";
+import { PostHogIdentify } from "@/lib/analytics/PostHogIdentify";
 
 // Client-side PostHog: product analytics + session replay + exception capture.
 // Env-guarded — with no NEXT_PUBLIC_POSTHOG_KEY this is a no-op passthrough, so the
@@ -35,7 +36,14 @@ export function Providers({ children }: { children: ReactNode }) {
   return (
     <AuthProvider>
       <CartHydrator />
-      {KEY ? <PHProvider client={posthog}>{children}</PHProvider> : children}
+      {KEY ? (
+        <PHProvider client={posthog}>
+          <PostHogIdentify />
+          {children}
+        </PHProvider>
+      ) : (
+        children
+      )}
     </AuthProvider>
   );
 }

@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useState, type FormEvent } from "react";
-import { usePostHog } from "posthog-js/react";
 import type { CreateLeadRequest, CreateLeadResponse } from "@heartbound/shared";
+import { ANALYTICS_EVENTS } from "@/lib/analytics/events";
+import { useTrackEvent } from "@/lib/analytics/useTrackEvent";
 import { usePosterStore } from "@/lib/store/posterStore";
 import { exportScreenPngBlob, slugify } from "@/lib/export";
 import { uploadFreePosterPng } from "@/lib/upload/uploadPosterPng";
@@ -62,7 +63,7 @@ export function FreeDesignForm({
   /** False until a home is set — mirrors the buy/export gating. */
   canSubmit: boolean;
 }) {
-  const posthog = usePostHog();
+  const track = useTrackEvent();
   const home = usePosterStore((s) => s.home);
   const templateId = usePosterStore((s) => s.templateId);
   const places = usePosterStore((s) => s.places);
@@ -72,7 +73,7 @@ export function FreeDesignForm({
   const [sentEmail, setSentEmail] = useState("");
 
   useEffect(() => {
-    posthog.capture("free_design_form_viewed", {
+    track(ANALYTICS_EVENTS.freeDesignFormViewed, {
       template_id: templateId,
       places_count: places.length,
     });
@@ -86,12 +87,12 @@ export function FreeDesignForm({
 
     const trimmed = email.trim();
     if (!EMAIL_RE.test(trimmed)) {
-      posthog.capture("free_design_failed", { error: "invalid_email" });
+      track(ANALYTICS_EVENTS.freeDesignFailed, { error: "invalid_email" });
       setStatus("invalid_email");
       return;
     }
 
-    posthog.capture("free_design_submitted");
+    track(ANALYTICS_EVENTS.freeDesignSubmitted, {});
     setStatus("submitting");
     try {
       const svg = getSvg();
@@ -110,17 +111,17 @@ export function FreeDesignForm({
       };
       await apiSend<CreateLeadResponse>("/leads", "POST", body);
 
-      posthog.capture("free_design_sent");
+      track(ANALYTICS_EVENTS.freeDesignSent, {});
       setSentEmail(trimmed);
       setStatus("sent");
     } catch (err) {
       if (err instanceof ApiError && err.status === 503) {
-        posthog.capture("free_design_failed", { error: err.code ?? "leads_unconfigured" });
+        track(ANALYTICS_EVENTS.freeDesignFailed, { error: err.code ?? "leads_unconfigured" });
         setStatus("unavailable");
         return;
       }
       const errorLabel = err instanceof ApiError ? (err.code ?? String(err.status)) : "client_error";
-      posthog.capture("free_design_failed", { error: errorLabel });
+      track(ANALYTICS_EVENTS.freeDesignFailed, { error: errorLabel });
       setStatus("error");
     }
   }

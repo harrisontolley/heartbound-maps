@@ -209,7 +209,14 @@ export default function CartPage() {
                           </div>
                           <button
                             type="button"
-                            onClick={() => removeItem(item.id)}
+                            onClick={() => {
+                              track(ANALYTICS_EVENTS.removeFromCart, {
+                                product_id: item.selection.productId,
+                                format: item.selection.format,
+                                framed: Boolean(item.selection.frame),
+                              });
+                              removeItem(item.id);
+                            }}
                             className="text-sm text-muted underline-offset-2 transition-colors hover:text-ink hover:underline pointer-coarse:-my-2.5 pointer-coarse:py-2.5"
                           >
                             Remove

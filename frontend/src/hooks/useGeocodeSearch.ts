@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import { apiUrl } from "@/lib/api";
 import type { GeoResult } from "@/lib/types";
+import { ANALYTICS_EVENTS } from "@/lib/analytics/events";
+import { useTrackEvent } from "@/lib/analytics/useTrackEvent";
 
 export type GeoStatus = "idle" | "loading" | "success" | "empty" | "error";
 
@@ -22,6 +24,7 @@ export function useGeocodeSearch(
   const [results, setResults] = useState<GeoResult[]>([]);
   const [status, setStatus] = useState<GeoStatus>("idle");
   const [loadedQuery, setLoadedQuery] = useState("");
+  const track = useTrackEvent();
 
   useEffect(() => {
     const q = query.trim();
@@ -38,11 +41,24 @@ export function useGeocodeSearch(
         setResults(data);
         setStatus(data.length ? "success" : "empty");
         setLoadedQuery(q);
+        if (data.length === 0) {
+          // The debounce means this fires once per settled query, not per
+          // keystroke. Only the length is sent — the query itself could be a
+          // home address (see events.ts).
+          track(ANALYTICS_EVENTS.placeSearchFailed, {
+            query_length: q.length,
+            reason: "no_results",
+          });
+        }
       } catch (err) {
         if (err instanceof DOMException && err.name === "AbortError") return;
         setResults([]);
         setStatus("error");
         setLoadedQuery(q);
+        track(ANALYTICS_EVENTS.placeSearchFailed, {
+          query_length: q.length,
+          reason: "error",
+        });
       }
     }, debounceMs);
 
@@ -50,7 +66,7 @@ export function useGeocodeSearch(
       clearTimeout(timer);
       controller.abort();
     };
-  }, [query, minLength, debounceMs]);
+  }, [query, minLength, debounceMs, track]);
 
   const q = query.trim();
   const tooShort = q.length < minLength;

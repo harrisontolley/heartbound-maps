@@ -1,4 +1,5 @@
 import * as Sentry from "@sentry/node";
+import { capturePostHogServerEvent } from "./posthog.js";
 
 // Error tracking for the API. Env-guarded like db.ts (getSql): with no SENTRY_DSN
 // nothing is initialized and nothing is sent, so the app builds and the tests stay
@@ -28,6 +29,19 @@ export function isSentryConfigured(): boolean {
 
 /** Report an exception when Sentry is initialized; a no-op otherwise. */
 export function captureError(err: unknown): void {
-  if (!started) return;
-  Sentry.captureException(err);
+  if (started) Sentry.captureException(err);
+  // Mirror into PostHog error tracking so front- and backend errors live on one
+  // dashboard. `$exception_list` is PostHog's exception event shape; fire-and-
+  // forget and independently env-guarded, so neither tracker gates the other.
+  const e = err instanceof Error ? err : new Error(String(err));
+  void capturePostHogServerEvent("$exception", "backend", {
+    $exception_list: [
+      {
+        type: e.name,
+        value: e.message,
+        mechanism: { handled: true, synthetic: !(err instanceof Error) },
+      },
+    ],
+    source: "backend",
+  });
 }

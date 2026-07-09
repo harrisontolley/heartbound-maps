@@ -10,6 +10,8 @@ import { OrderStatusBadge } from "@/components/account/OrderStatusBadge";
 import { OrderTimeline } from "@/components/account/OrderTimeline";
 import { Button } from "@/components/ui/Button";
 import { formatDate } from "@/lib/account/format";
+import { ANALYTICS_EVENTS } from "@/lib/analytics/events";
+import { useTrackEvent } from "@/lib/analytics/useTrackEvent";
 
 // Public order tracking — no sign-in needed. Looks an order up by number + email
 // and shows status, items, and the tracking timeline (the narrow TrackResult; no
@@ -21,6 +23,7 @@ export default function TrackPage() {
   const [status, setStatus] = useState<"idle" | "loading" | "notfound" | "limited" | "error">(
     "idle",
   );
+  const track = useTrackEvent();
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -31,11 +34,19 @@ export default function TrackPage() {
         method: "POST",
         body: JSON.stringify({ orderNumber: orderNumber.trim(), email: email.trim() }),
       });
-      if (res.status === 429) return setStatus("limited");
-      if (!res.ok) return setStatus("notfound");
+      if (res.status === 429) {
+        track(ANALYTICS_EVENTS.orderTrackLookup, { outcome: "rate_limited" });
+        return setStatus("limited");
+      }
+      if (!res.ok) {
+        track(ANALYTICS_EVENTS.orderTrackLookup, { outcome: "not_found" });
+        return setStatus("notfound");
+      }
       setResult((await res.json()) as TrackResult);
       setStatus("idle");
+      track(ANALYTICS_EVENTS.orderTrackLookup, { outcome: "found" });
     } catch {
+      track(ANALYTICS_EVENTS.orderTrackLookup, { outcome: "error" });
       setStatus("error");
     }
   }

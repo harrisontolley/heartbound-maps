@@ -308,6 +308,11 @@ export async function submitOrderToArtelo(orderId: string): Promise<SubmitResult
         message: `Fulfilment blocked: print asset below ${DPI_FLOOR} DPI (${dims.w}×${dims.h} for ${it.productLabel})`,
         source: "system",
       }).catch(() => {});
+      await capturePostHogServerEvent("fulfillment_failed", order.id, {
+        order_id: order.id,
+        error_code: "dpi_below_minimum",
+        is_test_order: cfg.testOrders,
+      });
       return { submitted: false, reason: "dpi_below_minimum" };
     }
   }
@@ -342,6 +347,11 @@ export async function submitOrderToArtelo(orderId: string): Promise<SubmitResult
         message: `Artelo submission failed (${res.status})`,
         source: "system",
       }).catch(() => {});
+      await capturePostHogServerEvent("fulfillment_failed", order.id, {
+        order_id: order.id,
+        error_code: `artelo_create_failed:${res.status}`,
+        is_test_order: cfg.testOrders,
+      });
       return { submitted: false, reason: `http_${res.status}` };
     }
 
@@ -381,6 +391,11 @@ export async function submitOrderToArtelo(orderId: string): Promise<SubmitResult
       requestPayload: body,
       error: err instanceof Error ? err.message : "unknown_error",
     }).catch(() => {});
+    await capturePostHogServerEvent("fulfillment_failed", order.id, {
+      order_id: order.id,
+      error_code: "exception",
+      is_test_order: cfg.testOrders,
+    });
     return { submitted: false, reason: "exception" };
   }
 }
