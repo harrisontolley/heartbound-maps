@@ -27,7 +27,7 @@ export const COMPETITORS: readonly Competitor[] = [
     oneLiner:
       "Sweden's minimalist custom map-poster shop: one beautifully styled city or street.",
     homepage: "https://www.mapiful.com",
-    lastReviewed: "2026-06-30",
+    lastReviewed: "2026-07-09",
     hero: {
       h1: "Heartbound Maps vs Mapiful: which custom map print is right for you?",
       subhead:
@@ -37,6 +37,7 @@ export const COMPETITORS: readonly Competitor[] = [
       "Mapiful makes a gorgeous poster of one place. Heartbound Maps maps many places on a single print, with a real bearing and distance from home to each, a more personal story for a gift.",
       "Heartbound Maps includes the digital files with every print and sells a standalone download; Mapiful is print-and-ship only, with no digital option.",
       "Loose Heartbound Maps prints are on Hahnemühle German Etching 310gsm (a textured fine-art paper); Mapiful's posters are 200gsm matte. Heartbound Maps's is the heavier, more premium fine-art stock.",
+      "Heartbound Maps arrives framed, wired and ready to hang, and every order is backed by a damage guarantee: a photo gets a free replacement or full refund with nothing to send back. Mapiful has no framing service yet (the frame ships flat and you mount it), and its custom prints and frames are non-returnable, so a creased arrival or a wrong crop is harder to put right.",
       "Mapiful ships worldwide; Heartbound Maps currently ships within the US only. If you're outside the US, that may settle it.",
     ],
     atAGlance: [
@@ -78,7 +79,8 @@ export const COMPETITORS: readonly Competitor[] = [
       {
         attribute: "Framing",
         heartbound: `Ready-to-hang wood frame, wired, +${PP.frameUpchargeRange}`,
-        competitor: "Frames sold separately (~$49.99+); odd sizes add a surcharge",
+        competitor:
+          "No framing service yet: hanger or frame sold separately, ships flat, you mount the print yourself",
         advantage: "heartbound",
       },
       {
@@ -92,6 +94,14 @@ export const COMPETITORS: readonly Competitor[] = [
         heartbound: "Free standard shipping (US only)",
         competitor: "Worldwide; free over ~$59 (promo-dependent)",
         advantage: "competitor",
+      },
+      {
+        attribute: "If it arrives damaged",
+        heartbound:
+          "A photo gets a free replacement or full refund, nothing to send back",
+        competitor:
+          "Custom prints and frames are non-returnable; damage handled case by case if reported within two weeks",
+        advantage: "heartbound",
       },
     ],
     deepDive: [
@@ -113,8 +123,9 @@ export const COMPETITORS: readonly Competitor[] = [
           "Mapiful prints on 200gsm matte paper, FSC-certified, which it describes as “museum-grade.” It's a genuinely nice, weighty matte stock and the print quality is well reviewed.",
           "Heartbound Maps's loose prints are on Hahnemühle German Etching 310gsm (a heavily textured fine-art paper) with archival pigment inks, made to order. Framed prints use 300gsm 100% cotton-rag paper (smooth behind glass) with a premium natural-oak ready-to-hang frame. Because the artwork is drawn as vectors, every size prints razor-sharp.",
           "Both are archival fine-art papers; the honest difference is weight and character. Heartbound Maps's German Etching 310gsm is the heavier, more textured substrate, and it names the paper specifically rather than leaning on \"museum-grade\" language.",
+          "There's also what happens if something goes wrong. Mapiful ships prints in a cardboard tube or a flat pack, and some customers report prints arriving creased or frames dented, with custom prints and frames non-returnable by policy. Heartbound Maps is made to order and backed by a damage guarantee: if a print turns up damaged or flawed, a quick photo gets a free replacement or a full refund with nothing to return, and because the digital files come with every order, your artwork is never lost.",
         ],
-        takeaway: "Heartbound Maps's edge: Hahnemühle German Etching 310gsm vs. 200gsm matte.",
+        takeaway: "Heartbound Maps's edge: Hahnemühle German Etching 310gsm vs. 200gsm matte, plus a damage guarantee on every order.",
       },
       {
         id: "styles",
@@ -133,6 +144,7 @@ export const COMPETITORS: readonly Competitor[] = [
           `Heartbound Maps's prints run ${PP.priceRange} across its three sizes (${PP.sizeRange}), with a ready-to-hang frame adding ${PP.frameUpchargeRange}. Every print includes the digital files, and a standalone digital download is ${PP.digitalPrice}.`,
           "Mapiful's posters list at $44.99 to $79.99 and are frequently shown at around 25% off, so a single unframed poster can dip below Heartbound Maps's entry price. Frames are sold separately (roughly $49.99 and up), and ordering a frame in a non-standard size adds a surcharge. There's no digital option, so every order is a physical print.",
           "Net of it: Mapiful can be cheaper for one unframed poster on sale. Heartbound Maps's price bundles the digital files and a wired, ready-to-hang frame, and the value grows with how many places you put on one print.",
+          "One more thing to weigh: because Mapiful's prints are custom, they are non-returnable, so if the crop comes out wrong the usual fix is paying to reorder. Heartbound Maps's preview is what-you-see-is-what-you-get, nothing changes at checkout, and the damage-or-fault guarantee still applies, so that risk isn't on you.",
         ],
         takeaway:
           "Heartbound Maps's edge: digital files included and framing that arrives ready to hang.",
@@ -142,7 +154,7 @@ export const COMPETITORS: readonly Competitor[] = [
         heading: "Shipping and delivery",
         body: [
           "This is the clearest point in Mapiful's favor. Mapiful ships worldwide, with free shipping over about $59 (promo-dependent) and standard delivery in roughly 4 to 10 business days.",
-          "Heartbound Maps currently ships within the United States only, but shipping is always free with no threshold: the price you see is the price you pay. Most orders arrive within 5 to 10 business days.",
+          "Heartbound Maps currently ships within the United States only, but shipping is always free with no threshold: the price you see is the price you pay. Most orders arrive within 5 to 10 business days, and every US order is backed by the damage guarantee, so a knock in transit means a free replacement or refund, not a loss.",
           "If you're ordering from outside the US today, Mapiful is the practical choice. Inside the US, Heartbound Maps's free, no-minimum shipping is the simpler deal.",
         ],
         takeaway:
@@ -154,6 +166,7 @@ export const COMPETITORS: readonly Competitor[] = [
         body: [
           "Both let you design and preview before paying, which is the right way to buy something custom. Mapiful's editor is mature and smooth.",
           "Heartbound Maps is free to design with no account required: you only sign in to save your work or export without a watermark, and you only pay when you print. Because the fiddly part (placing and labeling many points) is automated, even a busy map comes together in a few minutes.",
+          "And what you preview is exactly what prints, down to each arrow and label, with nothing changing at checkout, so the crop you approve is the crop that arrives. With Mapiful's prints non-returnable, that certainty matters more than it looks.",
         ],
       },
     ],
@@ -161,7 +174,8 @@ export const COMPETITORS: readonly Competitor[] = [
       heartbound: [
         "You want several meaningful places on one print, not just one city",
         "The bearings and distances from home are the point: the map is a story, not décor",
-        "You'd like the digital files included, or a frame that arrives ready to hang",
+        "You'd like the digital files included, or a frame that arrives wired and ready to hang rather than a print and frame to mount yourself",
+        "You want a damage guarantee and a preview that's exactly what prints, not a non-returnable poster",
         "You're ordering within the United States",
       ],
       competitor: [
@@ -172,7 +186,7 @@ export const COMPETITORS: readonly Competitor[] = [
       ],
     },
     verdict:
-      "For a single, gorgeously styled city map (especially shipped overseas), Mapiful is a safe, well-reviewed choice. But if the point is the places that made you, and the directions and distances between them, Heartbound Maps is the better buy: it's the only one of the two that maps many locations on a single print, each measured from home, on Hahnemühle German Etching 310gsm fine-art paper, with the digital files included. For a gift that tells a story rather than decorates a wall, start with Heartbound Maps.",
+      "For a single, gorgeously styled city map (especially shipped overseas), Mapiful is a safe, well-reviewed choice. But if the point is the places that made you, and the directions and distances between them, Heartbound Maps is the better buy: it's the only one of the two that maps many locations on a single print, each measured from home, on Hahnemühle German Etching 310gsm fine-art paper, with the digital files included. It also arrives framed and ready to hang, shows you exactly what will print before you order, and is backed by a damage guarantee that a non-returnable poster can't match. For a gift that tells a story rather than decorates a wall, start with Heartbound Maps.",
     faq: [
       {
         q: "Can Mapiful map more than one location on a single poster?",
@@ -194,11 +208,23 @@ export const COMPETITORS: readonly Competitor[] = [
         q: "Does Heartbound Maps ship internationally like Mapiful?",
         a: "Not yet. Heartbound Maps currently ships within the United States, with free shipping and no minimum. Mapiful ships worldwide, so for international orders it's currently the better option.",
       },
+      {
+        q: "Does Mapiful refund or replace a damaged print?",
+        a: "Mapiful's custom prints and frames are non-returnable. If an order arrives damaged you have to report it within two weeks with photos of the product and packaging, and Mapiful looks for a solution case by case. Heartbound Maps backs every order with a damage guarantee: a quick photo gets you a free replacement or a full refund, with nothing to send back.",
+      },
+      {
+        q: "Do Mapiful prints arrive rolled up or creased?",
+        a: "Mapiful ships prints in a sturdy cardboard tube or a flat pack depending on the print location, and some customers report prints arriving creased or bent. Heartbound Maps prints are made to order and covered by the damage guarantee, so if one arrives flawed a photo gets it replaced or refunded.",
+      },
+      {
+        q: "Does Mapiful arrive framed and ready to hang?",
+        a: "No. Mapiful doesn't offer a framing service yet, so a hanger or frame is sold separately, ships flat, and you mount the print yourself. Heartbound Maps's frame arrives wired and ready to hang in protective packaging, so it's ready to give straight out of the box.",
+      },
     ],
     meta: {
       title: "Heartbound Maps vs Mapiful: Custom Map Print Comparison",
       description:
-        "Heartbound Maps vs Mapiful: multi-place measured maps vs single-location posters. Hahnemühle German Etching 310gsm vs 200gsm matte. Pricing and shipping.",
+        "Heartbound Maps vs Mapiful: many places on one measured map, framed ready to hang, damage guaranteed. Mapiful posters ship flat and are non-returnable.",
     },
   },
 
