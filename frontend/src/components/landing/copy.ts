@@ -60,7 +60,7 @@ export const copy = {
     primaryCta: PRIMARY_CTA,
     secondaryCta: "See how it works",
     // Quiet materials line under the CTAs: the upmarket signal is the spec.
-    specLine: "Hahnemühle 310gsm · archival giclée · solid oak frames",
+    specLine: "Hahnemühle 310gsm · archival giclée · oak or metal frames",
     reassurance:
       "See your finished design free, before you pay a cent. Pay only when you're ready for the print, shipped free to your door.",
     media: {
@@ -84,7 +84,7 @@ export const copy = {
       "See your design before you buy",
       "Hahnemühle 310gsm paper",
       "Archival giclée inks",
-      "Natural oak frames",
+      "Oak or metal frames",
       GUARANTEE_NAME,
     ],
   },
@@ -135,7 +135,7 @@ export const copy = {
     body: [
       "Every print is made to order on Hahnemühle German Etching, a 310gsm textured fine art paper, with archival pigment inks that hold their color for decades. Each one is checked by hand before it ships.",
       "For scale: everyday printer paper weighs about 90gsm. Most poster-shop prints are 120 to 170. This is 310, closer to card than paper, with a surface texture you can feel.",
-      "Framed prints come on smooth 300gsm cotton rag behind glass, in a solid natural oak frame that arrives wired and ready to hang.",
+      "Framed prints come on smooth 300gsm cotton rag behind glass, in a solid oak or metal frame, your choice, that arrives wired and ready to hang.",
     ],
     media: {
       label: "Close-up of 310gsm cotton paper and an oak frame corner",
@@ -203,7 +203,7 @@ export const copy = {
     headline: "Made to be given.",
     body: [
       "The hardest people to buy for already own everything except this. A Heartbound Maps is their story, drawn from real coordinates: where they started, where they went, where home is now.",
-      "It arrives ready to give. A solid oak frame, wired for the wall, in protective packaging that opens well.",
+      "It arrives ready to give. A solid frame of your choice, oak or metal, wired for the wall, in protective packaging that opens well.",
     ],
     occasions: [
       "Weddings and anniversaries",
