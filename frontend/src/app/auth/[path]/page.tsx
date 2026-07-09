@@ -30,7 +30,7 @@ export default async function AuthPage({
       <Link href="/" className="font-display text-3xl tracking-[-0.32px] text-ink">
         Heartbound Maps
       </Link>
-      <div className="w-full max-w-md">
+      <div className="w-full max-w-sm">
         <AuthView path={path} />
       </div>
     </main>
